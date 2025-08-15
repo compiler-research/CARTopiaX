@@ -49,12 +49,12 @@ DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
 IncludeCategories:
-  - Regex:           '^<.*\.h>'
-    Priority:        1
-  - Regex:           '^<.*'
-    Priority:        2
-  - Regex:           '.*'
-    Priority:        3
+  - Regex:           '^"[^/]+\"'
+    Priority:        10
+  - Regex:           '^"core/'
+    Priority:        20
+  - Regex:           '^<'
+    Priority:        30
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 IndentCaseLabels: true
 IndentWidth:     2
