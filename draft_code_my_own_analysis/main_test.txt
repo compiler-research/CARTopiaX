@@ -1,0 +1,115 @@
+#ifndef CART_TUMOR_H_
+#define CART_TUMOR_H_
+
+#include "biodynamo.h"
+#include "tumor_cell.h"
+#include "cart_cell.h"
+#include "interaction_velocity.h" 
+#include "core/operation/mechanical_forces_op.h"
+namespace bdm {
+
+
+
+// List the extracellular substances
+enum Substances { kImmunostimulatoryFactor, kOxygen };
+
+inline int Simulate(int argc, const char** argv) {
+
+
+
+  // Set simulation bounds
+  auto set_param = [](Param* param) {
+    param->random_seed = kSeed; // Set a fixed random seed for reproducibility
+    param->bound_space = Param::BoundSpaceMode::kTorus;// Periodic boundary
+    param->min_bound = -kBoundedSpaceLength / 2;
+    param->max_bound = kBoundedSpaceLength/2;  // Cube of 1000x1000x1000 centered at origin
+    param->simulation_time_step = kDt; // 0.1 minutes
+
+  };
+  
+
+
+  Simulation simulation(argc, argv, set_param);
+  auto* ctxt = simulation.GetExecutionContext();
+
+  //Change Forces
+  auto* scheduler = simulation.GetScheduler();
+  auto* op = scheduler->GetOps("mechanical forces")[0];
+  op->GetImplementation<MechanicalForcesOp>()->SetInteractionForce(new InteractionVelocity());
+
+
+
+
+  // ───────────────────────────────────────
+  // Define Substances
+  // ───────────────────────────────────────
+  // substance_id, name, diffusion_coefficient, decay_constant, resolution
+  ModelInitializer::DefineSubstance(kOxygen, "oxygen", 
+                                    kDiffusionCoefficientOxygen,// 100000 micrometers^2/minute
+                                    kDecayConstantOxygen, // 0.1 minutes^-1
+                                    kResolutionGridSubstances);
+
+
+
+  ModelInitializer::DefineSubstance(kImmunostimulatoryFactor, "immunostimulatory_factor", 
+                                    kDiffusionCoefficientImmunostimulatoryFactor, // 1000 micrometers^2/minute
+                                    kDecayConstantImmunostimulatoryFactor, // 0.016 minutes^-1
+                                    kResolutionGridSubstances);
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+
+  // change time step of the diffusion grids to a smaller value for higher resolution in diffusion. 
+  auto* oxygen_grid = rm->GetDiffusionGrid(kOxygen);
+  oxygen_grid->SetTimeStep(kTimeStepOxygen);// 0.001 minutes
+  auto* immunostimulatory_factor_grid = rm->GetDiffusionGrid(kImmunostimulatoryFactor);
+  immunostimulatory_factor_grid->SetTimeStep(kTimeStepImmunostimulatoryFactor);// 0.01 minutes
+
+
+  // Boundary Conditions Dirichlet: simulating absorption or total loss at the boundaries of the space.
+  //Oxygen comming from the borders (capillary vessels)
+  ModelInitializer::AddBoundaryConditions(
+    kOxygen, BoundaryConditionType::kDirichlet,
+    std::make_unique<ConstantBoundaryCondition>(kOxygenReferenceLevel));// kOxygenReferenceLevel mmHg is the physiological level of oxygen in tissues, o2 saturation is 100% at this level
+
+  //immunostimulatory_factor disapearing at the boundaries
+  ModelInitializer::AddBoundaryConditions(
+      kImmunostimulatoryFactor, BoundaryConditionType::kPeriodic, nullptr);// for an infinite box
+
+  //Initialize oxygen voxels
+  ModelInitializer::InitializeSubstance(kOxygen, [](real_t x, real_t y, real_t z) {
+    return kInitialOxygenLevel; // Set all voxels to kInitialOxygenLevel mmHg
+  });
+
+  // size_t num_boxes = oxygen_grid->GetNumBoxes();
+  // for (size_t idx = 0; idx < num_boxes; ++idx) {oxygen_grid->ChangeConcentrationBy(idx, kInitialOxygenLevel, InteractionMode::kAdditive);}// Set initial concentration of oxygen in all boxes to kInitialOxygenLevel mmHg
+  // std::cout << num_boxes << std::endl;//This is 0
+
+
+  // ───────────────────────────────────────
+  // One spherical tumor of radius kInitialRadiusTumor in the center of the simulation space
+  // ───────────────────────────────────────
+  std::vector<Real3> positions=CreateSphereOfTumorCells(kInitialRadiusTumor);//positions of the cells
+  for (const auto& pos : positions) {
+    TumorCell* tumor_cell = new TumorCell(pos);
+    tumor_cell->AddBehavior(new StateControlGrowProliferate());
+    ctxt->AddAgent(tumor_cell);
+  }
+
+  //OutputSummary operation
+  auto* summary_op = new bdm::Operation("OutputSummary");
+  summary_op->frequency_ = kOutputCsvInterval; // Set the interval for outputting CSV files
+  summary_op->AddOperationImpl(bdm::kCpu, new bdm::OutputSummary());
+  scheduler->ScheduleOp(summary_op);
+
+
+
+  // ───────────────────────────────────────
+  // Run simulation
+  // ───────────────────────────────────────
+  scheduler->Simulate(kTotalMinutesToSimulate/kDt);
+  std::cout << "Simulation completed successfully!" << std::endl;
+  return 0;
+}
+
+}  // namespace bdm
+
+#endif  // CART_TUMOR_H_

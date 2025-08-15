@@ -1,0 +1,10 @@
+[visualization]
+export = true
+interval = 7200
+
+[[visualize_agent]]
+name = "TumorCell"
+additional_data_members = ["diameter_","volume_", "type_"]
+
+[[visualize_diffusion]]
+name = "oxygen"
