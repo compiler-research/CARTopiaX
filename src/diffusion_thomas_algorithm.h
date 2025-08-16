@@ -35,20 +35,8 @@ namespace bdm {
  */
 class DiffusionThomasAlgorithm : public DiffusionGrid {
  public:
-  /** @brief Default constructor */
   DiffusionThomasAlgorithm() = default;
   
-  /** @brief Constructor with full parameter specification
-   * 
-   * @param substance_id Unique identifier for the substance
-   * @param substance_name Human-readable name of the substance
-   * @param dc Diffusion coefficient (μm²/min)
-   * @param mu Decay constant (min⁻¹)
-   * @param resolution Number of voxels in each spatial direction
-   * @param dt Time step for simulation (min)
-   * @param dirichlet_border Flag indicating Dirichlet boundary conditions
-   *        (this flag should not be necessary in a future version of BioDynaMo)
-   */
   DiffusionThomasAlgorithm(int substance_id,
                             std::string substance_name,
                             real_t dc,
@@ -57,61 +45,24 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
                             real_t dt,
                             bool dirichlet_border);
 
-  /** @name Concentration Setters
-   *  @brief Methods to set substance concentration at specific locations
-   *  @{
-   */
-
-  /** @brief Set concentration at spatial coordinates
-   * 
-   * @param x X-coordinate in micrometers
-   * @param y Y-coordinate in micrometers
-   * @param z Z-coordinate in micrometers
-   * @param amount Concentration value to set
-   */
+  /// Concentration setters
   void SetConcentration(real_t x, real_t y, real_t z, real_t amount){
     SetConcentration(GetBoxIndex(x, y, z), amount);
   };
   
-  /** @brief Set concentration at voxel index
-   * 
-   * @param idx Linear index of the voxel
-   * @param amount Concentration value to set
-   */
   void SetConcentration(size_t idx, real_t amount);
 
-  /** @} */ // end of Concentration Setters group
 
-  /** @name Legacy Diffusion Methods (Unused)
-   *  @brief Overridden methods that are empty as they are not used
-   * 
+  /*
    * These methods are overridden but empty because they are not used.
    * This should be fixed in future versions of BioDynaMo.
-   *  @{
    */
-
-  /** @brief Diffusion with closed edge boundary conditions (not implemented) */
   void DiffuseWithClosedEdge(real_t dt) override{};
-  
-  /** @brief Diffusion with open edge boundary conditions (not implemented) */
   void DiffuseWithOpenEdge(real_t dt) override{};
-  
-  /** @brief Diffusion with Neumann boundary conditions (not implemented) */
   void DiffuseWithNeumann(real_t dt) override{};
-  
-  /** @brief Diffusion with periodic boundary conditions (not implemented) */
   void DiffuseWithPeriodic(real_t dt) override{};
-  
-  /** @brief Diffusion with Dirichlet boundary conditions (not implemented) */
   void DiffuseWithDirichlet(real_t dt) override{};
 
-  /** @} */ // end of Legacy Diffusion Methods group
-
-
-  /** @name Core Diffusion Methods
-   *  @brief Main methods for diffusion computation
-   *  @{
-   */
 
   /** @brief Perform chemical diffusion using Thomas algorithm
    * 
@@ -164,8 +115,6 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
    */
   void ComputeConsumptionsSecretions();
 
-  /** @} */ // end of Core Diffusion Methods group
-  
  /** @name Private Member Variables
   *  @brief Internal data structures and parameters
   *  @{
@@ -245,11 +194,6 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
 
   /** @} */ // end of Private Member Variables group
 
-  /** @name Private Helper Methods
-   *  @brief Internal utility functions
-   *  @{
-   */
-
   /** @brief Initialize Thomas algorithm coefficient vectors
    * 
    * Sets up the precomputed coefficients for efficient Thomas algorithm
@@ -277,7 +221,6 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
    */
   size_t GetBoxIndex(size_t x, size_t y, size_t z) const;
 
-  /** @} */ // end of Private Helper Methods group
 
   BDM_CLASS_DEF_OVERRIDE(DiffusionThomasAlgorithm, 1);
 };

@@ -24,7 +24,6 @@
 namespace bdm {
 
 Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
-  // std::cout << "Calculating interaction velocity..." << std::endl;//Debug
 
   auto* a = static_cast<const Cell*>(lhs);
   auto* b = static_cast<const Cell*>(rhs);

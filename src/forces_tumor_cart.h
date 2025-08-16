@@ -41,10 +41,8 @@ namespace bdm {
  */
 class InteractionVelocity : public InteractionForce {
  public:
-  /** @brief Default constructor */
   InteractionVelocity() = default;
   
-  /** @brief Virtual destructor */
   ~InteractionVelocity() override = default;
 
   /** @brief Calculate interaction force between two agents
@@ -59,13 +57,6 @@ class InteractionVelocity : public InteractionForce {
    */
   Real4 Calculate(const Agent* lhs, const Agent* rhs) const override;
 
-  /** @brief Create a copy of this interaction force
-   * 
-   * Creates a new instance of the InteractionVelocity force for use
-   * in multi-threaded simulations where each thread needs its own copy.
-   * 
-   * @return Pointer to a new InteractionVelocity instance
-   */
   InteractionForce* NewCopy() const override;
 };
 

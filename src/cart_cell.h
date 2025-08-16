@@ -59,221 +59,60 @@ class CartCell : public Cell {
   BDM_AGENT_HEADER(CartCell, Cell, 1);
 
   public:
-  /** @brief Default constructor */
   CartCell() {}
-  
-  /** @brief Constructor with position parameter
-   *  @param position Initial 3D position of the cell
-   */
   explicit CartCell(const Real3& position);
-  
-  /** @brief Virtual destructor */
   virtual ~CartCell() {}
 
-  /** @name State Management
-   *  @brief Methods for managing cell state
-   *  @{
-   */
-  
-  /** @brief Set the current state of the CAR-T cell
-   *  @param state The new state to set
-   */
+  ///Getters and Setters
   void SetState(CartCellState state) { state_ = state; }
-  
-  /** @brief Get the current state of the CAR-T cell
-   *  @return The current cell state
-   */
   CartCellState GetState() const { return state_; }
 
-  /** @brief Set the timer for tracking time in current state
-   *  @param timer_state Timer value in minutes
-   */
   void SetTimerState(int timer_state) { timer_state_ = timer_state; }
-  
-  /** @brief Get the timer for tracking time in current state
-   *  @return Timer value in minutes
-   */
   int GetTimerState() const { return timer_state_; }
-  
-  /** @} */ // end of State Management group
 
-  /** @name Volume and Physical Properties
-   *  @brief Methods for managing cell volume and physical characteristics
-   *  @{
-   */
-
-  /** @brief Set the fluid fraction of the cell
-   *  @param fluid_fraction The fluid fraction value
-   */
   void SetFluidFraction(real_t fluid_fraction) { fluid_fraction_ = fluid_fraction; }
-  
-  /** @brief Get the fluid fraction of the cell
-   *  @return The current fluid fraction
-   */
   real_t GetFluidFraction() const { return fluid_fraction_; }
 
-  /** @brief Set the nuclear volume
-   *  @param nuclear_volume The nuclear volume value
-   */
   void SetNuclearVolume(real_t nuclear_volume) { nuclear_volume_ = nuclear_volume; }
-  
-  /** @brief Get the nuclear volume
-   *  @return The current nuclear volume
-   */
   real_t GetNuclearVolume() const { return nuclear_volume_; }
 
-  /** @brief Set the target cytoplasm solid volume
-   *  @param target_cytoplasm_solid The target cytoplasm solid volume
-   */
   void SetTargetCytoplasmSolid(real_t target_cytoplasm_solid) { target_cytoplasm_solid_ = target_cytoplasm_solid; }
-  
-  /** @brief Get the target cytoplasm solid volume
-   *  @return The target cytoplasm solid volume
-   */
   real_t GetTargetCytoplasmSolid() const { return target_cytoplasm_solid_; }
 
-  /** @brief Set the target nucleus solid volume
-   *  @param target_nucleus_solid The target nucleus solid volume
-   */
   void SetTargetNucleusSolid(real_t target_nucleus_solid) { target_nucleus_solid_ = target_nucleus_solid; }
-  
-  /** @brief Get the target nucleus solid volume
-   *  @return The target nucleus solid volume
-   */
   real_t GetTargetNucleusSolid() const { return target_nucleus_solid_; }  
 
-  /** @brief Set the target fraction of fluid
-   *  @param target_fraction_fluid The target fluid fraction
-   */
   void SetTargetFractionFluid(real_t target_fraction_fluid) { target_fraction_fluid_ = target_fraction_fluid; }
-  
-  /** @brief Get the target fraction of fluid
-   *  @return The target fluid fraction
-   */
   real_t GetTargetFractionFluid() const { return target_fraction_fluid_; }  
 
-  /** @brief Set the target relation between cytoplasm and nucleus
-   *  @param target_relation_cytoplasm_nucleus The target relation value
-   */
   void SetTargetRelationCytoplasmNucleus(real_t target_relation_cytoplasm_nucleus) { target_relation_cytoplasm_nucleus_ = target_relation_cytoplasm_nucleus; }
-  
-  /** @brief Get the target relation between cytoplasm and nucleus
-   *  @return The target relation value
-   */
   real_t GetTargetRelationCytoplasmNucleus() const { return target_relation_cytoplasm_nucleus_; }
 
-  /** @} */ // end of Volume and Physical Properties group
-
-  /** @name Tumor Cell Attachment
-   *  @brief Methods for managing attachment to tumor cells
-   *  @{
-   */
-
-  /** @brief Set whether the cell is attached to a tumor cell
-   *  @param attached True if attached, false otherwise
-   */
   void SetAttachedToTumorCell(bool attached) { attached_to_tumor_cell_ = attached; }
-  
-  /** @brief Check if the cell is attached to a tumor cell
-   *  @return True if attached to a tumor cell, false otherwise
-   */
   bool IsAttachedToTumorCell() const { return attached_to_tumor_cell_; }
 
-  /** @brief Get the attached tumor cell
-   *  @return Pointer to the attached tumor cell, or nullptr if not attached
-   */
-  TumorCell* GetAttachedCell() const { return attached_cell_; }
-  
-  /** @brief Set the attached tumor cell
-   *  @param cell Pointer to the tumor cell to attach
-   */
-  void SetAttachedCell(TumorCell* cell) { attached_cell_ = cell; }
-
-  /** @} */ // end of Tumor Cell Attachment group
-
-  /** @name Movement and Velocity
-   *  @brief Methods for managing cell movement and velocity
-   *  @{
-   */
-
-  /** @brief Get the velocity from the previous time step
-   *  @return The velocity vector from the previous step
-   */
   Real3 GetOlderVelocity() const { return older_velocity_; }
-  
-  /** @brief Set the velocity from the previous time step
-   *  @param velocity The velocity vector to set
-   */
   void SetOlderVelocity(const Real3& velocity) { older_velocity_ = velocity; }
 
-  /** @brief Check whether the cell moves by its own
-   *  @return True if the cell can move independently, false otherwise
-   */
-  bool DoesCellMove();
-
-  /** @} */ // end of Movement and Velocity group
-
-  /** @name Biochemical Properties
-   *  @brief Methods for managing oxygen consumption and cell lifetime
-   *  @{
-   */
-
-  /** @brief Get the oxygen consumption rate
-   *  @return The current oxygen consumption rate
-   */
   real_t GetOxygenConsumptionRate() const { return oxygen_consumption_rate_; }
-  
-  /** @brief Set the oxygen consumption rate
-   *  @param rate The oxygen consumption rate to set
-   */
   void SetOxygenConsumptionRate(real_t rate) { oxygen_consumption_rate_ = rate; }
 
-  /** @brief Get the current live time
-   *  @return The current time until apoptosis
-   */
   real_t GetCurrentLiveTime() const { return current_live_time_; }
-  
-  /** @brief Set the current live time
-   *  @param time The current live time to set
-   */
   void SetCurrentLiveTime(real_t time) { current_live_time_ = time; }
 
-  /** @} */ // end of Biochemical Properties group
+  TumorCell* GetAttachedCell() const { return attached_cell_; }
+  void SetAttachedCell(TumorCell* cell) { attached_cell_ = cell; }
 
-  /** @name Volume Calculations
-   *  @brief Methods for volume calculations
-   *  @{
-   */
+  /// Returns whether the cell moves by its own
+  bool DoesCellMove();
 
-  /** @brief Calculate the target total volume of the cell
-   *  @return The target total volume
-   */
   real_t GetTargetTotalVolume();
 
-  /** @} */ // end of Volume Calculations group
-
-  /** @name Diffusion Grids
-   *  @brief Methods for accessing diffusion grids
-   *  @{
-   */
-
-  /** @brief Get the diffusion grid for oxygen
-   *  @return Pointer to the oxygen diffusion grid
-   */
+  /// Returns the diffusion grid for oxygen
   DiffusionGrid* GetOxygenDiffusionGrid() const { return oxygen_dgrid_; }
-  
-  /** @brief Get the diffusion grid for immunostimulatory factors
-   *  @return Pointer to the immunostimulatory factor diffusion grid
-   */
+  /// Returns the diffusion grid for immunostimulatory factors
   DiffusionGrid* GetImmunostimulatoryFactorDiffusionGrid() const { return immunostimulatory_factor_dgrid_; }
-
-  /** @} */ // end of Diffusion Grids group
-
-  /** @name Core Simulation Methods
-   *  @brief Core methods for cell simulation and behavior
-   *  @{
-   */
-
+  
   /** @brief Change volume using exponential relaxation equation
    * 
    * This method explicitly solves the system of exponential relaxation differential
@@ -317,7 +156,6 @@ class CartCell : public Cell {
    */
   void ComputeConstantsConsumptionSecretion();
 
-  /** @} */ // end of Core Simulation Methods group
 
  /** @name Private Member Variables
   *  @brief Private attributes of the CAR-T cell
@@ -396,12 +234,8 @@ class CartCell : public Cell {
 struct StateControlCart : public Behavior {
   BDM_BEHAVIOR_HEADER(StateControlCart, Behavior, 1);
 
-  /** @brief Default constructor
-   *  Calls AlwaysCopyToNew() to ensure the behavior is copied to new cells
-   */
   StateControlCart() { AlwaysCopyToNew(); }
   
-  /** @brief Virtual destructor */
   virtual ~StateControlCart() {}
 
   /** @brief Execute the state control behavior

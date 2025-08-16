@@ -27,13 +27,8 @@
 #include "tumor_cell.h"
 
 namespace bdm {
-    /** @brief Forward declaration of TumorCell class */
+    /// Forward declaration of TumorCell class
     class TumorCell;
-
-/** @name Random Sampling Functions
- *  @brief Functions for random value generation
- *  @{
- */
 
 /** @brief Sample a positive Gaussian value
  * 
@@ -45,13 +40,6 @@ namespace bdm {
  * @return Sampled positive value (negative values mapped to zero)
  */
 real_t SamplePositiveGaussian(float mean, float sigma);
-
-/** @} */ // end of Random Sampling Functions group
-
-/** @name Tumor Analysis Functions
- *  @brief Functions for tumor creation and analysis
- *  @{
- */
 
 /** @brief Create a spherical arrangement of tumor cells
  * 
@@ -80,13 +68,6 @@ std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius);
  */
 std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, real_t> ComputeNumberTumorCellsAndRadius();
 
-/** @} */ // end of Tumor Analysis Functions group
-
-/** @name Output and Analysis Operations
- *  @brief Operations for data output and simulation analysis
- *  @{
- */
-
 /** @brief Operation for outputting simulation summary data to CSV files
  * 
  * This operation collects and outputs summary statistics about the simulation
@@ -96,21 +77,16 @@ std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, real_t> ComputeNumber
 struct OutputSummary : public StandaloneOperationImpl {
   BDM_OP_HEADER(OutputSummary);
 
-  /** @brief Frequency of output (every N simulation steps) */
+  ///Frequency of output (every N simulation steps)
   uint64_t frequency_ = 1;
 
-  /** @brief Execute the output operation
-   * 
-   * Collects current simulation data and writes it to CSV files.
-   * Called automatically by the simulation scheduler at the specified frequency.
-   */
+  ///Collects current simulation data and writes it to CSV files: Called automatically by the simulation scheduler at the specified frequency.
   void operator()() override;
 };
 
-/** @brief Register OutputSummary operation with CPU as compute target */
+/// Register OutputSummary operation with CPU as compute target
 inline BDM_REGISTER_OP(OutputSummary, "OutputSummary", kCpu);
 
-/** @} */ // end of Output and Analysis Operations group
 
 }  // namespace bdm
 

@@ -67,9 +67,6 @@ DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id, std::string
   thomas_denom_z_ = std::vector<real_t>(resolution_, constant3_);
   InitializeThomasAlgorithmVectors(thomas_denom_z_, thomas_c_z_);
 
-  // std::cout << "thomas_c: " << thomas_c_z_[0] << " " << thomas_c_z_[1] << " " << thomas_c_z_[2] << " " << thomas_c_z_[resolution_-2] << " " <<thomas_c_z_[resolution_-1] << std::endl;
-
-  // std::cout << "thomas_denom: " << thomas_denom_z_[0] << " " << thomas_denom_z_[1] << " " << thomas_denom_z_[2] << " " << thomas_denom_z_[resolution_-2] << " " << thomas_denom_z_[resolution_-1] << std::endl;
 }
 
 void DiffusionThomasAlgorithm::InitializeThomasAlgorithmVectors(std::vector<real_t>& thomas_denom, std::vector<real_t>& thomas_c) {
@@ -189,19 +186,7 @@ void DiffusionThomasAlgorithm::Step(real_t dt) {//instead of overwriting Step, i
 void DiffusionThomasAlgorithm::DiffuseChemical(real_t dt) {
 
 
-  // Change to add double buffer for paralelization
-
-  // //Debug
-	// std::ofstream file("output/vector_densities_mine.csv", std::ios::app);
-	// if (file.is_open()) {
-  //   auto* con=GetAllConcentrations();
-	// 	for (unsigned int i = 0; i < resolution_ * resolution_ * resolution_; ++i) {
-	// 		file << con[i];
-	// 		file << ",";
-	// 	}
-	// 	file<< "\n";
-	// }
-	// //End Debug
+  // Change for the future: to add double buffer for paralelization
 
   if (dirichlet_border_) { ApplyDirichletBoundaryConditions();}
 
@@ -298,11 +283,7 @@ void DiffusionThomasAlgorithm::ComputeConsumptionsSecretions() {
       real_t new_conc = cell->ConsumeSecreteSubstance(GetContinuumId(),conc);
       ChangeConcentrationBy(pos, new_conc - conc, InteractionMode::kAdditive, false);
     }
-    //Debug
-    // std::ofstream file("output/consumptions_mine.csv", std::ios::app);
-    // if (file.is_open()) {
-    //   file << current_time << "," << conc << "," << 0.0 << "," << 1.3 << "," << new_conc << "\n";
-    // }
+
   });
 
   return;

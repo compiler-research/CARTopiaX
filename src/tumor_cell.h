@@ -76,254 +76,68 @@ class TumorCell : public Cell {
   BDM_AGENT_HEADER(TumorCell, Cell, 1);
 
   public:
-  /** @brief Default constructor */
   TumorCell() {}
   
-  /** @brief Constructor with position parameter
-   *  @param position Initial 3D position of the cell
-   */
   explicit TumorCell(const Real3& position);
   
-  /** @brief Virtual destructor */
   virtual ~TumorCell() {}
 
   /** @brief Called when a new agent is created (e.g., after cell division)
    *  @param event The new agent event containing initialization data
    */
   void Initialize(const NewAgentEvent& event) override;
-
-  /** @name State Management
-   *  @brief Methods for managing tumor cell state
-   *  @{
-   */
-
-  /** @brief Set the current state of the tumor cell
-   *  @param state The new state to set
-   */
+//Getters and Setters
   void SetState(TumorCellState state) { state_ = state; }
-  
-  /** @brief Get the current state of the tumor cell
-   *  @return The current cell state
-   */
   TumorCellState GetState() const { return state_; }
 
-  /** @brief Set the timer for tracking time in current state
-   *  @param timer_state Timer value in minutes
-   */
   void SetTimerState(int timer_state) { timer_state_ = timer_state; }
-  
-  /** @brief Get the timer for tracking time in current state
-   *  @return Timer value in minutes
-   */
   int GetTimerState() const { return timer_state_; }
 
-  /** @} */ // end of State Management group
-
-  /** @name Oncoprotein Management
-   *  @brief Methods for managing oncoprotein expression levels
-   *  @{
-   */
-
-  /** @brief Set the oncoprotein expression level
-   *  @param level The oncoprotein level to set
-   */
   void SetOncoproteineLevel(real_t level);
-  
-  /** @brief Get the oncoprotein expression level
-   *  @return The current oncoprotein level
-   */
-  real_t GetOncoproteineLevel() const { return oncoproteine_level_; }
+  real_t GetOncoproteineLevel() const { return oncoproteine_level_; }  
 
-  /** @} */ // end of Oncoprotein Management group  
-
-  /** @name Volume and Physical Properties
-   *  @brief Methods for managing cell volume and physical characteristics
-   *  @{
-   */
-
-  /** @brief Set the fluid fraction of the cell
-   *  @param fluid_fraction The fluid fraction value
-   */
   void SetFluidFraction(real_t fluid_fraction) { fluid_fraction_ = fluid_fraction; }
-  
-  /** @brief Get the fluid fraction of the cell
-   *  @return The current fluid fraction
-   */
   real_t GetFluidFraction() const { return fluid_fraction_; }
 
-  /** @brief Set the nuclear volume
-   *  @param nuclear_volume The nuclear volume value
-   */
   void SetNuclearVolume(real_t nuclear_volume) { nuclear_volume_ = nuclear_volume; }
-  
-  /** @brief Get the nuclear volume
-   *  @return The current nuclear volume
-   */
   real_t GetNuclearVolume() const { return nuclear_volume_; }
 
-  /** @brief Set the target cytoplasm solid volume
-   *  @param target_cytoplasm_solid The target cytoplasm solid volume
-   */
   void SetTargetCytoplasmSolid(real_t target_cytoplasm_solid) { target_cytoplasm_solid_ = target_cytoplasm_solid; }
-  
-  /** @brief Get the target cytoplasm solid volume
-   *  @return The target cytoplasm solid volume
-   */
   real_t GetTargetCytoplasmSolid() const { return target_cytoplasm_solid_; }
 
-  /** @brief Set the target nucleus solid volume
-   *  @param target_nucleus_solid The target nucleus solid volume
-   */
   void SetTargetNucleusSolid(real_t target_nucleus_solid) { target_nucleus_solid_ = target_nucleus_solid; }
-  
-  /** @brief Get the target nucleus solid volume
-   *  @return The target nucleus solid volume
-   */
-  real_t GetTargetNucleusSolid() const { return target_nucleus_solid_; }
+  real_t GetTargetNucleusSolid() const { return target_nucleus_solid_; }  
 
-  /** @brief Set the target fraction of fluid
-   *  @param target_fraction_fluid The target fluid fraction
-   */
   void SetTargetFractionFluid(real_t target_fraction_fluid) { target_fraction_fluid_ = target_fraction_fluid; }
-  
-  /** @brief Get the target fraction of fluid
-   *  @return The target fluid fraction
-   */
-  real_t GetTargetFractionFluid() const { return target_fraction_fluid_; }
+  real_t GetTargetFractionFluid() const { return target_fraction_fluid_; }  
 
-  /** @brief Set the target relation between cytoplasm and nucleus
-   *  @param target_relation_cytoplasm_nucleus The target relation value
-   */
   void SetTargetRelationCytoplasmNucleus(real_t target_relation_cytoplasm_nucleus) { target_relation_cytoplasm_nucleus_ = target_relation_cytoplasm_nucleus; }
-  
-  /** @brief Get the target relation between cytoplasm and nucleus
-   *  @return The target relation value
-   */
   real_t GetTargetRelationCytoplasmNucleus() const { return target_relation_cytoplasm_nucleus_; }
 
-  /** @} */ // end of Volume and Physical Properties group
-
-  /** @name Transformation and Cell Type
-   *  @brief Methods for managing transformation rates and cell types
-   *  @{
-   */
-
-  /** @brief Set the transformation random rate for state transitions
-   * 
-   *  This rate affects the probability of transitioning between states and
-   *  depends on the individual cell. It remains constant during the cell's lifetime.
-   */
   void SetTransformationRandomRate();
-  
-  /** @brief Get the transformation random rate
-   *  @return The current transformation random rate
-   */
   real_t GetTransformationRandomRate() const { return transformation_random_rate_; }
 
-  /** @brief Set the cell type based on oncoprotein level
-   *  @param type Cell type (1-4: 1 is most mutated/proliferative, 4 is least aggressive; 5 means dead)
-   */
-  void SetType(int type) { type_ = type; }
-  
-  /** @brief Get the cell type
-   *  @return The current cell type
-   */
-  int GetType() const { return type_; }
-
-  /** @name CAR-T Cell Interaction
-   *  @brief Methods for managing attachment to CAR-T cells
-   *  @{
-   */
-
-  /** @brief Set whether the cell is attached to a CAR-T cell
-   *  @param attached True if attached, false otherwise
-   */
   void SetAttachedToCart(bool attached) { attached_to_cart_ = attached; }
-  
-  /** @brief Check if the cell is attached to a CAR-T cell
-   *  @return True if attached to a CAR-T cell, false otherwise
-   */
   bool IsAttachedToCart() const { return attached_to_cart_; }
 
-  /** @} */ // end of CAR-T Cell Interaction group
+  void SetType(int type) { type_ = type; }
+  int GetType() const { return type_; }
 
-  /** @name Movement and Velocity
-   *  @brief Methods for managing cell movement and velocity
-   *  @{
-   */
-
-  /** @brief Get the velocity from the previous time step
-   *  @return The velocity vector from the previous step
-   */
   Real3 GetOlderVelocity() const { return older_velocity_; }
-  
-  /** @brief Set the velocity from the previous time step
-   *  @param velocity The velocity vector to set
-   */
   void SetOlderVelocity(const Real3& velocity) { older_velocity_ = velocity; }
 
-  /** @} */ // end of Movement and Velocity group
-
-  /** @name Biochemical Properties
-   *  @brief Methods for managing substance consumption and secretion
-   *  @{
-   */
-
-  /** @brief Get the oxygen consumption rate
-   *  @return The current oxygen consumption rate
-   */
   real_t GetOxygenConsumptionRate() const { return oxygen_consumption_rate_; }
-  
-  /** @brief Set the oxygen consumption rate
-   *  @param rate The oxygen consumption rate to set
-   */
   void SetOxygenConsumptionRate(real_t rate) { oxygen_consumption_rate_ = rate; }
 
-  /** @brief Get the immunostimulatory factor secretion rate
-   *  @return The current immunostimulatory factor secretion rate
-   */
   real_t GetImmunostimulatoryFactorSecretionRate() const { return immunostimulatory_factor_secretion_rate_; }
-  
-  /** @brief Set the immunostimulatory factor secretion rate
-   *  @param rate The immunostimulatory factor secretion rate to set
-   */
   void SetImmunostimulatoryFactorSecretionRate(real_t rate) { immunostimulatory_factor_secretion_rate_ = rate; }
 
-  /** @} */ // end of Biochemical Properties group
-
-  /** @name Volume Calculations
-   *  @brief Methods for volume calculations
-   *  @{
-   */
-
-  /** @brief Calculate the target total volume of the cell
-   *  @return The target total volume
-   */
   real_t GetTargetTotalVolume();
 
-  /** @} */ // end of Volume Calculations group
-
-  /** @name Diffusion Grids
-   *  @brief Methods for accessing diffusion grids
-   *  @{
-   */
-
-  /** @brief Get the diffusion grid for oxygen
-   *  @return Pointer to the oxygen diffusion grid
-   */
+  /// Returns the diffusion grid for oxygen
   DiffusionGrid* GetOxygenDiffusionGrid() const { return oxygen_dgrid_; }
-  
-  /** @brief Get the diffusion grid for immunostimulatory factors
-   *  @return Pointer to the immunostimulatory factor diffusion grid
-   */
+  /// Returns the diffusion grid for immunostimulatory factors
   DiffusionGrid* GetImmunostimulatoryFactorDiffusionGrid() const { return immunostimulatory_factor_dgrid_; }
-
-  /** @} */ // end of Diffusion Grids group
-
-  /** @name Core Simulation Methods
-   *  @brief Core methods for cell simulation and behavior
-   *  @{
-   */
 
   /** @brief Change volume using exponential relaxation equation
    * 
@@ -368,7 +182,6 @@ class TumorCell : public Cell {
    */
   void ComputeConstantsConsumptionSecretion();
 
-  /** @} */ // end of Core Simulation Methods group
 
  /** @name Private Member Variables
   *  @brief Private attributes of the tumor cell
@@ -471,12 +284,8 @@ class TumorCell : public Cell {
 struct StateControlGrowProliferate : public Behavior {
   BDM_BEHAVIOR_HEADER(StateControlGrowProliferate, Behavior, 1);
 
-  /** @brief Default constructor
-   *  Calls AlwaysCopyToNew() to ensure the behavior is copied to new cells
-   */
   StateControlGrowProliferate() { AlwaysCopyToNew(); }
   
-  /** @brief Virtual destructor */
   virtual ~StateControlGrowProliferate() {}
 
   /** @brief Execute the state control and growth behavior
