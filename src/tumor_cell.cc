@@ -1,20 +1,22 @@
-// -----------------------------------------------------------------------------
-// Copyright (C) 2025 Salvador de la Torre Gonzalez
-// Co-author: Luciana Melina Luque
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// -----------------------------------------------------------------------------
-
+/*
+ * Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana Melina Luque
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *     SPDX-License-Identifier: Apache-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * This file contains a model developed under Google Summer of Code (GSoC)
+ * for the compiler-research.org organization.
+ */
 #include "tumor_cell.h"
 
 namespace bdm {
@@ -25,28 +27,28 @@ TumorCell::TumorCell(const Real3& position) {
   timer_state_ = 0;  // Initial timer_state
 
   //volumes
-  this->SetVolume(kDefaultVolumeNewTumorCell);  // Set default volume
-  this->SetFluidFraction(kDefaultFractionFluidTumorCell); // Set default fluid fraction
-  this->SetNuclearVolume(kDefaultVolumeNucleusTumorCell); // Set default nuclear volume
+  SetVolume(kDefaultVolumeNewTumorCell);  // Set default volume
+  SetFluidFraction(kDefaultFractionFluidTumorCell); // Set default fluid fraction
+  SetNuclearVolume(kDefaultVolumeNucleusTumorCell); // Set default nuclear volume
   //target volumes
-  this->SetTargetFractionFluid(kDefaultFractionFluidTumorCell); // Set target fraction of fluid
-  this->SetTargetRelationCytoplasmNucleus((kDefaultVolumeNewTumorCell - kDefaultVolumeNucleusTumorCell) / ( 1e-16 + kDefaultVolumeNucleusTumorCell)); // Set target relation between cytoplasm and nucleus
-  this->SetTargetNucleusSolid(kDefaultVolumeNucleusTumorCell*(1-kDefaultFractionFluidTumorCell)); // Set target nucleus solid volume to real_t
-  this->SetTargetCytoplasmSolid((kDefaultVolumeNewTumorCell - kDefaultVolumeNucleusTumorCell) * (1 - kDefaultFractionFluidTumorCell)); // Set target cytoplasm solid volume to real_t
+  SetTargetFractionFluid(kDefaultFractionFluidTumorCell); // Set target fraction of fluid
+  SetTargetRelationCytoplasmNucleus((kDefaultVolumeNewTumorCell - kDefaultVolumeNucleusTumorCell) / ( 1e-16 + kDefaultVolumeNucleusTumorCell)); // Set target relation between cytoplasm and nucleus
+  SetTargetNucleusSolid(kDefaultVolumeNucleusTumorCell*(1-kDefaultFractionFluidTumorCell)); // Set target nucleus solid volume to real_t
+  SetTargetCytoplasmSolid((kDefaultVolumeNewTumorCell - kDefaultVolumeNucleusTumorCell) * (1 - kDefaultFractionFluidTumorCell)); // Set target cytoplasm solid volume to real_t
 
-  this->SetOncoproteineLevel(SamplePositiveGaussian(kOncoproteinMean,kOncoproteinStandardDeviation)); // Set initial oncoproteine level with a truncated normal distribution
-  // this->SetOncoproteineLevel(1.); //Debug
-  this->oxygen_dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid("oxygen"); // Pointer to oxygen diffusion grid
-  this->immunostimulatory_factor_dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid("immunostimulatory_factor"); // Pointer to immunostimulatory_factor diffusion grid
-  this->SetTransformationRandomRate(); // Set state transition random rate
-  this->attached_to_cart_ = false; // Initially not attached to a cart
+  SetOncoproteineLevel(SamplePositiveGaussian(kOncoproteinMean,kOncoproteinStandardDeviation)); // Set initial oncoproteine level with a truncated normal distribution
+  // SetOncoproteineLevel(1.); //Debug
+  oxygen_dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid("oxygen"); // Pointer to oxygen diffusion grid
+  immunostimulatory_factor_dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid("immunostimulatory_factor"); // Pointer to immunostimulatory_factor diffusion grid
+  SetTransformationRandomRate(); // Set state transition random rate
+  attached_to_cart_ = false; // Initially not attached to a cart
 
-  this->older_velocity_ = {0, 0, 0}; // Initialize the velocity of the cell in the previous step to zero
+  older_velocity_ = {0, 0, 0}; // Initialize the velocity of the cell in the previous step to zero
 
   //Add Consumption and Secretion
-  this->SetOxygenConsumptionRate(kDefaultOxygenConsumption); // Set default oxygen consumption rate
-  this->SetImmunostimulatoryFactorSecretionRate(kRateSecretionImmunostimulatoryFactor); // Set default immunostimulatory factor secretion rate
-  this->ComputeConstantsConsumptionSecretion(); // Compute constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
+  SetOxygenConsumptionRate(kDefaultOxygenConsumption); // Set default oxygen consumption rate
+  SetImmunostimulatoryFactorSecretionRate(kRateSecretionImmunostimulatoryFactor); // Set default immunostimulatory factor secretion rate
+  ComputeConstantsConsumptionSecretion(); // Compute constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
 
 }
 
@@ -107,11 +109,12 @@ void TumorCell::SetOncoproteineLevel(real_t level) {
 }
 
 void TumorCell::SetTransformationRandomRate() { 
-  transformation_random_rate_ = 1/(std::max(SamplePositiveGaussian(38.6,3.7)*60., 1e-16));// avoid division by zero
+  // avoid division by zero
+  transformation_random_rate_ = 1/(std::max(SamplePositiveGaussian(38.6,3.7)*60., 1e-16));
 }
 
 real_t TumorCell::GetTargetTotalVolume() {
-  return this->GetTargetNucleusSolid() * (1 + GetTargetRelationCytoplasmNucleus()) / (1 - GetTargetFractionFluid());
+  return GetTargetNucleusSolid() * (1 + GetTargetRelationCytoplasmNucleus()) / (1 - GetTargetFractionFluid());
 }
 
 // This method explicitly solves the system of exponential relaxation differential equation using a discrete 
@@ -119,9 +122,9 @@ real_t TumorCell::GetTargetTotalVolume() {
 // volume over time. The relaxations rate controls the speed of convergence
 void TumorCell::ChangeVolumeExponentialRelaxationEquation(real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus, real_t relaxation_rate_fluid) {
   // Exponential relaxation towards the target volume
-  real_t current_total_volume = this->GetVolume();
-  real_t fluid_fraction= this->GetFluidFraction();
-  real_t nuclear_volume = this->GetNuclearVolume();
+  real_t current_total_volume = GetVolume();
+  real_t fluid_fraction= GetFluidFraction();
+  real_t nuclear_volume = GetNuclearVolume();
 
   real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
   real_t current_cytoplasm_solid = (current_total_volume - nuclear_volume) * (1-fluid_fraction);
@@ -134,18 +137,22 @@ void TumorCell::ChangeVolumeExponentialRelaxationEquation(real_t relaxation_rate
 
   real_t current_fluid = fluid_fraction * current_total_volume;
 
-  real_t new_fluid = current_fluid + kDtCycle* relaxation_rate_fluid * (this->GetTargetFractionFluid() * current_total_volume - current_fluid); // Update fluid volume
-  if (new_fluid < 0.0) { new_fluid = 0.0; }// Clamp to zero to prevent negative volumes
+  // Update fluid volume
+  real_t new_fluid = current_fluid + kDtCycle* relaxation_rate_fluid * (GetTargetFractionFluid() * current_total_volume - current_fluid);
+  // Clamp to zero to prevent negative volumes
+  if (new_fluid < 0.0) { new_fluid = 0.0; }
   
   real_t nuclear_fluid = new_fluid* ( nuclear_volume/ current_total_volume);
   // real_t cytoplasm_fluid = new_fluid - nuclear_fluid;
 
-  real_t nuclear_solid = current_nuclear_solid + kDtCycle * relaxation_rate_nucleus * (this->GetTargetNucleusSolid() - current_nuclear_solid);
-  if (nuclear_solid < 0.0) { nuclear_solid = 0.0; } // Clamp to zero to prevent negative volumes
+  real_t nuclear_solid = current_nuclear_solid + kDtCycle * relaxation_rate_nucleus * (GetTargetNucleusSolid() - current_nuclear_solid);
+  // Clamp to zero to prevent negative volumes
+  if (nuclear_solid < 0.0) { nuclear_solid = 0.0; }
 
-  real_t target_cytoplasm_solid = this->GetTargetRelationCytoplasmNucleus() * this->GetTargetNucleusSolid();
+  real_t target_cytoplasm_solid = GetTargetRelationCytoplasmNucleus() * GetTargetNucleusSolid();
   real_t cytoplasm_solid = current_cytoplasm_solid + kDtCycle * relaxation_rate_cytoplasm * (target_cytoplasm_solid - current_cytoplasm_solid);
-  if (cytoplasm_solid < 0.0) { cytoplasm_solid = 0.0; } // Clamp to zero to prevent negative volumes
+  // Clamp to zero to prevent negative volumes
+  if (cytoplasm_solid < 0.0) { cytoplasm_solid = 0.0; }
 
   real_t new_total_solid= nuclear_solid + cytoplasm_solid;
 
@@ -155,7 +162,8 @@ void TumorCell::ChangeVolumeExponentialRelaxationEquation(real_t relaxation_rate
 
   real_t new_volume = new_total_solid + new_fluid;
 
-  real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume); // Avoid division by zero
+  // Avoid division by zero
+  real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
 
 //Debug Debug Output params
 // std::ofstream file("output/volumes.csv", std::ios::app);
@@ -176,12 +184,14 @@ void TumorCell::ChangeVolumeExponentialRelaxationEquation(real_t relaxation_rate
 // End Debug Output
   
   // Update the cell's properties
-  if (new_volume!= current_total_volume){//if the volume has changed
-    this->SetVolume(new_volume);
-    this->ComputeConstantsConsumptionSecretion(); // Update constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
+  // if the volume has changed
+  if (new_volume!= current_total_volume){
+    SetVolume(new_volume);
+    // Update constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
+    ComputeConstantsConsumptionSecretion();
   }
-  this->SetFluidFraction(new_fraction_fluid);
-  this->SetNuclearVolume(total_nuclear);
+  SetFluidFraction(new_fraction_fluid);
+  SetNuclearVolume(total_nuclear);
 }
 
 //compute Displacement
@@ -189,7 +199,8 @@ Real3 TumorCell::CalculateDisplacement(const InteractionForce* force,
                             real_t squared_radius, real_t dt) {
 
   Real3 movement_at_next_step{0, 0, 0};
-  squared_radius=kSquaredMaxDistanceNeighborsForce;//this should be chaged in a future version of BioDynaMo in order to have a cleaner code instead of hardcoding it here
+  // this should be chaged in a future version of BioDynaMo in order to have a cleaner code instead of hardcoding it here
+  squared_radius=kSquaredMaxDistanceNeighborsForce;
   
   Real3 translation_velocity_on_point_mass{0, 0, 0};
 
@@ -223,7 +234,8 @@ Real3 TumorCell::CalculateDisplacement(const InteractionForce* force,
 
   older_velocity_ = translation_velocity_on_point_mass;
 
-  return movement_at_next_step;//Displacement
+  // Displacement
+  return movement_at_next_step;
 }
 
 //Compute new oxygen or immunostimulatory factor concentration after consumption/ secretion
@@ -232,9 +244,11 @@ real_t TumorCell::ConsumeSecreteSubstance(int substance_id, real_t old_concentra
   // constant2_oxygen_ = 1.3;  // Debug
   real_t res;
   if (substance_id == oxygen_dgrid_->GetContinuumId()) {
-    res= (old_concentration + constant1_oxygen_) / constant2_oxygen_;// consuming oxygen
+    // consuming oxygen
+    res= (old_concentration + constant1_oxygen_) / constant2_oxygen_;
   } else if (substance_id == immunostimulatory_factor_dgrid_->GetContinuumId()) {
-    res= (old_concentration + constant1_immunostimulatory_factor_) / constant2_immunostimulatory_factor_;// secreting immunostimulatory factor
+    // secreting immunostimulatory factor
+    res= (old_concentration + constant1_immunostimulatory_factor_) / constant2_immunostimulatory_factor_;
   } else {
     throw std::invalid_argument("Unknown substance id: " + std::to_string(substance_id));
   }
@@ -252,14 +266,17 @@ void TumorCell::ComputeConstantsConsumptionSecretion() {
   // V_voxel = volume of the voxel containing the cell
   // dt     = simulation time step
   
-  real_t new_volume = this->GetVolume();
+  real_t new_volume = GetVolume();
   //compute the constants for the differential equation explicit solution: for oxygen and immunostimulatory factor
   //dt*(cell_volume/voxel_volume)*quantity_secretion*substance_saturation =  dt · (V_k / V_voxel) · S_k · ρ*_k) 
   constant1_oxygen_ = 0.;
-  constant1_immunostimulatory_factor_ = immunostimulatory_factor_secretion_rate_ * kSaturationDensityImmunostimulatoryFactor * kDtSubstances * (new_volume / kVoxelVolume);// Scale by the volume of the cell in the Voxel and time step
+  // Scale by the volume of the cell in the Voxel and time step
+  constant1_immunostimulatory_factor_ = immunostimulatory_factor_secretion_rate_ * kSaturationDensityImmunostimulatoryFactor * kDtSubstances * (new_volume / kVoxelVolume);
   //1 + dt*(cell_volume/voxel_volume)*(quantity_secretion + quantity_consumption ) = [1 + dt · (V_k / V_voxel) · (S_k + U_k)]
-  constant2_oxygen_ = 1 + kDtSubstances * (new_volume/ kVoxelVolume) * (oxygen_consumption_rate_);// Scale by the volume of the cell in the Voxel and time step
-  constant2_immunostimulatory_factor_ = 1 + kDtSubstances * (new_volume/ kVoxelVolume) * (immunostimulatory_factor_secretion_rate_);// Scale by the volume of the cell in the Voxel and time step
+  // Scale by the volume of the cell in the Voxel and time step
+  constant2_oxygen_ = 1 + kDtSubstances * (new_volume/ kVoxelVolume) * (oxygen_consumption_rate_);
+  // Scale by the volume of the cell in the Voxel and time step
+  constant2_immunostimulatory_factor_ = 1 + kDtSubstances * (new_volume/ kVoxelVolume) * (immunostimulatory_factor_secretion_rate_);
 }
 
 /// Main behavior executed at each simulation step
@@ -304,7 +321,7 @@ void StateControlGrowProliferate::Run(Agent* agent) {
         cell->SetTimerState(cell->GetTimerState() + kDtCycle);  // Increase timer_state to track time in this state (kDtCycle minutes per step)
 
         
-        if (this->ShouldEnterNecrosis(oxygen_level, cell)) { // Enter necrosis if oxygen level is too low
+        if (ShouldEnterNecrosis(oxygen_level, cell)) { // Enter necrosis if oxygen level is too low
           return; // Exit the function to prevent further processing
         }
 
@@ -326,14 +343,14 @@ void StateControlGrowProliferate::Run(Agent* agent) {
         final_rate_transition= cell->GetTransformationRandomRate() * multiplier * cell->GetOncoproteineLevel(); // Calculate the rate of state change based on oxygen level and oncoproteine (min^-1)
         
         //Debug
-        int current_time = sim->GetScheduler()->GetSimulatedSteps()* kDt; // Get the current time step in minutes
-        std::ofstream file("output/simulation_data_mine" + std::to_string(current_time/(12*60)) + ".csv", std::ios::app);
-        if (file.is_open()) {
-        file  << oxygen_level << "," 
-             << cell->GetOncoproteineLevel() << ","
-             <<cell->GetTransformationRandomRate()<< "," 
-             << final_rate_transition << "\n";
-        }
+        // int current_time = sim->GetScheduler()->GetSimulatedSteps()* kDt; // Get the current time step in minutes
+        // std::ofstream file("output/simulation_data_mine" + std::to_string(current_time/(12*60)) + ".csv", std::ios::app);
+        // if (file.is_open()) {
+        // file  << oxygen_level << "," 
+        //      << cell->GetOncoproteineLevel() << ","
+        //      <<cell->GetTransformationRandomRate()<< "," 
+        //      << final_rate_transition << "\n";
+        // }
         //End Debug
 
             //Debug Debug Output params
@@ -381,9 +398,10 @@ void StateControlGrowProliferate::Run(Agent* agent) {
       case TumorCellState::kNecroticSwelling:{//the cell is swelling before lysing
         cell->SetTimerState(cell->GetTimerState() + kDtCycle);  // Increase timer_state to track time in this state (kDtCycle minutes per step)
         //volume change
+        // The cell swells
         cell->ChangeVolumeExponentialRelaxationEquation(kVolumeRelaxarionRateCytoplasmNecroticSwelling,
                                                         kVolumeRelaxarionRateNucleusNecroticSwelling,
-                                                        kVolumeRelaxarionRateFluidNecroticSwelling);// The cell swells
+                                                        kVolumeRelaxarionRateFluidNecroticSwelling);
         if (cell->GetVolume() >= 2*kDefaultVolumeNewTumorCell) { // If the cell has swollen to 2 times its original volume, it lyses
           cell->SetState(TumorCellState::kNecroticLysed); // Change state to necrotic lysed
           cell->SetTimerState(0);  // Reset timer_state
@@ -393,18 +411,22 @@ void StateControlGrowProliferate::Run(Agent* agent) {
           cell->SetTargetFractionFluid(0.0); 
           cell->SetTargetRelationCytoplasmNucleus(0.0);
           // Stop secretion and consumption rate
-          cell->SetOxygenConsumptionRate(0.0);//Stop consumption
-          cell->SetImmunostimulatoryFactorSecretionRate(0.0);//Stop secretion
-          cell->ComputeConstantsConsumptionSecretion(); // Update constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
+          // Stop consumption
+          cell->SetOxygenConsumptionRate(0.0);
+          // Stop secretion
+          cell->SetImmunostimulatoryFactorSecretionRate(0.0);
+          // Update constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
+          cell->ComputeConstantsConsumptionSecretion();
         }
         break;
       }
       case TumorCellState::kNecroticLysed:{//the cell is shirinking and will be removed after a certain time
         cell->SetTimerState(cell->GetTimerState() + kDtCycle);  // Increase timer_state to track time in this state (kDtCycle minutes per step)
         //volume change
+        // The cell shrinks
         cell->ChangeVolumeExponentialRelaxationEquation(kVolumeRelaxarionRateCytoplasmNecroticLysed,
                                                         kVolumeRelaxarionRateNucleusNecroticLysed,
-                                                        kVolumeRelaxarionRateFluidNecroticLysed);// The cell shrinks
+                                                        kVolumeRelaxarionRateFluidNecroticLysed);
         if (kTimeLysis < cell->GetTimerState()) { // If the timer_state exceeds the time to transition (this is a fixed duration transition)
           //remove the cell from the simulation
           auto* ctxt = sim->GetExecutionContext();
@@ -423,9 +445,10 @@ void StateControlGrowProliferate::Run(Agent* agent) {
 
         cell->SetTimerState(cell->GetTimerState() + kDtCycle);  // Increase timer_state to track time in this state (kDtCycle minutes per step)
         //volume change CHANGe check if it should indeed be reduced to 0 
+        // The cell shrinks
         cell->ChangeVolumeExponentialRelaxationEquation(kVolumeRelaxarionRateCytoplasmApoptotic,
                                                         kVolumeRelaxarionRateNucleusApoptotic,
-                                                        kVolumeRelaxarionRateFluidApoptotic);// The cell shrinks
+                                                        kVolumeRelaxarionRateFluidApoptotic);
         if (kTimeApoptosis < cell->GetTimerState()) { // If the timer_state exceeds the time to transition (this is a fixed duration transition)
           //remove the cell from the simulation
           auto* ctxt = sim->GetExecutionContext();
@@ -466,9 +489,12 @@ bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,TumorC
     cell->SetTimerState(0);  // Reset timer_state
 
     //Stop Secretion and reduce consumption
-    cell->SetImmunostimulatoryFactorSecretionRate(0.0);//Stop secretion
-    cell->SetOxygenConsumptionRate(cell->GetOxygenConsumptionRate()*kReductionConsumptionDeadCells);//Reduce consumption
-    cell->ComputeConstantsConsumptionSecretion(); // Update constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
+    // Stop secretion
+    cell->SetImmunostimulatoryFactorSecretionRate(0.0);
+    // Reduce consumption
+    cell->SetOxygenConsumptionRate(cell->GetOxygenConsumptionRate()*kReductionConsumptionDeadCells);
+    // Update constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
+    cell->ComputeConstantsConsumptionSecretion();
 
     // The cell will swell getting filled with fluid
     cell->SetTargetCytoplasmSolid(0);

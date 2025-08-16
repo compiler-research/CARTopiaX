@@ -1,19 +1,22 @@
-# -----------------------------------------------------------------------------
-# Copyright (C) 2025 Salvador de la Torre Gonzalez
-# Co-author: Luciana Melina Luque
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# -----------------------------------------------------------------------------
+"""
+Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana Melina Luque
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+    SPDX-License-Identifier: Apache-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This file contains a model developed under Google Summer of Code (GSoC)
+for the compiler-research.org organization.
+"""
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -74,10 +77,10 @@ for i in range(0, len(days)):
 plt.figure(figsize=(10, 6))
 
 # Our model data (solid lines) - now as percentages
-plt.plot(df['total_days'], df['type1_percentage'], color='darkred', label='Type 1 (Model in BioDynaMo)', linewidth=2)
-plt.plot(df['total_days'], df['type2_percentage'], color='red', label='Type 2 (Model in BioDynaMo)', linewidth=2)
-plt.plot(df['total_days'], df['type3_percentage'], color='darkorange', label='Type 3 (Model in BioDynaMo)', linewidth=2)
-plt.plot(df['total_days'], df['type4_percentage'], color='gold', label='Type 4 (Model in BioDynaMo)', linewidth=2)
+plt.plot(df['total_days'], df['type1_percentage'], color='darkred', label='Type 1 (CARTopiaX)', linewidth=2)
+plt.plot(df['total_days'], df['type2_percentage'], color='red', label='Type 2 (CARTopiaX)', linewidth=2)
+plt.plot(df['total_days'], df['type3_percentage'], color='darkorange', label='Type 3 (CARTopiaX)', linewidth=2)
+plt.plot(df['total_days'], df['type4_percentage'], color='gold', label='Type 4 (CARTopiaX)', linewidth=2)
 
 # Nature Paper data (dashed lines)
 plt.plot(time_days, quantities_type1, color='darkred', linestyle='--', label='Type 1 (Model from Nature paper)', linewidth=2)

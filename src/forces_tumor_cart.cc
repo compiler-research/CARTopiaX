@@ -1,19 +1,22 @@
-// -----------------------------------------------------------------------------
-// Copyright (C) 2025 Salvador de la Torre Gonzalez
-// Co-author: Luciana Melina Luque
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// -----------------------------------------------------------------------------
+/*
+ * Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana Melina Luque
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *     SPDX-License-Identifier: Apache-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * This file contains a model developed under Google Summer of Code (GSoC)
+ * for the compiler-research.org organization.
+ */
 
 #include "forces_tumor_cart.h"
 
@@ -55,8 +58,10 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
 
   if (distance < R) {
 
-    temp_r = 1.0 - distance / R; // 1 - d/R
-    temp_r *= temp_r;// (1 - d/R)^2
+    // 1 - d/R
+    temp_r = 1.0 - distance / R; 
+    // (1 - d/R)^2
+    temp_r *= temp_r;
 
     double repulsion;
   // std::cout << "temp_r = " << temp_r<< std::endl;// Debug output
@@ -85,8 +90,10 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
 
 
   if (distance < max_interaction_distance) {
-    double temp_a = 1.0 - distance / max_interaction_distance; // 1 - d/S
-    temp_a *= temp_a;// (1-d/S)^2
+    // 1 - d/S
+    double temp_a = 1.0 - distance / max_interaction_distance; 
+    // (1-d/S)^2
+    temp_a *= temp_a;
 
     // std::cout << "temp_a = " << temp_a << std::endl;// Debug output
 
@@ -142,7 +149,7 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
   // return{0.,0.,0.,0.};//debug
   
 
-  return {2*force_magnitude * displacement[0],//Change this is aggregated twice in the papers code
+  return {2*force_magnitude * displacement[0],
           2*force_magnitude * displacement[1],
           2*force_magnitude * displacement[2],
           0.0};  // 4th component is unused

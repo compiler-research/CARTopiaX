@@ -1,19 +1,22 @@
-# -----------------------------------------------------------------------------
-# Copyright (C) 2025 Salvador de la Torre Gonzalez
-# Co-author: Luciana Melina Luque
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# -----------------------------------------------------------------------------
+"""
+Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana Melina Luque
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+    SPDX-License-Identifier: Apache-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This file contains a model developed under Google Summer of Code (GSoC)
+for the compiler-research.org organization.
+"""
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -45,7 +48,7 @@ color1 = 'blue'
 ax1.set_xlabel('Time (days)')
 ax1.set_ylabel('Tumor Radius', color=color1)
 ax1.plot(filtered_df_csv['total_days'], filtered_df_csv['tumor_radius'], 
-         color=color1, marker='o', label='Tumor Radius: Model in BioDynaMo')
+         color=color1, marker='o', label='Tumor Radius: CARTopiaX')
 ax1.plot(filtered_df_dat['total_days'], filtered_df_dat['radio'], 
          color=color1, linestyle='--', marker='x', label='Tumor Radius: Model from Nature paper')
 ax1.tick_params(axis='y', labelcolor=color1)

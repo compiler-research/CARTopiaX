@@ -1,20 +1,22 @@
-// -----------------------------------------------------------------------------
-// Copyright (C) 2025 Salvador de la Torre Gonzalez
-// Co-author: Luciana Melina Luque
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// -----------------------------------------------------------------------------
-
+/*
+ * Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana Melina Luque
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *     SPDX-License-Identifier: Apache-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * This file contains a model developed under Google Summer of Code (GSoC)
+ * for the compiler-research.org organization.
+ */
 #include "diffusion_thomas_algorithm.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
@@ -27,7 +29,7 @@ namespace bdm {
 DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id, std::string substance_name, real_t dc, real_t mu,int resolution, real_t dt, bool dirichlet_border)//time step
   : DiffusionGrid(substance_id, std::move(substance_name), dc, mu, resolution) {
   
-  this->SetTimeStep(dt);
+  SetTimeStep(dt);
   resolution_ = GetResolution();//num of voxels in each direction
   d_space_ = kBoundedSpaceLength / resolution_; // Voxel side length in micrometers
 
@@ -141,7 +143,7 @@ void DiffusionThomasAlgorithm::ApplyDirichletBoundaryConditions() {
 
 // Sets the concentration at a specific voxel
 void DiffusionThomasAlgorithm::SetConcentration(size_t idx, real_t amount){
-  this->ChangeConcentrationBy(idx, amount - GetAllConcentrations()[idx], InteractionMode::kAdditive, false);
+  ChangeConcentrationBy(idx, amount - GetAllConcentrations()[idx], InteractionMode::kAdditive, false);
 };
 
 // Flattens the 3D coordinates (x, y, z) into a 1D index
@@ -183,7 +185,7 @@ void DiffusionThomasAlgorithm::Step(real_t dt) {//instead of overwriting Step, i
 void DiffusionThomasAlgorithm::DiffuseChemical(real_t dt) {
 
 
-  // CHANGE to add double buffer for paralelization
+  // Change to add double buffer for paralelization
 
   // //Debug
 	// std::ofstream file("output/vector_densities_mine.csv", std::ios::app);
@@ -288,9 +290,9 @@ void DiffusionThomasAlgorithm::ComputeConsumptionsSecretions() {
   rm->ForEachAgent([this, current_time](bdm::Agent* agent) {
     if (auto* cell = dynamic_cast<TumorCell*>(agent)) {
       const auto& pos = cell->GetPosition();
-      real_t conc = this->GetValue(pos);
+      real_t conc = GetValue(pos);
       real_t new_conc = cell->ConsumeSecreteSubstance(GetContinuumId(),conc);
-      this->ChangeConcentrationBy(pos, new_conc - conc, InteractionMode::kAdditive, false);
+      ChangeConcentrationBy(pos, new_conc - conc, InteractionMode::kAdditive, false);
     }
     //Debug
     // std::ofstream file("output/consumptions_mine.csv", std::ios::app);
