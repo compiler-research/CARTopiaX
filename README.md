@@ -92,8 +92,7 @@ Directly from the build directory:
 
 ## Acknowledgments
 
-This project builds upon the BioDynaMo simulation framework  
-(Copyright © 2021 CERN & University of Surrey):
+This project builds upon the BioDynaMo simulation framework.
 
 > Lukas Breitwieser, Ahmad Hesam, Jean de Montigny, Vasileios Vavourakis, Alexandros Iosif, Jack Jennings, Marcus Kaiser, Marco Manca, Alberto Di Meglio, Zaid Al-Ars, Fons Rademakers, Onur Mutlu, Roman Bauer.  
 > *BioDynaMo: a modular platform for high-performance agent-based simulation*.  
