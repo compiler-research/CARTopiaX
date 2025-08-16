@@ -30,8 +30,10 @@ DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id, std::string
   : DiffusionGrid(substance_id, std::move(substance_name), dc, mu, resolution) {
   
   SetTimeStep(dt);
-  resolution_ = GetResolution();//num of voxels in each direction
-  d_space_ = kBoundedSpaceLength / resolution_; // Voxel side length in micrometers
+  //num of voxels in each direction
+  resolution_ = GetResolution();
+  // Voxel side length in micrometers
+  d_space_ = kBoundedSpaceLength / resolution_; 
 
   dirichlet_border_ = dirichlet_border;
 
@@ -39,12 +41,14 @@ DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id, std::string
   jump_j_ = resolution_;
   jump_k_ = resolution_ * resolution_;
 
-  constant1_ = dc;//all diffusion coefficients are the same for all directions (isotropic)
+  //all diffusion coefficients are the same for all directions (isotropic)
+  constant1_ = dc;
   constant1_ *=dt/(d_space_ * d_space_);
   constant1a_ = -constant1_;
-
-  constant2_ = mu;//decay constant
-  constant2_ *= dt / 3.0; // Divide by 3 for the three directions
+  //decay constant
+  constant2_ = mu;
+  // Divide by 3 for the three directions
+  constant2_ *= dt / 3.0; 
 
   constant3_ = 1.0 + 2 * constant1_ + constant2_;
   constant3a_ = 1.0 + constant1_ + constant2_;
