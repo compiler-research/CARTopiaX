@@ -119,6 +119,3 @@ doc/latex
 # Result files
 *.xyz
 *.dat
-
-# Code for comparing models
-draft_code_my_own_analysis/
