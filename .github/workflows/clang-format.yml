@@ -31,7 +31,7 @@ jobs:
         run: |
           PR_BASE=$(git rev-list ${{ github.event.pull_request.head.sha }} ^${{ github.event.pull_request.base.sha }} | tail --lines 1 | xargs -I {} git rev-parse {}~1)
           echo "running git clang-format against $PR_BASE commit"
-          GIT="git -c color.ui=always -c diff.wsErrorHighlight=all -c color.diff.whitespace='red reverse'"
+          GIT="git -c color.ui=always -c diff.wsErrorHighlight=all -c color.diff.whitespace=red reverse"
 
           if ! $GIT clang-format-18 --diff --binary clang-format-18 $PR_BASE; then
             echo "::error::Code is not properly formatted. Please run 'git clang-format-18 HEAD~' locally. \n
