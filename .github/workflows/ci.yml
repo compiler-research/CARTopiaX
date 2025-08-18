@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.9.1
 
       - name: Install dependencies
         run: |
@@ -76,7 +76,7 @@ jobs:
         with:
           path: |
             biodynamo-*
-          key: ${{ matrix.os }}
+          key: ${{ matrix.os }}-bdm
 
       - name: Build BDM if Cache is not found
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
