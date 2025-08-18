@@ -65,7 +65,7 @@ jobs:
           cd biodynamo
           cmake \
              -Dnotebooks=OFF \
-             -Dparaview=ON \
+             -Dparaview=OFF \
              -Dbenchmark=ON \
              -Dlibgit2=ON \
              -Dsbml=OFF \
