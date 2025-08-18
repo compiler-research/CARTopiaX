@@ -43,7 +43,6 @@ jobs:
             echo "CXX=clang++" >> $GITHUB_ENV
           fi
       - name: Restore BDM Cache
-        if: ${{ (matrix.debug_build == true) && (runner.os != 'windows') }}
         uses: actions/cache/restore@v4
         id: cache
         with:
