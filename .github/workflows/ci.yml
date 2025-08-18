@@ -42,6 +42,12 @@ jobs:
             echo "CC=clang" >> $GITHUB_ENV
             echo "CXX=clang++" >> $GITHUB_ENV
           fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
       - name: Restore BDM Cache
         uses: actions/cache/restore@v4
         id: cache
@@ -54,6 +60,7 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           export GHA_BRANCH_NAME=master
+          export BDM_INSTALL=master
           export GHA_REPOSITORY=/BioDynaMo/biodynamo
           curl -s -S -L https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
 
