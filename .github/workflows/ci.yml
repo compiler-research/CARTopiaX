@@ -42,6 +42,7 @@ jobs:
             echo "CC=clang" >> $GITHUB_ENV
             echo "CXX=clang++" >> $GITHUB_ENV
           fi
+          sudo apt-get install curl freeglut3-dev g++ gcc git libblas-dev libbz2-dev liblapack-dev libnuma-dev libomp5 libomp-dev libopenmpi-dev libpthread-stubs0-dev make wget zlib1g-dev python3-dev libbz2-dev libffi-dev liblzma-dev libreadline-dev libsqlite3-dev libssl-dev python3-openssl tk-dev xz-utils zlib1g-dev
 
       - name: Cache Third Party Packages
         uses: actions/cache@v4
