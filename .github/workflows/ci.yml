@@ -28,11 +28,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.9
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
+          #sudo apt-get update
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             sudo apt-get install -y gcc g++ cmake make
             echo "CC=gcc" >> $GITHUB_ENV
@@ -43,10 +43,32 @@ jobs:
             echo "CXX=clang++" >> $GITHUB_ENV
           fi
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Cache pyenv
+        uses: actions/cache@v4
+        id: pyenv-cache
         with:
-          python-version: 3.9
+          path: ~/.pyenv
+          key: ${{ matrix.os }}-pyenv-3.9.1
+
+      - name: Install pyenv dependency
+        if: steps.pyenv-cache.outputs.cache-hit != 'true'
+        run: |
+          if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+            curl https://pyenv.run | bash
+          fi
+          export PATH="$HOME/.pyenv/bin:$PATH"
+          eval "$(pyenv init --path)"
+          eval "$(pyenv init -)"
+          if [ ! -f  "$HOME/.pyenv/versions/3.9.1/lib/libpython3.so" ]; then
+            PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+          fi
+          pyenv shell 3.9.1
+
+      - name: Cache Third Party Packages
+        uses: actions/cache@v4
+        with:
+          path: build/third_party
+          key: ${{ matrix.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
       - name: Restore BDM Cache
         uses: actions/cache/restore@v4
