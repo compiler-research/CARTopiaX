@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: ubu20-gcc
-            os: ubuntu-20.04
+          - name: ubu22-gcc
+            os: ubuntu-22.04
             compiler: gcc
 
     steps:
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9.1
+          python-version: 3.9
 
       - name: Install dependencies
         run: |
@@ -81,6 +81,10 @@ jobs:
       - name: Build BDM if Cache is not found
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
+          export PATH="$HOME/.pyenv/bin:$PATH"
+          eval "$(pyenv init --path)"
+          eval "$(pyenv init -)"
+          pyenv shell 3.9.1
           export GHA_BRANCH_NAME=master
           export BDM_INSTALL=master
           export GHA_REPOSITORY=/BioDynaMo/biodynamo
