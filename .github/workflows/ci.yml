@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: ubu22-gcc
-            os: ubuntu-22.04
+          - name: ubu20-gcc
+            os: ubuntu-20.04
             compiler: gcc
 
     steps:
