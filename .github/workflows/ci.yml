@@ -52,6 +52,7 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           export BDM_INSTALL=v1.05
+          export GHA_REPOSITORY=/BioDynaMo/biodynamo.git
           curl -s -S -L https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
 
       - name: Save Cache BDM
