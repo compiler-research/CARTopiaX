@@ -39,6 +39,27 @@ jobs:
             echo "CC=clang" >> $GITHUB_ENV
             echo "CXX=clang++" >> $GITHUB_ENV
           fi
+      - name: Restore BDM Cache
+        if: ${{ (matrix.debug_build == true) && (runner.os != 'windows') }}
+        uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: |
+            biodynamo-*
+          key: ${{ matrix.os }}
+
+      - name: Build BDM if Cache is not found
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          curl -s -S -L https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
+
+      - name: Save Cache BDM
+        uses: actions/cache/save@v4
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        with:
+          path: |
+            biodynamo-*
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Configure project
         run: |
@@ -51,3 +72,9 @@ jobs:
       - name: Run tests
         run: |
           ctest --test-dir build --output-on-failure
+
+      - name: Setup tmate session
+        if: ${{ !cancelled() && runner.debug }}
+        uses: mxschmitt/action-tmate@v3
+        # When debugging increase to a suitable value!
+        timeout-minutes: 30
