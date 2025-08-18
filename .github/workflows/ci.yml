@@ -53,13 +53,13 @@ jobs:
       - name: Install pyenv dependency
         if: steps.pyenv-cache.outputs.cache-hit != 'true'
         run: |
-          if [ ! -f "~/.pyenv/bin/pyenv" ]; then
+          if [ ! -f ".pyenv/bin/pyenv" ]; then
             curl https://pyenv.run | bash
           fi
-          export PATH="~/.pyenv/bin:$PATH"
+          export PATH=".pyenv/bin:$PATH"
           eval "$(pyenv init --path)"
           eval "$(pyenv init -)"
-          if [ ! -f  "~/.pyenv/versions/3.9.1/lib/libpython3.so" ]; then
+          if [ ! -f  ".pyenv/versions/3.9.1/lib/libpython3.so" ]; then
             PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
           fi
           pyenv shell 3.9.1
@@ -81,7 +81,7 @@ jobs:
       - name: Build BDM if Cache is not found
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          export PATH="~/.pyenv/bin:$PATH"
+          export PATH=".pyenv/bin:$PATH"
           #eval "$(pyenv init --path)"
           #eval "$(pyenv init -)"
           pyenv shell 3.9.1
