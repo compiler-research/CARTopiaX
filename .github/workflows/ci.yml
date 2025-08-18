@@ -53,7 +53,7 @@ jobs:
       - name: Build BDM if Cache is not found
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          export GHA_BRANCH_NAME=v1.05
+          export GHA_BRANCH_NAME=master
           export GHA_REPOSITORY=/BioDynaMo/biodynamo
           curl -s -S -L https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
 
