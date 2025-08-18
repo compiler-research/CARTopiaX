@@ -43,27 +43,6 @@ jobs:
             echo "CXX=clang++" >> $GITHUB_ENV
           fi
 
-      - name: Cache pyenv
-        uses: actions/cache@v4
-        id: pyenv-cache
-        with:
-          path: ~/.pyenv
-          key: ${{ matrix.os }}-pyenv-3.9.1
-
-      - name: Install pyenv dependency
-        if: steps.pyenv-cache.outputs.cache-hit != 'true'
-        run: |
-          if [ ! -f "`pwd`/.pyenv/bin/pyenv" ]; then
-            curl https://pyenv.run | bash
-          fi
-          export PATH="`pwd`/.pyenv/bin:$PATH"
-          eval "$(pyenv init --path)"
-          eval "$(pyenv init -)"
-          if [ ! -f  "`pwd`/.pyenv/versions/3.9.1/lib/libpython3.so" ]; then
-            PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
-          fi
-          pyenv shell 3.9.1
-
       - name: Cache Third Party Packages
         uses: actions/cache@v4
         with:
@@ -81,12 +60,7 @@ jobs:
       - name: Build BDM if Cache is not found
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          export PATH="`pwd`/.pyenv/bin:$PATH"
-          eval "$(pyenv init --path)"
-          eval "$(pyenv init -)"
-          pyenv shell 3.9.1
-          python --version
-          git clone --depth=1 https://github.com/BioDynaMo/biodynamo.git
+          git clone --depth=1 https://github.com/vgvassilev/biodynamo.git
           cd biodynamo
           cmake \
              -Dnotebooks=OFF \
