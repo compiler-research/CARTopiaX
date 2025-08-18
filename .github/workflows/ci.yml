@@ -75,7 +75,7 @@ jobs:
         id: cache
         with:
           path: |
-            biodynamo-*
+            biodynamo
           key: ${{ matrix.os }}-bdm
 
       - name: Build BDM if Cache is not found
@@ -86,11 +86,18 @@ jobs:
           eval "$(pyenv init -)"
           pyenv shell 3.9.1
           python --version
-          export GHA_BRANCH_NAME=master
-          export BDM_INSTALL=master
-          export GHA_REPOSITORY=/BioDynaMo/biodynamo
-          curl -s -S -L https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
-
+          git clone --depth=1 https://github.com/BioDynaMo/biodynamo.git
+          cd biodynamo
+          cmake \
+             -Dnotebooks=OFF \
+             -Dparaview=ON \
+             -Dbenchmark=ON \
+             -Dlibgit2=ON \
+             -Dsbml=OFF \
+             -DCMAKE_BUILD_TYPE=Release \
+             -B build
+          cmake --build build --config Release
+          cd ..
       - name: Save Cache BDM
         uses: actions/cache/save@v4
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
