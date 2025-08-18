@@ -85,6 +85,7 @@ jobs:
           eval "$(pyenv init --path)"
           eval "$(pyenv init -)"
           pyenv shell 3.9.1
+          python --version
           export GHA_BRANCH_NAME=master
           export BDM_INSTALL=master
           export GHA_REPOSITORY=/BioDynaMo/biodynamo
