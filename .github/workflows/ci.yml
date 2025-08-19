@@ -78,7 +78,7 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         with:
           path: |
-            biodynamo-*
+            biodynamo
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Configure project
