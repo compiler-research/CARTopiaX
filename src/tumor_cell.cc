@@ -435,7 +435,7 @@ void StateControlGrowProliferate::Run(Agent* agent) {
         break;
       }
       case TumorCellState::kApoptotic:{
-        //CHANGE write this in the function that causes apoptosis
+      //CHANGE write this in the function that causes apoptosis
         // //Stop Secretion and reduce consumption
         //   for (auto* beh : cell->GetAllBehaviors()) {
         //     if (auto* c = dynamic_cast<Consumption*>(beh)) {c->SetQuantity(c->GetQuantity()*kReductionConsumptionDeadCells);}// Reduce consumption rate

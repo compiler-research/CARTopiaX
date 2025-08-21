@@ -221,4 +221,4 @@ struct StateControlCart : public Behavior {
 
 }  // namespace bdm
 
-#endif
+#endif  // CART_CELL_H_

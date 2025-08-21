@@ -38,11 +38,12 @@ CartCell::CartCell(const Real3& position) {
   SetNuclearVolume(kDefaultVolumeNucleusCartCell);
 
 
+
+  ResourceManager &rm = *Simulation::GetActive()->GetResourceManager();
   // Pointer to oxygen diffusion grid
-  auto &rm = *Simulation::GetActive()->GetResourceManager();
   oxygen_dgrid_ = rm.GetDiffusionGrid("oxygen");
   // Pointer to immunostimulatory_factor diffusion grid
-  immunostimulatory_factor_dgrid_ = rm.GetDiffusionGrid("immunostimulatory_factor");
+  immunostimulatory_factor_dgrid_ = rm.GetDiffusionGrid("immunostimulatory_factor"); 
   // Initially not attached to a tumor cell
   attached_to_tumor_cell_ = false; 
   // Initialize attached cell pointer to null
@@ -64,7 +65,9 @@ CartCell::CartCell(const Real3& position) {
 
 // Cart cells can move if they are alive and not attached to a tumor cell
 bool CartCell::DoesCellMove() {
-  return state_ == CartCellState::kAlive && !attached_to_tumor_cell_; 
+
+  return (state_ == CartCellState::kAlive && !attached_to_tumor_cell_); 
+
 }
 
 
@@ -138,11 +141,10 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
 
   Real3 translation_velocity_on_point_mass{0, 0, 0};
 
-  //--------------------------------------------
-  //Adhesion and repulsion forces
-  //--------------------------------------------
   // We check for every neighbor object if they touch us, i.e. push us
   // away and agreagate the velocities
+
+
   uint64_t non_zero_neighbor_forces = 0;
   if (!IsStatic()) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
@@ -164,30 +166,10 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
     }
   }
 
-  //--------------------------------------------
 
-  //Still in progress
-  Real3 motility{0, 0, 0};
-
-  if (DoesCellMove()){
-    //compute motility
-  }
-
-
-
-
-
-
-
-
-
-
-  //--------------------------------------------
   // Two step Adams-Bashforth approximation of the time derivative for position
   // position(t + dt) ≈ position(t) + dt * [ 1.5 * velocity(t) - 0.5 * velocity(t - dt) ]
-  //--------------------------------------------
   movement_at_next_step += translation_velocity_on_point_mass * kDnew + older_velocity_ * kDold;
-
 
   older_velocity_ = translation_velocity_on_point_mass;
 
@@ -204,7 +186,6 @@ real_t CartCell::ConsumeSecreteSubstance(int substance_id, real_t old_concentrat
   } else if (substance_id == immunostimulatory_factor_dgrid_->GetContinuumId()) {
     // This point should never be reached
     res= old_concentration;
-
   } else {
     throw std::invalid_argument("Unknown substance id: " + std::to_string(substance_id));
   }

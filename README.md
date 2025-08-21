@@ -18,6 +18,7 @@ The simulation integrates computational modeling and biological insights to expl
 7. [Acknowledgments](#acknowledgments)
 8. [License](#license)
 
+
 ---
 
 ## Project Overview
@@ -51,6 +52,7 @@ Clone the repository:
 ```bash
 git clone https://github.com/compiler-research/CARTopiaX.git
 cd CARTopiaX
+
 ```
 
 ---
@@ -86,6 +88,7 @@ biodynamo run
 **Option 2:**  
 Directly from the build directory:
 ```bash
+
 ./build/CARTopiaX
 ```
 
@@ -98,6 +101,7 @@ Data about tumor growth and diffrent types of cell populations is output in ./ou
 To visualize the results in paraview use:
 ```bash
 paraview ./output/CARTopiaX/CARTopiaX.pvsm
+
 ```
 
 ---

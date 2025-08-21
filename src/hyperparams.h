@@ -81,7 +81,6 @@ constexpr real_t kVolumeRelaxarionRateFluidNecroticLysed = 0.050/60.0;
 ///
 /// General Hyperparameters
 ///
-
 /// Seed for random number generation
 constexpr int kSeed =3; 
 
