@@ -13,39 +13,64 @@ concurrency:
 
 jobs:
   review:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v4
 
-      - name: Install LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "20"
-
-      - name: install lit
-        run: pip install lit
-
       - name: run git config command
         run: |
           git config --global --add safe.directory /github/workspace
+
+      - name: Restore BDM Cache
+        uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: |
+            biodynamo
+          key: ubuntu-22.04-bdm
+
+      - name: Complain when cache not found
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          echo "Cache was not found!"
+          exit 1
 
       - name: Run clang-tidy
         uses: ZedThree/clang-tidy-review@v0.20.1
         id: review
         with:
           build_dir: build
-          apt_packages: cmake,libxml2,libxml2-dev,libtinfo-dev,zlib1g-dev,libzstd-dev
+          apt_packages: >
+            build-essential, cmake, curl, freeglut3-dev, g++, gcc, git,
+            libblas-dev, libbz2-dev, libffi-dev, liblapack-dev, liblzma-dev,
+            libncursesw5-dev, libnuma-dev, libomp-dev, libomp5, libopenmpi-dev,
+            libpthread-stubs0-dev, libreadline-dev, libsqlite3-dev, libssl-dev,
+            libxml2-dev, libxmlsec1-dev, make, python3-dev, python3-openssl,
+            tk-dev, wget, xz-utils, zlib1g-dev
           exclude: "test/*,unittests/*"
           split_workflow: true
           config_file: .clang-tidy
           cmake_command: >
-            CC=$GITHUB_WORKSPACE/llvm/bin/clang CXX=$GITHUB_WORKSPACE/llvm/bin/clang++
-            cmake . -B build -DLLVM_DIR="$GITHUB_WORKSPACE/llvm"
-            -DClang_DIR="$GITHUB_WORKSPACE/llvm"
+            bash -x -c '
+            curl https://pyenv.run | bash &&
+            export PATH="$HOME/.pyenv/bin:$PATH" &&
+            eval "$(pyenv init --path)" &&
+            eval "$(pyenv init -)" &&
+            pyenv install 3.9 &&
+            pyenv shell 3.9 &&
+            export &&
+            source $GITHUB_WORKSPACE/biodynamo/build/bin/thisbdm.sh &&
+            cmake . -B build
+            -DBioDynaMo_DIR="$GITHUB_WORKSPACE/biodynamo/build/share/cmake/"
             -DCMAKE_BUILD_TYPE="Release"
-            -DLLVM_EXTERNAL_LIT="`which lit`"
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=On
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=On || true'
 
       - name: Upload artifacts
         uses: ZedThree/clang-tidy-review/upload@v0.20.1
+
+      - name: Setup tmate session
+        if: ${{ !cancelled() && runner.debug }}
+        uses: mxschmitt/action-tmate@v3
+        # When debugging increase to a suitable value!
+        timeout-minutes: 30

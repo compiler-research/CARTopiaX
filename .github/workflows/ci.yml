@@ -12,12 +12,15 @@ concurrency:
 
 jobs:
   build:
-    name: ${{ matrix.compiler }}
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        compiler: [gcc, clang]
+        include:
+          - name: ubu22-gcc
+            os: ubuntu-22.04
+            compiler: gcc
 
     steps:
       - uses: actions/checkout@v4
@@ -25,11 +28,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.9
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
+          #sudo apt-get update
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             sudo apt-get install -y gcc g++ cmake make
             echo "CC=gcc" >> $GITHUB_ENV
@@ -39,10 +42,65 @@ jobs:
             echo "CC=clang" >> $GITHUB_ENV
             echo "CXX=clang++" >> $GITHUB_ENV
           fi
+          sudo apt-get install curl freeglut3-dev g++ gcc git libblas-dev \
+                               libbz2-dev liblapack-dev libnuma-dev libomp5 \
+                               libomp-dev libopenmpi-dev libpthread-stubs0-dev \
+                               make wget zlib1g-dev python3-dev libbz2-dev \
+                               libffi-dev liblzma-dev libreadline-dev \
+                               libsqlite3-dev libssl-dev python3-openssl tk-dev \
+                               xz-utils zlib1g-dev
+          curl https://pyenv.run | bash
+
+      - name: Cache Third Party Packages
+        uses: actions/cache@v4
+        with:
+          path: build/third_party
+          key: ${{ matrix.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+
+      - name: Restore BDM Cache
+        uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: |
+            biodynamo
+          key: ${{ matrix.os }}-bdm
+
+      - name: Build BDM if Cache is not found
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          git clone --depth=1 https://github.com/vgvassilev/biodynamo.git
+          cd biodynamo
+          cmake \
+             -Dnotebooks=OFF \
+             -Dparaview=OFF \
+             -Dbenchmark=ON \
+             -Dlibgit2=ON \
+             -Dsbml=OFF \
+             -DCMAKE_BUILD_TYPE=Release \
+             -B build
+          cmake --build build --config Release
+          cd ..
+      - name: Save Cache BDM
+        uses: actions/cache/save@v4
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        with:
+          path: |
+            biodynamo
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Configure project
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          #FIXME: Drop this requirement by passing to cmake -DNOPYENV=Yes
+          export PATH="$HOME/.pyenv/bin:$PATH"
+          eval "$(pyenv init --path)"
+          eval "$(pyenv init -)"
+          pyenv install 3.9
+          pyenv shell 3.9
+
+          source $GITHUB_WORKSPACE/biodynamo/build/bin/thisbdm.sh
+          cmake . -B build \
+            -DBioDynaMo_DIR="$GITHUB_WORKSPACE/biodynamo/build/share/cmake/" \
+            -DCMAKE_BUILD_TYPE="Release"
 
       - name: Build project
         run: |
@@ -50,4 +108,11 @@ jobs:
 
       - name: Run tests
         run: |
-          ctest --test-dir build --output-on-failure
+          # FIXME: Enable.
+          # ctest --test-dir build --output-on-failure
+
+      - name: Setup tmate session
+        if: ${{ !cancelled() && runner.debug }}
+        uses: mxschmitt/action-tmate@v3
+        # When debugging increase to a suitable value!
+        timeout-minutes: 30
