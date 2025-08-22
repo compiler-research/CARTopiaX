@@ -20,14 +20,10 @@
 
 #ifndef FORCES_TUMOR_CART_H_
 #define FORCES_TUMOR_CART_H_
+
 #include "core/interaction_force.h"
-#include "core/operation/mechanical_forces_op.h"
 #include "biodynamo.h"
-#include "core/util/log.h"
-#include "core/util/root.h"
-#include "hyperparams.h"
-#include "utils_aux.h"
-#include "tumor_cell.h"
+
 
 namespace bdm {
 

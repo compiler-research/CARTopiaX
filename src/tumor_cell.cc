@@ -18,6 +18,9 @@
  * for the compiler-research.org organization.
  */
 #include "tumor_cell.h"
+#include "hyperparams.h"
+#include "utils_aux.h"
+
 
 namespace bdm {
 
@@ -113,7 +116,7 @@ void TumorCell::SetTransformationRandomRate() {
   transformation_random_rate_ = 1/(std::max(SamplePositiveGaussian(38.6,3.7)*60., 1e-16));
 }
 
-real_t TumorCell::GetTargetTotalVolume() {
+real_t TumorCell::GetTargetTotalVolume() const {
   return GetTargetNucleusSolid() * (1 + GetTargetRelationCytoplasmNucleus()) / (1 - GetTargetFractionFluid());
 }
 
@@ -196,7 +199,7 @@ void TumorCell::ChangeVolumeExponentialRelaxationEquation(real_t relaxation_rate
 
 //compute Displacement
 Real3 TumorCell::CalculateDisplacement(const InteractionForce* force,
-                            real_t squared_radius, real_t dt) {
+                            real_t squared_radius, real_t /*dt*/) {
 
   Real3 movement_at_next_step{0, 0, 0};
   // this should be chaged in a future version of BioDynaMo in order to have a cleaner code instead of hardcoding it here

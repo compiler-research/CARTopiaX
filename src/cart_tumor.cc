@@ -20,10 +20,12 @@
 #include "cart_tumor.h"
 #include "tumor_cell.h"
 #include "cart_cell.h"
+#include "hyperparams.h"
 #include "diffusion_thomas_algorithm.h"
 #include "forces_tumor_cart.h" 
 #include "core/environment/uniform_grid_environment.h"
 #include "core/operation/mechanical_forces_op.h"
+#include "utils_aux.h"
 
 namespace bdm {
 

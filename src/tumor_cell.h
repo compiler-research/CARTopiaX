@@ -22,10 +22,6 @@
 #define TUMOR_CELL_H_
 
 #include "biodynamo.h"
-#include "core/util/log.h"
-#include "core/util/root.h"
-#include "hyperparams.h"
-#include "utils_aux.h"
 
 namespace bdm {
 
@@ -113,7 +109,7 @@ class TumorCell : public Cell {
   real_t GetImmunostimulatoryFactorSecretionRate() const { return immunostimulatory_factor_secretion_rate_; }
   void SetImmunostimulatoryFactorSecretionRate(real_t rate) { immunostimulatory_factor_secretion_rate_ = rate; }
 
-  real_t GetTargetTotalVolume();
+  real_t GetTargetTotalVolume() const;
 
   /// Returns the diffusion grid for oxygen
   DiffusionGrid* GetOxygenDiffusionGrid() const { return oxygen_dgrid_; }

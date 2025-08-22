@@ -22,9 +22,6 @@
 #define CORE_UTIL_UTILS_AUX_H_
 
 #include "biodynamo.h"
-#include "core/util/random.h"
-#include "hyperparams.h"
-#include "tumor_cell.h"
 
 namespace bdm {
   /// Forward declaration of TumorCell class

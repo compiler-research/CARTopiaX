@@ -22,7 +22,6 @@
 #define DIFFUSION_THOMAS_ALGORITHM_H_
 
 #include <utility>
-
 #include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {

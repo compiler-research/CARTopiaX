@@ -19,6 +19,14 @@
  */
 
 #include "cart_cell.h"
+#include "tumor_cell.h"
+#include "core/container/math_array.h"
+#include "hyperparams.h"
+#include "core/resource_manager.h"
+#include "core/real_t.h"
+#include "core/interaction_force.h"
+#include "utils_aux.h"
+
 
 namespace bdm {
 
@@ -71,7 +79,7 @@ bool CartCell::DoesCellMove() {
 }
 
 
-real_t CartCell::GetTargetTotalVolume() {
+real_t CartCell::GetTargetTotalVolume() const {
   return GetTargetNucleusSolid() * (1 + GetTargetRelationCytoplasmNucleus()) / (1 - GetTargetFractionFluid());
 }
 
@@ -130,7 +138,7 @@ void CartCell::ChangeVolumeExponentialRelaxationEquation(real_t relaxation_rate_
 
 //compute Displacement
 Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
-                            real_t squared_radius, real_t dt) {
+                            real_t squared_radius, real_t /*dt*/) {
 
   // real_t h = dt;
   Real3 movement_at_next_step{0, 0, 0};

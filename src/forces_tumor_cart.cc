@@ -18,8 +18,12 @@
  * for the compiler-research.org organization.
  */
 
-#include "forces_tumor_cart.h"
 
+#include "forces_tumor_cart.h"
+#include "core/operation/mechanical_forces_op.h"
+#include "hyperparams.h"
+#include "utils_aux.h"
+#include "tumor_cell.h"
 
 namespace bdm {
 

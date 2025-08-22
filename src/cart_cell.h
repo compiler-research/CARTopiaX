@@ -24,8 +24,6 @@
 #include "biodynamo.h"
 #include "core/util/log.h"
 #include "core/util/root.h"
-#include "utils_aux.h"
-#include "hyperparams.h"
 #include "tumor_cell.h"
 
 namespace bdm {
@@ -97,7 +95,7 @@ class CartCell : public Cell {
   /// Returns whether the cell moves by its own
   bool DoesCellMove();
 
-  real_t GetTargetTotalVolume();
+  real_t GetTargetTotalVolume() const;
 
   /// Returns the diffusion grid for oxygen
   DiffusionGrid* GetOxygenDiffusionGrid() const { return oxygen_dgrid_; }

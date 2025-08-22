@@ -18,6 +18,9 @@
  * for the compiler-research.org organization.
  */
 #include "utils_aux.h"
+#include "hyperparams.h"
+#include "core/util/random.h"
+#include "tumor_cell.h"
 
 namespace bdm {
 
