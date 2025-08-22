@@ -14,6 +14,7 @@
 cmake_minimum_required(VERSION 3.19.3)
 project(cart_tumor)
 
+
 # BioDynaMo curretly uses the C++17 standard.
 set(CMAKE_CXX_STANDARD 17)
 

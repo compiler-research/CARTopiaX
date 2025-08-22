@@ -25,13 +25,12 @@ namespace bdm {
 
 Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
 
-  auto* a = static_cast<const Cell*>(lhs);
-  auto* b = static_cast<const Cell*>(rhs);
+  auto* a = dynamic_cast<const Cell*>(lhs);
+  auto* b = dynamic_cast<const Cell*>(rhs);
 
   // Ignore self-interaction
-  if (a->GetUid() == b->GetUid()) {
+  if (a->GetUid() == b->GetUid())
     return {0.0, 0.0, 0.0, 0.0};
-  }
 
   Real3 displacement = a->GetPosition() - b->GetPosition();
 

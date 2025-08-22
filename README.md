@@ -14,8 +14,10 @@ The simulation integrates computational modeling and biological insights to expl
 3. [Installation](#installation)
 4. [Building the Simulation](#building-the-simulation)
 5. [Running the Simulation](#running-the-simulation)
-6. [Acknowledgments](#acknowledgments)
-7. [License](#license)
+6. [Visualizing Results](#results)
+7. [Acknowledgments](#acknowledgments)
+8. [License](#license)
+
 
 ---
 
@@ -49,7 +51,8 @@ By adjusting biological and therapeutic parameters, the model enables **in silic
 Clone the repository:
 ```bash
 git clone https://github.com/compiler-research/CARTopiaX.git
-cd cart_tumor
+cd CARTopiaX
+
 ```
 
 ---
@@ -85,7 +88,20 @@ biodynamo run
 **Option 2:**  
 Directly from the build directory:
 ```bash
-./build/cart_tumor
+
+./build/CARTopiaX
+```
+
+---
+
+## Results
+
+Data about tumor growth and diffrent types of cell populations is output in ./output/final_data.csv
+
+To visualize the results in paraview use:
+```bash
+paraview ./output/CARTopiaX/CARTopiaX.pvsm
+
 ```
 
 ---

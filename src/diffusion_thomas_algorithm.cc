@@ -22,6 +22,7 @@
 #include "core/simulation.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
+#include "cart_cell.h"
 
 namespace bdm {
 
@@ -160,25 +161,7 @@ void DiffusionThomasAlgorithm::Step(real_t dt) {//instead of overwriting Step, i
   }
   DiffuseChemical(dt);
 
-  //This should be done this way instead but there is a bug in BioDynaMo that makes bc_type be "Neumann" no matter what. In future versions of BioDynaMo this should be fixed
-  // auto bc_type = Simulation::GetActive()->GetParam()->diffusion_boundary_condition;
-  // std::cout << bc_type << std::endl;
-  // if (bc_type == "Closed") {
-  //   DiffuseWithClosedEdge(dt);
-  // } else if (bc_type == "Open" ) {
-  //   DiffuseWithOpenEdge(dt);
-  // } else if (bc_type == "Dirichlet") {
-  //   DiffuseWithDirichlet(dt);
-  // } else if (bc_type == "Neumann") {
-  //   DiffuseWithNeumann(dt);
-  // } else if (bc_type == "Periodic") {
-  //   DiffuseWithPeriodic(dt);
-  // } else {
-  //   Log::Error(
-  //       "DiffusionThomasAlgorithm::Diffuse", "Boundary condition of type '",
-  //       bc_type,
-  //       "' is not implemented. Defaulting to 'closed' boundary condition");
-  // }
+  //This should be done considering different border cases instead of using the dirichlet_border_ flag. However, there is a bug in BioDynaMo that makes bc_type be "Neumann" no matter what. In future versions of BioDynaMo this should be fixed
 
 }
 
@@ -278,6 +261,13 @@ void DiffusionThomasAlgorithm::ComputeConsumptionsSecretions() {
   //in a future version of BioDynaMo this should be parallelized getting the agents inside each chemical voxel and trating each voxel independently.
   rm->ForEachAgent([this, current_time](bdm::Agent* agent) {
     if (auto* cell = dynamic_cast<TumorCell*>(agent)) {
+      // Handle TumorCell agents
+      const auto& pos = cell->GetPosition();
+      real_t conc = this->GetValue(pos);
+      real_t new_conc = cell->ConsumeSecreteSubstance(GetContinuumId(),conc);
+      this->ChangeConcentrationBy(pos, new_conc - conc, InteractionMode::kAdditive, false);
+    } else if (auto* cell = dynamic_cast<CartCell*>(agent)) {
+      // Handle CartCell agents
       const auto& pos = cell->GetPosition();
       real_t conc = GetValue(pos);
       real_t new_conc = cell->ConsumeSecreteSubstance(GetContinuumId(),conc);

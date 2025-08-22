@@ -21,17 +21,16 @@
 #ifndef TUMOR_HYPERPARAMS_H_
 #define TUMOR_HYPERPARAMS_H_
 
-#include "core/real_t.h"
-
 #include <map>
 #include <string>
 
 namespace bdm {
 
+///This file contains hyperparameters used in the simulation. Change: In a future version it needs to be changed into a params file with no need to be recompiled
 
-
-
+///
 /// TumorCell Hyperparameters
+///
 
 /// Rate of secretion of immunostimulatory factor of tumor cells per minute
 constexpr real_t kRateSecretionImmunostimulatoryFactor= 10.0; 

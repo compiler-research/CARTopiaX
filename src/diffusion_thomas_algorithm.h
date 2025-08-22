@@ -27,12 +27,10 @@
 
 namespace bdm {
 
-/**
- * @brief Continuum model for the 3D heat equation with exponential decay
- * 
- * Implements the diffusion equation: ∂t u = ∇D∇u - μu
- * Uses the Thomas algorithm for solving tridiagonal systems efficiently.
- */
+/// Continuum model for the 3D heat equation with exponential decay
+/// 
+/// Implements the diffusion equation, solved implicitly: ∂t u = ∇D∇u - μu
+/// Uses the Thomas algorithm for solving tridiagonal systems efficiently.
 class DiffusionThomasAlgorithm : public DiffusionGrid {
  public:
   DiffusionThomasAlgorithm() = default;
@@ -53,10 +51,8 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   void SetConcentration(size_t idx, real_t amount);
 
 
-  /*
-   * These methods are overridden but empty because they are not used.
-   * This should be fixed in future versions of BioDynaMo.
-   */
+  /// These methods are overridden but empty because they are not used.
+  /// This should be fixed in future versions of BioDynaMo.
   void DiffuseWithClosedEdge(real_t dt) override{};
   void DiffuseWithOpenEdge(real_t dt) override{};
   void DiffuseWithNeumann(real_t dt) override{};
@@ -64,161 +60,128 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   void DiffuseWithDirichlet(real_t dt) override{};
 
 
-  /** @brief Perform chemical diffusion using Thomas algorithm
-   * 
-   * Computes the diffusion of the substance using the Thomas algorithm
-   * for solving tridiagonal systems efficiently.
-   * 
-   * @param dt Time step for the diffusion computation
-   */
+  /// Perform chemical diffusion using Thomas algorithm
+  /// 
+  /// Computes the diffusion of the substance using the Thomas algorithm
+  /// for solving tridiagonal systems efficiently.
+  /// 
+  /// @param dt Time step for the diffusion computation
   void DiffuseChemical(real_t dt);
   
-  /** @brief Execute one simulation step
-   * 
-   * Main stepping function that performs one time step of the simulation,
-   * including diffusion and cellular consumption/secretion.
-   * 
-   * @param dt Time step for the simulation
-   */
+  /// Execute one simulation step
+  /// 
+  /// Main stepping function that performs one time step of the simulation,
+  /// including diffusion and cellular consumption/secretion.
+  /// 
+  /// @param dt Time step for the simulation
   void Step(real_t dt) override;
-  /** @brief Compute cellular consumption and secretion effects
-   * 
-   * Handles secretion or consumption of substances following the differential equation:
-   * 
-   * ∂ρ/∂t = ∇·(D ∇ρ) − λ · ρ + sum_{cells in voxel}((V_k / V_voxel) · [ S_k · ( ρ*_k − ρ ) − (S_k + U_k) · ρ ])
-   * 
-   * Where:
-   * - ρ      = concentration of the substance in the microenvironment
-   * - S_k    = secretion rate of cell k
-   * - U_k    = uptake (consumption) rate of cell k
-   * - ρ*_k   = saturation (target) density for secretion
-   * - V_k    = volume of cell k (approximated to default volume of new tumor cell)
-   * - V_voxel = volume of the voxel containing the cell
-   * - dt     = simulation time step
-   * 
-   * In this class, we only model the secretion and consumption of the substance,
-   * not its diffusion, which follows:
-   * (ρ − σ)/dt = sum_{cells in voxel}((V_k / V_voxel) · [ S_k · ( ρ*_k − ρ ) − (S_k + U_k) · ρ ])
-   * 
-   * Where σ is the concentration at the previous time step (may include diffusion term).
-   * The solution is:
-   * ρⁿ⁺¹ = (ρⁿ + dt · (V_k / V_voxel) · S_k · ρ*_k) / [1 + dt · (V_k / V_voxel) · (S_k + U_k)]
-   * 
-   * Where:
-   * - ρⁿ     = current concentration
-   * - ρⁿ⁺¹   = updated concentration after secretion/uptake
-   * 
-   * This assumes secretion is toward a saturation level, and uptake is proportional to ρ.
-   * 
-   * In a future version, consider using a Behavior associated to each agent but controlling the time in which it is applied so that it is executed always after the diffusion module
-   * 
-   */
+
+  /// Compute cellular consumption and secretion effects
+  /// 
+  /// Handles secretion or consumption of substances following the differential equation:
+  /// 
+  /// ∂ρ/∂t = ∇·(D ∇ρ) − λ · ρ + sum_{cells in voxel}((V_k / V_voxel) · [ S_k · ( ρ*_k − ρ ) − (S_k + U_k) · ρ ])
+  /// 
+  /// Where:
+  /// - ρ      = concentration of the substance in the microenvironment
+  /// - S_k    = secretion rate of cell k
+  /// - U_k    = uptake (consumption) rate of cell k
+  /// - ρ*_k   = saturation (target) density for secretion
+  /// - V_k    = volume of cell k (approximated to default volume of new tumor cell)
+  /// - V_voxel = volume of the voxel containing the cell
+  /// - dt     = simulation time step
+  /// 
+  /// In this class, we only model the secretion and consumption of the substance,
+  /// not its diffusion, which follows:
+  /// (ρ − σ)/dt = sum_{cells in voxel}((V_k / V_voxel) · [ S_k · ( ρ*_k − ρ ) − (S_k + U_k) · ρ ])
+  /// 
+  /// Where σ is the concentration at the previous time step (may include diffusion term).
+  /// The solution is:
+  /// ρⁿ⁺¹ = (ρⁿ + dt · (V_k / V_voxel) · S_k · ρ*_k) / [1 + dt · (V_k / V_voxel) · (S_k + U_k)]
+  /// 
+  /// Where:
+  /// - ρⁿ     = current concentration
+  /// - ρⁿ⁺¹   = updated concentration after secretion/uptake
+  /// 
+  /// This assumes secretion is toward a saturation level, and uptake is proportional to ρ.
+  /// 
+  /// In a future version, consider using a Behavior associated to each agent but controlling the time in which it is applied so that it is executed always after the diffusion module
   void ComputeConsumptionsSecretions();
 
- /** @name Private Member Variables
-  *  @brief Internal data structures and parameters
-  *  @{
-  */
  private:
-  /** @brief Number of voxels in each spatial direction */
+  /// Number of voxels in each spatial direction
   size_t resolution_;
   
-  /** @brief Voxel side length in micrometers */
+  /// Voxel side length in micrometers
   real_t d_space_;
 
-  /** @name Thomas Algorithm Coefficients
-   *  @brief Precomputed coefficients for Thomas algorithm in each direction
-   *  @{
-   */
-  
-  /** @brief Denominators for x-direction Thomas algorithm */
+  /// Denominators for x-direction Thomas algorithm
   std::vector<real_t> thomas_denom_x_;
   
-  /** @brief Coefficients for x-direction Thomas algorithm */
+  /// Coefficients for x-direction Thomas algorithm
   std::vector<real_t> thomas_c_x_;
   
-  /** @brief Denominators for y-direction Thomas algorithm */
+  /// Denominators for y-direction Thomas algorithm
   std::vector<real_t> thomas_denom_y_;
   
-  /** @brief Coefficients for y-direction Thomas algorithm */
+  /// Coefficients for y-direction Thomas algorithm
   std::vector<real_t> thomas_c_y_;
   
-  /** @brief Denominators for z-direction Thomas algorithm */
+  /// Denominators for z-direction Thomas algorithm
   std::vector<real_t> thomas_denom_z_;
   
-  /** @brief Coefficients for z-direction Thomas algorithm */
+  /// Coefficients for z-direction Thomas algorithm
   std::vector<real_t> thomas_c_z_;
   
-  /** @} */ // end of Thomas Algorithm Coefficients group
-
-  /** @name Index Jump Values
-   *  @brief Precomputed index jumps for 3D array traversal
-   *  @{
-   */
-  
-  /** @brief Index jump for i-direction (x-axis) */
+  /// Index jump for i-direction (x-axis)
   int jump_i_;
   
-  /** @brief Index jump for j-direction (y-axis) */
+  /// Index jump for j-direction (y-axis)
   int jump_j_;
   
-  /** @brief Index jump for k-direction (z-axis) */
+  /// Index jump for k-direction (z-axis)
   int jump_k_;
   
-  /** @} */ // end of Index Jump Values group
-
-  /** @name Precomputed Constants
-   *  @brief Constants used in diffusion calculations
-   *  @{
-   */
-  
-  /** @brief First diffusion constant */
+  /// First diffusion constant
   real_t constant1_;
   
-  /** @brief Alternative first diffusion constant */
+  /// Alternative first diffusion constant
   real_t constant1a_;
   
-  /** @brief Second diffusion constant */
+  /// Second diffusion constant
   real_t constant2_;
   
-  /** @brief Third diffusion constant */
+  /// Third diffusion constant
   real_t constant3_;
   
-  /** @brief Alternative third diffusion constant */
+  /// Alternative third diffusion constant
   real_t constant3a_;
   
-  /** @} */ // end of Precomputed Constants group
-
-  /** @brief Flag indicating Dirichlet boundary conditions */
+  /// Flag indicating Dirichlet boundary conditions
   bool dirichlet_border_;
 
-  /** @} */ // end of Private Member Variables group
-
-  /** @brief Initialize Thomas algorithm coefficient vectors
-   * 
-   * Sets up the precomputed coefficients for efficient Thomas algorithm
-   * execution in the specified direction.
-   * 
-   * @param thomas_denom Reference to denominator vector to initialize
-   * @param thomas_c Reference to coefficient vector to initialize
-   */
+  /// Initialize Thomas algorithm coefficient vectors
+  /// 
+  /// Sets up the precomputed coefficients for efficient Thomas algorithm
+  /// execution in the specified direction.
+  /// 
+  /// @param thomas_denom Reference to denominator vector to initialize
+  /// @param thomas_c Reference to coefficient vector to initialize
   void InitializeThomasAlgorithmVectors(std::vector<real_t>& thomas_denom,
                                         std::vector<real_t>& thomas_c);
   
-  /** @brief Apply Dirichlet boundary conditions to the diffusion grid
-   * 
-   * Sets the boundary values according to Dirichlet boundary conditions,
-   * maintaining constant values at the grid boundaries.
-   */
+  /// Apply Dirichlet boundary conditions to the diffusion grid
+  /// 
+  /// Sets the boundary values according to Dirichlet boundary conditions,
+  /// maintaining constant values at the grid boundaries.
   void ApplyDirichletBoundaryConditions();
 
-  /** @brief Convert 3D coordinates to linear index
-   * 
-   * @param x X-coordinate in voxel space
-   * @param y Y-coordinate in voxel space  
-   * @param z Z-coordinate in voxel space
-   * @return Linear index in the flattened 3D array
-   */
+  /// Convert 3D coordinates to linear index
+  /// 
+  /// @param x X-coordinate in voxel space
+  /// @param y Y-coordinate in voxel space  
+  /// @param z Z-coordinate in voxel space
+  /// @return Linear index in the flattened 3D array
   size_t GetBoxIndex(size_t x, size_t y, size_t z) const;
 
 

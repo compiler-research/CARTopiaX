@@ -38,6 +38,7 @@ CartCell::CartCell(const Real3& position) {
   SetNuclearVolume(kDefaultVolumeNucleusCartCell);
 
 
+
   ResourceManager &rm = *Simulation::GetActive()->GetResourceManager();
   // Pointer to oxygen diffusion grid
   oxygen_dgrid_ = rm.GetDiffusionGrid("oxygen");
@@ -64,7 +65,9 @@ CartCell::CartCell(const Real3& position) {
 
 // Cart cells can move if they are alive and not attached to a tumor cell
 bool CartCell::DoesCellMove() {
+
   return (state_ == CartCellState::kAlive && !attached_to_tumor_cell_); 
+
 }
 
 
@@ -135,10 +138,12 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
   squared_radius=kSquaredMaxDistanceNeighborsForce;
 
   // the physics force to move the point mass
+
   Real3 translation_velocity_on_point_mass{0, 0, 0};
 
   // We check for every neighbor object if they touch us, i.e. push us
   // away and agreagate the velocities
+
 
   uint64_t non_zero_neighbor_forces = 0;
   if (!IsStatic()) {
@@ -161,52 +166,10 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
     }
   }
 
+
   // Two step Adams-Bashforth approximation of the time derivative for position
   // position(t + dt) ≈ position(t) + dt * [ 1.5 * velocity(t) - 0.5 * velocity(t - dt) ]
   movement_at_next_step += translation_velocity_on_point_mass * kDnew + older_velocity_ * kDold;
-
-  //Debug
-    //     std::ofstream file1("output/movement_at_next_step.csv", std::ios::app);
-    // if (file1.is_open()) {
-
-    //   // Calculate time in days, hours, minutes
-    //   double total_minutes = Simulation::GetActive()->GetScheduler()->GetSimulatedTime();
-    //   // Write data to CSV file
-    //   file1
-    //    << "minute"<<total_minutes << ","
-    //    <<"translation_velocity_on_point_mass"<< translation_velocity_on_point_mass[0]<< ","
-    //    << translation_velocity_on_point_mass[1] << ","
-    //    << translation_velocity_on_point_mass[2] << ","
-    //    << "kDnew" << kDnew << ","
-    //    << "older_velocity_" << older_velocity_[0] << ","
-    //     << older_velocity_[1] << ","
-    //     << older_velocity_[2] << ","
-    //    << "kDold" << kDold << "\n";
-    // }
-
-  //Debug Output forces
-    // std::ofstream file("output/forces.csv", std::ios::app);
-    // if (file.is_open()) {
-      
-    //   // Calculate time in days, hours, minutes
-    //   double total_minutes = Simulation::GetActive()->GetScheduler()->GetSimulatedTime();
-    //   double modulus_total_displacement = movement_at_next_step[0] * movement_at_next_step[0] +
-    //                                      movement_at_next_step[1] * movement_at_next_step[1] +
-    //                                      movement_at_next_step[2] * movement_at_next_step[2];
-    //   modulus_total_displacement = std::sqrt(modulus_total_displacement);
-    //   Real3 position = GetPosition();
-    //   // Write data to CSV file
-    //   file 
-    //    << total_minutes << ","
-    //     << position[0] << ","
-    //    << position[1] << ","
-    //    << position[2] << ","
-    //    << movement_at_next_step[0] << ","
-    //    << movement_at_next_step[1] << ","
-    //    << movement_at_next_step[2] << ","
-    //    << modulus_total_displacement << "\n";
-    // }
-    // End Debug Output
 
   older_velocity_ = translation_velocity_on_point_mass;
 

@@ -31,30 +31,27 @@
 
 namespace bdm {
 
-/**
- * @brief Custom interaction force implementation for velocity-based cell interactions
- * 
- * This class implements a specialized interaction force that takes into account
- * the velocity of cells when calculating forces between agents (tumor cells and CAR-T cells).
- * It extends the base InteractionForce class to provide custom force calculations
- * specific to the tumor-CAR-T cell interaction simulation.
- */
+/// Custom interaction force implementation for velocity-based cell interactions
+/// 
+/// This class implements a specialized interaction force that takes into account
+/// the velocity of cells when calculating forces between agents (tumor cells and CAR-T cells).
+/// It extends the base InteractionForce class to provide custom force calculations
+/// specific to the tumor-CAR-T cell interaction simulation.
 class InteractionVelocity : public InteractionForce {
  public:
   InteractionVelocity() = default;
   
   ~InteractionVelocity() override = default;
 
-  /** @brief Calculate interaction force between two agents
-   * 
-   * Computes the force vector between two agents (cells) based on their
-   * positions, properties, and velocities. This method is called by the
-   * mechanical forces operation during each simulation step.
-   * 
-   * @param lhs Pointer to the first agent (left-hand side)
-   * @param rhs Pointer to the second agent (right-hand side)
-   * @return Real4 vector containing the force components (fx, fy, fz, magnitude)
-   */
+  /// Calculate interaction force between two agents
+  /// 
+  /// Computes the force vector between two agents (cells) based on their
+  /// positions, properties, and velocities. This method is called by the
+  /// mechanical forces operation during each simulation step.
+  /// 
+  /// @param lhs Pointer to the first agent (left-hand side)
+  /// @param rhs Pointer to the second agent (right-hand side)
+  /// @return Real4 vector containing the force components (fx, fy, fz, magnitude)
   Real4 Calculate(const Agent* lhs, const Agent* rhs) const override;
 
   InteractionForce* NewCopy() const override;
