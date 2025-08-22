@@ -76,7 +76,7 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
     if (a_tumor && b_tumor) {            // two tumor cells
       repulsion = kRepulsionTumorTumor;  // std::sqrt(kRepulsionTumorTumor *
                                          // kRepulsionTumorTumor);
-    } else if (!a_tumor && !b_tumor) {  // two CAR-T cells
+    } else if (!a_tumor && !b_tumor) {   // two CAR-T cells
       repulsion =
           kRepulsionCartCart;  // std::sqrt(kRepulsionCartCart*kRepulsionCartCart);
     } else {                   // one tumor cell and one CAR-T

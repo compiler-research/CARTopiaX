@@ -31,11 +31,13 @@ namespace bdm {
 /// This enum class defines the various states a tumor cell can be in during its
 /// lifecycle, and various death pathways (necrosis and apoptosis).
 enum class TumorCellState : int {
-  kAlive = 0,  ///< Living cell state - cell is alive and can potentially proliferate
+  kAlive =
+      0,  ///< Living cell state - cell is alive and can potentially proliferate
 
-  kNecroticSwelling = 1,  ///< Necrotic swelling phase: The cell loses membrane integrity and
-                          ///< starts absorbing fluid, swelling abnormally, in volume before
-                          ///< rupture. This is the first phase of necrotic cell death.
+  kNecroticSwelling =
+      1,  ///< Necrotic swelling phase: The cell loses membrane integrity and
+          ///< starts absorbing fluid, swelling abnormally, in volume before
+          ///< rupture. This is the first phase of necrotic cell death.
   kNecroticLysed = 2,  ///< Necrotic lysed phase: The cell membrane breaks
                        ///< apart, releasing its contents. The cell will be
                        ///< removed from the simulation after a defined time.

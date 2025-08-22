@@ -48,11 +48,11 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
 
   /// These methods are overridden but empty because they are not used.
   /// This should be fixed in future versions of BioDynaMo.
-  void DiffuseWithClosedEdge(real_t dt) override{};
-  void DiffuseWithOpenEdge(real_t dt) override{};
-  void DiffuseWithNeumann(real_t dt) override{};
-  void DiffuseWithPeriodic(real_t dt) override{};
-  void DiffuseWithDirichlet(real_t dt) override{};
+  void DiffuseWithClosedEdge(real_t dt) override {};
+  void DiffuseWithOpenEdge(real_t dt) override {};
+  void DiffuseWithNeumann(real_t dt) override {};
+  void DiffuseWithPeriodic(real_t dt) override {};
+  void DiffuseWithDirichlet(real_t dt) override {};
 
   /// Perform chemical diffusion using Thomas algorithm
   ///
