@@ -21,6 +21,8 @@
 
 #include "cart_cell.h"
 #include <cstdint>
+#include <stdexcept>
+#include <string>
 #include "core/container/math_array.h"
 #include "core/interaction_force.h"
 #include "core/real_t.h"
