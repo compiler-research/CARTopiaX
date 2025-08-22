@@ -1,5 +1,6 @@
 /*
- * Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana Melina Luque
+ * Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana
+ * Melina Luque
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +20,14 @@
  */
 
 #include "cart_cell.h"
-#include "tumor_cell.h"
-#include "core/container/math_array.h"
-#include "hyperparams.h"
-#include "core/resource_manager.h"
-#include "core/real_t.h"
-#include "core/interaction_force.h"
-#include "utils_aux.h"
 #include <cstdint>
-
+#include "core/container/math_array.h"
+#include "core/interaction_force.h"
+#include "core/real_t.h"
+#include "core/resource_manager.h"
+#include "hyperparams.h"
+#include "tumor_cell.h"
+#include "utils_aux.h"
 
 namespace bdm {
 
@@ -38,86 +38,101 @@ CartCell::CartCell(const Real3& position) {
   // Initial timer_state for apoptotic state
   timer_state_ = 0;
 
-  //volumes
-  // Set default volume
+  // volumes
+  //  Set default volume
   SetVolume(kDefaultVolumeNewCartCell);
   // Set default fluid fraction
   SetFluidFraction(kDefaultFractionFluidCartCell);
   // Set default nuclear volume
   SetNuclearVolume(kDefaultVolumeNucleusCartCell);
 
-
-
-  ResourceManager &rm = *Simulation::GetActive()->GetResourceManager();
+  ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
   // Pointer to oxygen diffusion grid
   oxygen_dgrid_ = rm.GetDiffusionGrid("oxygen");
   // Pointer to immunostimulatory_factor diffusion grid
-  immunostimulatory_factor_dgrid_ = rm.GetDiffusionGrid("immunostimulatory_factor"); 
+  immunostimulatory_factor_dgrid_ =
+      rm.GetDiffusionGrid("immunostimulatory_factor");
   // Initially not attached to a tumor cell
-  attached_to_tumor_cell_ = false; 
+  attached_to_tumor_cell_ = false;
   // Initialize attached cell pointer to null
   attached_cell_ = nullptr;
 
   // Initialize the velocity of the cell in the previous step to zero
   older_velocity_ = {0, 0, 0};
 
-
   SetCurrentLiveTime(kAverageMaximumTimeUntillApoptosisCart);
 
-  //Add Consumption and Secretion
-  // Set default oxygen consumption rate
+  // Add Consumption and Secretion
+  //  Set default oxygen consumption rate
   SetOxygenConsumptionRate(kDefaultOxygenConsumption);
   // Compute constants for all ConsumptionSecretion of Oxygen
   ComputeConstantsConsumptionSecretion();
-
 }
 
 // Cart cells can move if they are alive and not attached to a tumor cell
 bool CartCell::DoesCellMove() {
-
-  return (state_ == CartCellState::kAlive && !attached_to_tumor_cell_); 
-
+  return (state_ == CartCellState::kAlive && !attached_to_tumor_cell_);
 }
-
 
 real_t CartCell::GetTargetTotalVolume() const {
-  return GetTargetNucleusSolid() * (1 + GetTargetRelationCytoplasmNucleus()) / (1 - GetTargetFractionFluid());
+  return GetTargetNucleusSolid() * (1 + GetTargetRelationCytoplasmNucleus()) /
+         (1 - GetTargetFractionFluid());
 }
 
-// This method explicitly solves the system of exponential relaxation differential equation using a discrete 
-// update step. It is used to shrink the volume (and proportions) smoothly toward a desired target
-// volume over time whe the cell is apoptotic. The relaxations rate controls the speed of convergence
-void CartCell::ChangeVolumeExponentialRelaxationEquation(real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus, real_t relaxation_rate_fluid) {
+// This method explicitly solves the system of exponential relaxation
+// differential equation using a discrete update step. It is used to shrink the
+// volume (and proportions) smoothly toward a desired target volume over time
+// whe the cell is apoptotic. The relaxations rate controls the speed of
+// convergence
+void CartCell::ChangeVolumeExponentialRelaxationEquation(
+    real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
+    real_t relaxation_rate_fluid) {
   // Exponential relaxation towards the target volume
   real_t current_total_volume = GetVolume();
-  real_t fluid_fraction= GetFluidFraction();
+  real_t fluid_fraction = GetFluidFraction();
   real_t nuclear_volume = GetNuclearVolume();
 
   real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
-  real_t current_cytoplasm_solid = (current_total_volume - nuclear_volume) * (1-fluid_fraction);
+  real_t current_cytoplasm_solid =
+      (current_total_volume - nuclear_volume) * (1 - fluid_fraction);
 
   real_t current_fluid = fluid_fraction * current_total_volume;
 
   // Update fluid volume
-  real_t new_fluid = current_fluid + kDtCycle* relaxation_rate_fluid * (GetTargetFractionFluid() * current_total_volume - current_fluid);
+  real_t new_fluid =
+      current_fluid +
+      kDtCycle * relaxation_rate_fluid *
+          (GetTargetFractionFluid() * current_total_volume - current_fluid);
   // Clamp to zero to prevent negative volumes
-  if (new_fluid < 0.0) { new_fluid = 0.0; }
-  
-  real_t nuclear_fluid = new_fluid* ( nuclear_volume/ current_total_volume);
+  if (new_fluid < 0.0) {
+    new_fluid = 0.0;
+  }
+
+  real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
   // real_t cytoplasm_fluid = new_fluid - nuclear_fluid;
 
-  real_t nuclear_solid = current_nuclear_solid + kDtCycle * relaxation_rate_nucleus * (GetTargetNucleusSolid() - current_nuclear_solid);
+  real_t nuclear_solid = current_nuclear_solid +
+                         kDtCycle * relaxation_rate_nucleus *
+                             (GetTargetNucleusSolid() - current_nuclear_solid);
   // Clamp to zero to prevent negative volumes
-  if (nuclear_solid < 0.0) { nuclear_solid = 0.0; }
+  if (nuclear_solid < 0.0) {
+    nuclear_solid = 0.0;
+  }
 
-  real_t target_cytoplasm_solid = GetTargetRelationCytoplasmNucleus() * GetTargetNucleusSolid();
-  real_t cytoplasm_solid = current_cytoplasm_solid + kDtCycle * relaxation_rate_cytoplasm * (target_cytoplasm_solid - current_cytoplasm_solid);
+  real_t target_cytoplasm_solid =
+      GetTargetRelationCytoplasmNucleus() * GetTargetNucleusSolid();
+  real_t cytoplasm_solid =
+      current_cytoplasm_solid +
+      kDtCycle * relaxation_rate_cytoplasm *
+          (target_cytoplasm_solid - current_cytoplasm_solid);
   // Clamp to zero to prevent negative volumes
-  if (cytoplasm_solid < 0.0) { cytoplasm_solid = 0.0; }
+  if (cytoplasm_solid < 0.0) {
+    cytoplasm_solid = 0.0;
+  }
 
-  real_t new_total_solid= nuclear_solid + cytoplasm_solid;
+  real_t new_total_solid = nuclear_solid + cytoplasm_solid;
 
-  real_t total_nuclear= nuclear_solid + nuclear_fluid;
+  real_t total_nuclear = nuclear_solid + nuclear_fluid;
 
   // real_t total_cytoplasm= cytoplasm_solid + cytoplasm_fluid;
 
@@ -125,26 +140,27 @@ void CartCell::ChangeVolumeExponentialRelaxationEquation(real_t relaxation_rate_
 
   // Avoid division by zero
   real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
-  
+
   // Update the cell's properties
   // if the volume has changed
-  if (new_volume!= current_total_volume){
+  if (new_volume != current_total_volume) {
     SetVolume(new_volume);
-    // Update constants for all ConsumptionSecretion of Oxygen and Immunostimulatory Factors
+    // Update constants for all ConsumptionSecretion of Oxygen and
+    // Immunostimulatory Factors
     ComputeConstantsConsumptionSecretion();
   }
   SetFluidFraction(new_fraction_fluid);
   SetNuclearVolume(total_nuclear);
 }
 
-//compute Displacement
+// compute Displacement
 Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
-                            real_t squared_radius, real_t /*dt*/) {
-
+                                      real_t squared_radius, real_t /*dt*/) {
   // real_t h = dt;
   Real3 movement_at_next_step{0, 0, 0};
-  // this should be chaged in a future version of BioDynaMo in order to have a cleaner code instead of hardcoding it here
-  squared_radius=kSquaredMaxDistanceNeighborsForce;
+  // this should be chaged in a future version of BioDynaMo in order to have a
+  // cleaner code instead of hardcoding it here
+  squared_radius = kSquaredMaxDistanceNeighborsForce;
 
   // the physics force to move the point mass
 
@@ -152,7 +168,6 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
 
   // We check for every neighbor object if they touch us, i.e. push us
   // away and agreagate the velocities
-
 
   uint64_t non_zero_neighbor_forces = 0;
   if (!IsStatic()) {
@@ -175,10 +190,11 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
     }
   }
 
-
   // Two step Adams-Bashforth approximation of the time derivative for position
-  // position(t + dt) ≈ position(t) + dt * [ 1.5 * velocity(t) - 0.5 * velocity(t - dt) ]
-  movement_at_next_step += translation_velocity_on_point_mass * kDnew + older_velocity_ * kDold;
+  // position(t + dt) ≈ position(t) + dt * [ 1.5 * velocity(t) - 0.5 *
+  // velocity(t - dt) ]
+  movement_at_next_step +=
+      translation_velocity_on_point_mass * kDnew + older_velocity_ * kDold;
 
   older_velocity_ = translation_velocity_on_point_mass;
 
@@ -186,25 +202,29 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
   return movement_at_next_step;
 }
 
-//Compute new oxygen or immunostimulatory factor concentration after consumption/ secretion
-real_t CartCell::ConsumeSecreteSubstance(int substance_id, real_t old_concentration) {
+// Compute new oxygen or immunostimulatory factor concentration after
+// consumption/ secretion
+real_t CartCell::ConsumeSecreteSubstance(int substance_id,
+                                         real_t old_concentration) {
   real_t res;
   if (substance_id == oxygen_dgrid_->GetContinuumId()) {
     // consuming oxygen
-    res= (old_concentration + constant1_oxygen_) / constant2_oxygen_;
-  } else if (substance_id == immunostimulatory_factor_dgrid_->GetContinuumId()) {
+    res = (old_concentration + constant1_oxygen_) / constant2_oxygen_;
+  } else if (substance_id ==
+             immunostimulatory_factor_dgrid_->GetContinuumId()) {
     // This point should never be reached
-    res= old_concentration;
+    res = old_concentration;
   } else {
-    throw std::invalid_argument("Unknown substance id: " + std::to_string(substance_id));
+    throw std::invalid_argument("Unknown substance id: " +
+                                std::to_string(substance_id));
   }
   return res;
 }
 
-//Recompute Consumption constants whenever oxygen_consumption_rate_ or the volume changes
+// Recompute Consumption constants whenever oxygen_consumption_rate_ or the
+// volume changes
 void CartCell::ComputeConstantsConsumptionSecretion() {
-
-  // constant1_= dt · (V_k / V_voxel) · S_k · ρ*_k) 
+  // constant1_= dt · (V_k / V_voxel) · S_k · ρ*_k)
   // constant2_ = [1 + dt · (V_k / V_voxel) · (S_k + U_k)]
   // where:
   // S_k    = secretion rate of cell k
@@ -214,64 +234,82 @@ void CartCell::ComputeConstantsConsumptionSecretion() {
   // V_voxel = volume of the voxel containing the cell
   // dt     = simulation time step
   real_t volume = GetVolume();
-  //compute the constants for the differential equation explicit solution: for oxygen and immunostimulatory factor
-  //dt*(cell_volume/voxel_volume)*quantity_secretion*substance_saturation =  dt · (V_k / V_voxel) · S_k · ρ*_k) 
+  // compute the constants for the differential equation explicit solution: for
+  // oxygen and immunostimulatory factor
+  // dt*(cell_volume/voxel_volume)*quantity_secretion*substance_saturation =  dt
+  // · (V_k / V_voxel) · S_k · ρ*_k)
   constant1_oxygen_ = 0.;
-  //1 + dt*(cell_volume/voxel_volume)*(quantity_secretion + quantity_consumption ) = [1 + dt · (V_k / V_voxel) · (S_k + U_k)]
-  // Scale by the volume of the cell in the Voxel and time step
-  constant2_oxygen_ = 1 + kDtSubstances * (volume/kVoxelVolume) * (oxygen_consumption_rate_);
+  // 1 + dt*(cell_volume/voxel_volume)*(quantity_secretion +
+  // quantity_consumption ) = [1 + dt · (V_k / V_voxel) · (S_k + U_k)]
+  //  Scale by the volume of the cell in the Voxel and time step
+  constant2_oxygen_ =
+      1 + kDtSubstances * (volume / kVoxelVolume) * (oxygen_consumption_rate_);
 }
 
 /// Main behavior executed at each simulation step
 void StateControlCart::Run(Agent* agent) {
-
   auto* sim = Simulation::GetActive();
-  if(sim->GetScheduler()->GetSimulatedSteps() % kStepsPerCycle != 0){return;}// Run only every kDtCycle minutes, fmod does not work with the type returned by GetSimulatedTime()
+  if (sim->GetScheduler()->GetSimulatedSteps() % kStepsPerCycle != 0) {
+    return;
+  }  // Run only every kDtCycle minutes, fmod does not work with the type
+     // returned by GetSimulatedTime()
 
   if (auto* cell = dynamic_cast<CartCell*>(agent)) {
+    switch (cell->GetState()) {
+      case CartCellState::kAlive: {  // the cell is growing to real_t its size
+                                     // before mitosis
 
-    switch (cell->GetState())
-    {
-      case CartCellState::kAlive:{//the cell is growing to real_t its size before mitosis
-
-        if (sim->GetRandom()->Uniform(1.0) < kDtCycle/std::max(cell->GetCurrentLiveTime(), 1e-10)) { // Probability of death= 1/CurrentLiveTime, avoiding division by 0
-          //the cell Dies
+        if (sim->GetRandom()->Uniform(1.0) <
+            kDtCycle /
+                std::max(cell->GetCurrentLiveTime(),
+                         1e-10)) {  // Probability of death= 1/CurrentLiveTime,
+                                    // avoiding division by 0
+          // the cell Dies
           cell->SetState(CartCellState::kApoptotic);
           cell->SetTimerState(0);  // Reset timer_state, it should be 0 anyway
           // Set target volume to 0 (the cell will shrink)
-          cell->SetTargetCytoplasmSolid(0.0); 
-          cell->SetTargetNucleusSolid(0.0); 
-          cell->SetTargetFractionFluid(0.0); 
+          cell->SetTargetCytoplasmSolid(0.0);
+          cell->SetTargetNucleusSolid(0.0);
+          cell->SetTargetFractionFluid(0.0);
           cell->SetTargetRelationCytoplasmNucleus(0.0);
-          //Reduce oxygen consumption
-          cell->SetOxygenConsumptionRate(cell->GetOxygenConsumptionRate()*kReductionConsumptionDeadCells);
-          cell->ComputeConstantsConsumptionSecretion(); // Update constants for all Consumption of oxygen
-          if (cell->IsAttachedToTumorCell()) {// Detach from tumor cell if it was attached
+          // Reduce oxygen consumption
+          cell->SetOxygenConsumptionRate(cell->GetOxygenConsumptionRate() *
+                                         kReductionConsumptionDeadCells);
+          cell->ComputeConstantsConsumptionSecretion();  // Update constants for
+                                                         // all Consumption of
+                                                         // oxygen
+          if (cell->IsAttachedToTumorCell()) {  // Detach from tumor cell if it
+                                                // was attached
             cell->GetAttachedCell()->SetAttachedToCart(false);
             cell->SetAttachedCell(nullptr);
             cell->SetAttachedToTumorCell(false);
           }
-        } else{
+        } else {
           // decrease current life time
-          cell->SetCurrentLiveTime((cell->GetCurrentLiveTime() - (kDtCycle*kDtCycle)));
+          cell->SetCurrentLiveTime(
+              (cell->GetCurrentLiveTime() - (kDtCycle * kDtCycle)));
         }
         break;
       }
-      case CartCellState::kApoptotic:{
-        cell->SetTimerState(cell->GetTimerState() + kDtCycle); 
+      case CartCellState::kApoptotic: {
+        cell->SetTimerState(cell->GetTimerState() + kDtCycle);
 
-        cell->ChangeVolumeExponentialRelaxationEquation(kVolumeRelaxarionRateCytoplasmApoptotic,
-                                                kVolumeRelaxarionRateNucleusApoptotic,
-                                                kVolumeRelaxarionRateFluidApoptotic);
-                                                
-        if (kTimeApoptosis < cell->GetTimerState()) { // If the timer_state exceeds the time to transition (this is a fixed duration transition)
-          //remove the cell from the simulation
+        cell->ChangeVolumeExponentialRelaxationEquation(
+            kVolumeRelaxarionRateCytoplasmApoptotic,
+            kVolumeRelaxarionRateNucleusApoptotic,
+            kVolumeRelaxarionRateFluidApoptotic);
+
+        if (kTimeApoptosis <
+            cell->GetTimerState()) {  // If the timer_state exceeds the time to
+                                      // transition (this is a fixed duration
+                                      // transition)
+          // remove the cell from the simulation
           auto* ctxt = sim->GetExecutionContext();
           ctxt->RemoveAgent(agent->GetUid());
         }
         break;
       }
-      default:{
+      default: {
         Log::Error("StateControlCart::Run", "Unknown CartCellState");
         break;
       }

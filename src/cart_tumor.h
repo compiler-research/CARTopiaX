@@ -1,5 +1,6 @@
 /*
- * Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana Melina Luque
+ * Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana
+ * Melina Luque
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
