@@ -20,13 +20,13 @@
  */
 
 #include "cart_cell.h"
-#include "hyperparams.h"
-#include "tumor_cell.h"
-#include "utils_aux.h"
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
+#include "hyperparams.h"
+#include "tumor_cell.h"
+#include "utils_aux.h"
 
 namespace bdm {
 

@@ -20,11 +20,11 @@
  */
 
 #include "tumor_cell.h"
-#include "hyperparams.h"
-#include "utils_aux.h"
 #include <algorithm>
 #include <stdexcept>
 #include <string>
+#include "hyperparams.h"
+#include "utils_aux.h"
 
 namespace bdm {
 

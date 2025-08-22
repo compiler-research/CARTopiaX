@@ -20,11 +20,11 @@
  */
 
 #include "forces_tumor_cart.h"
+#include <algorithm>
+#include <cmath>
 #include "hyperparams.h"
 #include "tumor_cell.h"
 #include "utils_aux.h"
-#include <algorithm>
-#include <cmath>
 
 namespace bdm {
 

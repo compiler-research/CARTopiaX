@@ -22,8 +22,8 @@
 #ifndef TUMOR_HYPERPARAMS_H_
 #define TUMOR_HYPERPARAMS_H_
 
-#include "biodynamo.h"
 #include <cmath>
+#include "biodynamo.h"
 
 namespace bdm {
 

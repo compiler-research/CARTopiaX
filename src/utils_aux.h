@@ -22,10 +22,10 @@
 #ifndef CORE_UTIL_UTILS_AUX_H_
 #define CORE_UTIL_UTILS_AUX_H_
 
-#include "biodynamo.h"
 #include <cstdint>
 #include <tuple>
 #include <vector>
+#include "biodynamo.h"
 
 namespace bdm {
 /// Forward declaration of TumorCell class

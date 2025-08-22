@@ -20,12 +20,12 @@
  */
 
 #include "utils_aux.h"
-#include "hyperparams.h"
-#include "tumor_cell.h"
 #include <cmath>
 #include <fstream>
 #include <tuple>
 #include <vector>
+#include "hyperparams.h"
+#include "tumor_cell.h"
 
 namespace bdm {
 

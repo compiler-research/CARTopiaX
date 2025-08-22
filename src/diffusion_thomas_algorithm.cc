@@ -19,12 +19,12 @@
  * for the compiler-research.org organization.
  */
 #include "diffusion_thomas_algorithm.h"
-#include "cart_cell.h"
-#include "hyperparams.h"
-#include "tumor_cell.h"
 #include <string>
 #include <utility>
 #include <vector>
+#include "cart_cell.h"
+#include "hyperparams.h"
+#include "tumor_cell.h"
 
 namespace bdm {
 
