@@ -73,7 +73,6 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
       repulsion = std::sqrt(kRepulsionCartTumor *
                             kRepulsionTumorCart);
     }
-  // std::cout << "repulsion = " << repulsion<< std::endl;// Debug output
 
     temp_r *= repulsion;
   }
