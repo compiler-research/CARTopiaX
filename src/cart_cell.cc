@@ -26,6 +26,7 @@
 #include "core/real_t.h"
 #include "core/interaction_force.h"
 #include "utils_aux.h"
+#include <cstdint>
 
 
 namespace bdm {
