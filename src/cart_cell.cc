@@ -28,7 +28,14 @@
 #include "core/functor.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
+#include "core/container/math_array.h"
+#include "core/interaction_force.h"
+#include "core/real_t.h"
+#include "core/resource_manager.h"
+#include "hyperparams.h"
+#include "tumor_cell.h"
 #include "utils_aux.h"
+#include <cstdint>
 
 namespace bdm {
 
