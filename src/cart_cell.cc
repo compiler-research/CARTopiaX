@@ -25,6 +25,7 @@
 #include "core/interaction_force.h"
 #include "core/real_t.h"
 #include "core/resource_manager.h"
+#include "core/functor.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
 #include "utils_aux.h"
@@ -173,7 +174,7 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
   if (!IsStatic()) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     auto calculate_neighbor_forces =
-        L2F([&](Agent* neighbor, real_t squared_distance) {
+        L2F([&](Agent* neighbor, real_t /*squared_distance*/) {
           auto neighbor_force = force->Calculate(this, neighbor);
           if (neighbor_force[0] != 0 || neighbor_force[1] != 0 ||
               neighbor_force[2] != 0) {
