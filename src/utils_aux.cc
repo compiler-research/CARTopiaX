@@ -18,10 +18,14 @@
  * This file contains a model developed under Google Summer of Code (GSoC)
  * for the compiler-research.org organization.
  */
+
 #include "utils_aux.h"
-#include "core/util/random.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
+#include <cmath>
+#include <fstream>
+#include <tuple>
+#include <vector>
 
 namespace bdm {
 

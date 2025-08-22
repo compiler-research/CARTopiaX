@@ -22,8 +22,10 @@
 #ifndef DIFFUSION_THOMAS_ALGORITHM_H_
 #define DIFFUSION_THOMAS_ALGORITHM_H_
 
-#include <utility>
+#include "biodynamo.h"
 #include "core/diffusion/diffusion_grid.h"
+#include <string>
+#include <vector>
 
 namespace bdm {
 

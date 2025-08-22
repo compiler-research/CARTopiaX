@@ -20,10 +20,11 @@
  */
 #include "diffusion_thomas_algorithm.h"
 #include "cart_cell.h"
-#include "core/resource_manager.h"
-#include "core/simulation.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace bdm {
 

@@ -19,7 +19,9 @@
  * for the compiler-research.org organization.
  */
 #include "cart_tumor.h"
-#include "cart_cell.h"
+#include <iostream>
+#include <memory>
+#include <vector>
 #include "core/environment/uniform_grid_environment.h"
 #include "core/operation/mechanical_forces_op.h"
 #include "diffusion_thomas_algorithm.h"
