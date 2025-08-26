@@ -19,15 +19,18 @@
  * for the compiler-research.org organization.
  */
 
-#ifndef DIFFUSION_THOMAS_ALGORITHM_H_
-#define DIFFUSION_THOMAS_ALGORITHM_H_
+#ifndef HOME_USUARIO_DESKTOP_VASSIL_CARTOPIAX_SRC_DIFFUSION_THOMAS_ALGORITHM_H_
+#define HOME_USUARIO_DESKTOP_VASSIL_CARTOPIAX_SRC_DIFFUSION_THOMAS_ALGORITHM_H_
 
 #include <string>
 #include <vector>
-#include "biodynamo.h"
+
 #include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {
+
+// Forward declarations
+using real_t = double;
 
 /// Continuum model for the 3D heat equation with exponential decay
 ///
@@ -35,7 +38,24 @@ namespace bdm {
 /// Uses the Thomas algorithm for solving tridiagonal systems efficiently.
 class DiffusionThomasAlgorithm : public DiffusionGrid {
  public:
-  DiffusionThomasAlgorithm() = default;
+  DiffusionThomasAlgorithm()
+      : resolution_(0),
+        d_space_(0.0),
+        thomas_denom_x_(),
+        thomas_c_x_(),
+        thomas_denom_y_(),
+        thomas_c_y_(),
+        thomas_denom_z_(),
+        thomas_c_z_(),
+        jump_i_(0),
+        jump_j_(0),
+        jump_k_(0),
+        constant1_(0.0),
+        constant1a_(0.0),
+        constant2_(0.0),
+        constant3_(0.0),
+        constant3a_(0.0),
+        dirichlet_border_(false) {}
 
   DiffusionThomasAlgorithm(int substance_id, std::string substance_name,
                            real_t dc, real_t mu, int resolution, real_t dt,
@@ -43,7 +63,7 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
 
   /// Concentration setters
   void SetConcentration(real_t x, real_t y, real_t z, real_t amount) {
-    SetConcentration(GetBoxIndex(x, y, z), amount);
+    SetConcentration(GetBoxIndex(static_cast<size_t>(x), static_cast<size_t>(y), static_cast<size_t>(z)), amount);
   };
 
   void SetConcentration(size_t idx, real_t amount);
@@ -184,11 +204,11 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   /// @param y Y-coordinate in voxel space
   /// @param z Z-coordinate in voxel space
   /// @return Linear index in the flattened 3D array
-  size_t GetBoxIndex(size_t x, size_t y, size_t z) const;
+  [[nodiscard]] size_t GetBoxIndex(size_t x, size_t y, size_t z) const;
 
   BDM_CLASS_DEF_OVERRIDE(DiffusionThomasAlgorithm, 1);
 };
 
 }  // namespace bdm
 
-#endif  // DIFFUSION_THOMAS_ALGORITHM_H_
+#endif  // HOME_USUARIO_DESKTOP_VASSIL_CARTOPIAX_SRC_DIFFUSION_THOMAS_ALGORITHM_H_
