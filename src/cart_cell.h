@@ -22,6 +22,7 @@
 #ifndef CART_CELL_H_
 #define CART_CELL_H_
 
+#include "core/util/root.h"
 #include "core/agent/agent.h"
 #include "core/agent/cell.h"
 #include "core/behavior/behavior.h"

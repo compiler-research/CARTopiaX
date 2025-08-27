@@ -24,7 +24,9 @@
 
 #include <string>
 #include <vector>
-#include "biodynamo.h"
+#include <cstddef>
+#include "core/real_t.h"
+#include "core/util/root.h"
 #include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {
@@ -35,7 +37,24 @@ namespace bdm {
 /// Uses the Thomas algorithm for solving tridiagonal systems efficiently.
 class DiffusionThomasAlgorithm : public DiffusionGrid {
  public:
-  DiffusionThomasAlgorithm() = default;
+  DiffusionThomasAlgorithm()
+      : resolution_(0),
+        d_space_(0.0),
+        thomas_denom_x_(),
+        thomas_c_x_(),
+        thomas_denom_y_(),
+        thomas_c_y_(),
+        thomas_denom_z_(),
+        thomas_c_z_(),
+        jump_i_(0),
+        jump_j_(0),
+        jump_k_(0),
+        constant1_(0.0),
+        constant1a_(0.0),
+        constant2_(0.0),
+        constant3_(0.0),
+        constant3a_(0.0),
+        dirichlet_border_(false) {}
 
   DiffusionThomasAlgorithm(int substance_id, std::string substance_name,
                            real_t dc, real_t mu, int resolution, real_t dt,
@@ -43,8 +62,8 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
 
   /// Concentration setters
   void SetConcentration(real_t x, real_t y, real_t z, real_t amount) {
-    SetConcentration(GetBoxIndex(x, y, z), amount);
-  };
+    SetConcentration(GetBoxIndex(static_cast<size_t>(x), static_cast<size_t>(y), static_cast<size_t>(z)), amount);
+  }
 
   void SetConcentration(size_t idx, real_t amount);
 
@@ -111,28 +130,37 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   void ComputeConsumptionsSecretions();
 
  private:
+
   /// Number of voxels in each spatial direction
+  // NOLINTNEXTLINE(readability-identifier-naming)
   size_t resolution_;
 
   /// Voxel side length in micrometers
+  // NOLINTNEXTLINE(readability-identifier-naming)
   real_t d_space_;
 
   /// Denominators for x-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
   std::vector<real_t> thomas_denom_x_;
 
   /// Coefficients for x-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
   std::vector<real_t> thomas_c_x_;
 
   /// Denominators for y-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
   std::vector<real_t> thomas_denom_y_;
 
   /// Coefficients for y-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
   std::vector<real_t> thomas_c_y_;
 
   /// Denominators for z-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
   std::vector<real_t> thomas_denom_z_;
 
   /// Coefficients for z-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
   std::vector<real_t> thomas_c_z_;
 
   /// Index jump for i-direction (x-axis)
@@ -144,22 +172,29 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   /// Index jump for k-direction (z-axis)
   int jump_k_;
 
+
   /// First diffusion constant
+  // NOLINTNEXTLINE(readability-identifier-naming)
   real_t constant1_;
 
   /// Alternative first diffusion constant
+  // NOLINTNEXTLINE(readability-identifier-naming)
   real_t constant1a_;
 
   /// Second diffusion constant
+  // NOLINTNEXTLINE(readability-identifier-naming)
   real_t constant2_;
 
   /// Third diffusion constant
+  // NOLINTNEXTLINE(readability-identifier-naming)
   real_t constant3_;
 
   /// Alternative third diffusion constant
+  // NOLINTNEXTLINE(readability-identifier-naming)
   real_t constant3a_;
 
   /// Flag indicating Dirichlet boundary conditions
+  // NOLINTNEXTLINE(readability-identifier-naming)
   bool dirichlet_border_;
 
   /// Initialize Thomas algorithm coefficient vectors
