@@ -23,7 +23,8 @@
 #define TUMOR_HYPERPARAMS_H_
 
 #include <cmath>
-#include "biodynamo.h"
+#include "core/real_t.h"
+#include "core/util/math.h"
 
 namespace bdm {
 
@@ -125,10 +126,9 @@ constexpr real_t kReductionConsumptionDeadCells = 0.1;
 constexpr int kResolutionGridSubstances = 50;  // 50 // voxels per axis
 /// Volume of a single voxel in μm³ (do not modify this line)
 constexpr real_t kVoxelVolume =
-    (kBoundedSpaceLength / kResolutionGridSubstances) *
-    (kBoundedSpaceLength / kResolutionGridSubstances) *
-    (kBoundedSpaceLength /
-     kResolutionGridSubstances);  // Do not modify this line
+    (static_cast<real_t>(kBoundedSpaceLength) / kResolutionGridSubstances) *
+    (static_cast<real_t>(kBoundedSpaceLength) / kResolutionGridSubstances) *
+    (static_cast<real_t>(kBoundedSpaceLength) / kResolutionGridSubstances);  // Do not modify this line
 /// Diffusion coefficient of oxygen in μm²/min
 constexpr real_t kDiffusionCoefficientOxygen =
     100000;  // 100000 micrometers^2/minute
@@ -186,12 +186,12 @@ constexpr real_t kDnew = 1.5 * kDtMechanics;
 constexpr real_t kDold = -0.5 * kDtMechanics;
 
 /// Do not change this line
-const real_t kLengthBoxMechanics =
+const real_t gKLengthBoxMechanics =
     22;  // Length of the box for mechanics in micrometers
 
 /// Max Distance for considering two cells as neighbours for force calculations
 /// in μm Do not change this line
-const real_t kSquaredMaxDistanceNeighborsForce = std::pow(
+const real_t gKSquaredMaxDistanceNeighborsForce = std::pow(
     0.1 + std::cbrt(kDefaultVolumeNewTumorCell * 6 / Math::kPi) *
               kMaxRelativeAdhesionDistance,
     2);  // (twice biggest cell radius (in case to cells tha maximum size

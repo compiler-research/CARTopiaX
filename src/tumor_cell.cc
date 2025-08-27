@@ -277,7 +277,7 @@ Real3 TumorCell::CalculateDisplacement(const InteractionForce* force,
   Real3 movement_at_next_step{0, 0, 0};
   // this should be chaged in a future version of BioDynaMo in order to have a
   // cleaner code instead of hardcoding it here
-  squared_radius = kSquaredMaxDistanceNeighborsForce;
+  squared_radius = gKSquaredMaxDistanceNeighborsForce;
 
   Real3 translation_velocity_on_point_mass{0, 0, 0};
 
