@@ -1,0 +1,1959 @@
+src/diffusion_thomas_algorithm.h: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmphfdorwda.yaml src/diffusion_thomas_algorithm.h
+102098 warnings generated.
+/github/workspace/src/diffusion_thomas_algorithm.h:22:9: warning: header guard does not follow preferred style [llvm-header-guard]
+   22 | #ifndef DIFFUSION_THOMAS_ALGORITHM_H_
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |         GITHUB_WORKSPACE_SRC_DIFFUSION_THOMAS_ALGORITHM_H
+   23 | #define DIFFUSION_THOMAS_ALGORITHM_H_
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |         GITHUB_WORKSPACE_SRC_DIFFUSION_THOMAS_ALGORITHM_H
+/github/workspace/src/diffusion_thomas_algorithm.h:25:1: warning: #includes are not sorted properly [llvm-include-order]
+   25 | #include <string>
+      | ^
+note: this fix will not be applied because it overlaps with another fix
+/github/workspace/src/diffusion_thomas_algorithm.h:27:1: warning: included header biodynamo.h is not used directly [misc-include-cleaner]
+   27 | #include "biodynamo.h"
+      | ^~~~~~~~~~~~~~~~~~~~~~
+   28 | #include "core/diffusion/diffusion_grid.h"
+/github/workspace/src/diffusion_thomas_algorithm.h:36:7: warning: constructor does not initialize these fields: resolution_, d_space_, jump_i_, jump_j_, jump_k_, constant1_, constant1a_, constant2_, constant3_, constant3a_, dirichlet_border_ [cppcoreguidelines-pro-type-member-init]
+   36 | class DiffusionThomasAlgorithm : public DiffusionGrid {
+      |       ^
+/github/workspace/src/diffusion_thomas_algorithm.h:41:28: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   29 | 
+   30 | namespace bdm {
+   31 | 
+   32 | /// Continuum model for the 3D heat equation with exponential decay
+   33 | ///
+   34 | /// Implements the diffusion equation, solved implicitly: ∂t u = ∇D∇u - μu
+   35 | /// Uses the Thomas algorithm for solving tridiagonal systems efficiently.
+   36 | class DiffusionThomasAlgorithm : public DiffusionGrid {
+   37 |  public:
+   38 |   DiffusionThomasAlgorithm() = default;
+   39 | 
+   40 |   DiffusionThomasAlgorithm(int substance_id, std::string substance_name,
+   41 |                            real_t dc, real_t mu, int resolution, real_t dt,
+      |                            ^
+/github/workspace/src/diffusion_thomas_algorithm.h:46:34: warning: narrowing conversion from 'real_t' (aka 'double') to 'size_t' (aka 'unsigned long') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+   46 |     SetConcentration(GetBoxIndex(x, y, z), amount);
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.h:46:37: warning: narrowing conversion from 'real_t' (aka 'double') to 'size_t' (aka 'unsigned long') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+   46 |     SetConcentration(GetBoxIndex(x, y, z), amount);
+      |                                     ^
+/github/workspace/src/diffusion_thomas_algorithm.h:46:40: warning: narrowing conversion from 'real_t' (aka 'double') to 'size_t' (aka 'unsigned long') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+   46 |     SetConcentration(GetBoxIndex(x, y, z), amount);
+      |                                        ^
+/github/workspace/src/diffusion_thomas_algorithm.h:49:25: warning: no header providing "size_t" is directly included [misc-include-cleaner]
+   25 |   void SetConcentration(size_t idx, real_t amount);
+      |                         ^
+/github/workspace/src/diffusion_thomas_algorithm.h:115:10: warning: invalid case style for private member 'resolution_' [readability-identifier-naming]
+  115 |   size_t resolution_;
+      |          ^~~~~~~~~~~
+      |          resolution
+/github/workspace/src/diffusion_thomas_algorithm.h:118:10: warning: invalid case style for private member 'd_space_' [readability-identifier-naming]
+  118 |   real_t d_space_;
+      |          ^~~~~~~~
+      |          d_space
+/github/workspace/src/diffusion_thomas_algorithm.h:121:23: warning: invalid case style for private member 'thomas_denom_x_' [readability-identifier-naming]
+  121 |   std::vector<real_t> thomas_denom_x_;
+      |                       ^~~~~~~~~~~~~~~
+      |                       thomas_denom_x
+/github/workspace/src/diffusion_thomas_algorithm.h:124:23: warning: invalid case style for private member 'thomas_c_x_' [readability-identifier-naming]
+  124 |   std::vector<real_t> thomas_c_x_;
+      |                       ^~~~~~~~~~~
+      |                       thomas_c_x
+/github/workspace/src/diffusion_thomas_algorithm.h:127:23: warning: invalid case style for private member 'thomas_denom_y_' [readability-identifier-naming]
+  127 |   std::vector<real_t> thomas_denom_y_;
+      |                       ^~~~~~~~~~~~~~~
+      |                       thomas_denom_y
+/github/workspace/src/diffusion_thomas_algorithm.h:130:23: warning: invalid case style for private member 'thomas_c_y_' [readability-identifier-naming]
+  130 |   std::vector<real_t> thomas_c_y_;
+      |                       ^~~~~~~~~~~
+      |                       thomas_c_y
+/github/workspace/src/diffusion_thomas_algorithm.h:133:23: warning: invalid case style for private member 'thomas_denom_z_' [readability-identifier-naming]
+  133 |   std::vector<real_t> thomas_denom_z_;
+      |                       ^~~~~~~~~~~~~~~
+      |                       thomas_denom_z
+/github/workspace/src/diffusion_thomas_algorithm.h:136:23: warning: invalid case style for private member 'thomas_c_z_' [readability-identifier-naming]
+  136 |   std::vector<real_t> thomas_c_z_;
+      |                       ^~~~~~~~~~~
+      |                       thomas_c_z
+/github/workspace/src/diffusion_thomas_algorithm.h:139:7: warning: invalid case style for private member 'jump_i_' [readability-identifier-naming]
+  139 |   int jump_i_;
+      |       ^~~~~~~
+      |       jump_i
+/github/workspace/src/diffusion_thomas_algorithm.h:142:7: warning: invalid case style for private member 'jump_j_' [readability-identifier-naming]
+  142 |   int jump_j_;
+      |       ^~~~~~~
+      |       jump_j
+/github/workspace/src/diffusion_thomas_algorithm.h:145:7: warning: invalid case style for private member 'jump_k_' [readability-identifier-naming]
+  145 |   int jump_k_;
+      |       ^~~~~~~
+      |       jump_k
+/github/workspace/src/diffusion_thomas_algorithm.h:148:10: warning: invalid case style for private member 'constant1_' [readability-identifier-naming]
+  148 |   real_t constant1_;
+      |          ^~~~~~~~~~
+      |          constant1
+/github/workspace/src/diffusion_thomas_algorithm.h:151:10: warning: invalid case style for private member 'constant1a_' [readability-identifier-naming]
+  151 |   real_t constant1a_;
+      |          ^~~~~~~~~~~
+      |          constant1a
+/github/workspace/src/diffusion_thomas_algorithm.h:154:10: warning: invalid case style for private member 'constant2_' [readability-identifier-naming]
+  154 |   real_t constant2_;
+      |          ^~~~~~~~~~
+      |          constant2
+/github/workspace/src/diffusion_thomas_algorithm.h:157:10: warning: invalid case style for private member 'constant3_' [readability-identifier-naming]
+  157 |   real_t constant3_;
+      |          ^~~~~~~~~~
+      |          constant3
+/github/workspace/src/diffusion_thomas_algorithm.h:160:10: warning: invalid case style for private member 'constant3a_' [readability-identifier-naming]
+  160 |   real_t constant3a_;
+      |          ^~~~~~~~~~~
+      |          constant3a
+/github/workspace/src/diffusion_thomas_algorithm.h:163:8: warning: invalid case style for private member 'dirichlet_border_' [readability-identifier-naming]
+  163 |   bool dirichlet_border_;
+      |        ^~~~~~~~~~~~~~~~~
+      |        dirichlet_border
+/github/workspace/src/diffusion_thomas_algorithm.h:189:3: warning: do not use 'else' after 'return' [llvm-else-after-return,readability-else-after-return]
+  189 |   BDM_CLASS_DEF_OVERRIDE(DiffusionThomasAlgorithm, 1);
+      |   ^~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/include/core/util/root.h:28:3: note: expanded from macro 'BDM_CLASS_DEF_OVERRIDE'
+   28 |   ClassDefOverride(class_name, class_version_id)
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:342:4: note: expanded from macro 'ClassDefOverride'
+  342 |    _ClassDefOutline_(name,id,,override)              \
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:304:4: note: expanded from macro '_ClassDefOutline_'
+  304 |    _ClassDefBase_(name,id, virtual_keyword, overrd)                                                             \
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:280:9: note: expanded from macro '_ClassDefBase_'
+  280 |       } else if (recurseBlocker == 1) {                                                                         \
+      |         ^~~~
+/github/workspace/src/diffusion_thomas_algorithm.h:189:3: warning: no header providing "BDM_CLASS_DEF_OVERRIDE" is directly included [misc-include-cleaner]
+   29 |   BDM_CLASS_DEF_OVERRIDE(DiffusionThomasAlgorithm, 1);
+      |   ^
+/github/workspace/src/diffusion_thomas_algorithm.h:189:3: warning: use c++17 style variable templates [modernize-type-traits]
+/github/workspace/biodynamo/build/include/core/util/root.h:28:3: note: expanded from macro 'BDM_CLASS_DEF_OVERRIDE'
+   28 |   ClassDefOverride(class_name, class_version_id)
+      |   ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:342:4: note: expanded from macro 'ClassDefOverride'
+  342 |    _ClassDefOutline_(name,id,,override)              \
+      |    ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:304:4: note: expanded from macro '_ClassDefOutline_'
+  304 |    _ClassDefBase_(name,id, virtual_keyword, overrd)                                                             \
+      |    ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:273:18: note: expanded from macro '_ClassDefBase_'
+  273 |    static_assert(std::is_integral<decltype(id)>::value,                                                         \
+      |                  ^
+Suppressed 102227 warnings (102065 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+src/hyperparams.h: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmpg5dwfux3.yaml src/hyperparams.h
+/github/workspace/src/hyperparams.h:22:9: warning: header guard does not follow preferred style [llvm-header-guard]
+   22 | #ifndef TUMOR_HYPERPARAMS_H_
+      |         ^~~~~~~~~~~~~~~~~~~~
+      |         GITHUB_WORKSPACE_SRC_HYPERPARAMS_H
+   23 | #define TUMOR_HYPERPARAMS_H_
+      |         ~~~~~~~~~~~~~~~~~~~~
+      |         GITHUB_WORKSPACE_SRC_HYPERPARAMS_H
+/github/workspace/src/hyperparams.h:25:1: warning: #includes are not sorted properly [llvm-include-order]
+   25 | #include <cmath>
+      | ^
+note: this fix will not be applied because it overlaps with another fix
+/github/workspace/src/hyperparams.h:26:1: warning: included header biodynamo.h is not used directly [misc-include-cleaner]
+   26 | #include "biodynamo.h"
+      | ^~~~~~~~~~~~~~~~~~~~~~
+   27 | 
+/github/workspace/src/hyperparams.h:39:11: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   27 | 
+   28 | namespace bdm {
+   29 | 
+   30 | /// This file contains hyperparameters used in the simulation. Change: In a
+   31 | /// future version it needs to be changed into a params file with no need to be
+   32 | /// recompiled
+   33 | 
+   34 | ///
+   35 | /// TumorCell Hyperparameters
+   36 | ///
+   37 | 
+   38 | /// Rate of secretion of immunostimulatory factor of tumor cells per minute
+   39 | constexpr real_t kRateSecretionImmunostimulatoryFactor = 10.0;
+      |           ^
+/github/workspace/src/hyperparams.h:128:6: warning: result of integer division used in a floating point context; possible loss of precision [bugprone-integer-division]
+  128 |     (kBoundedSpaceLength / kResolutionGridSubstances) *
+      |      ^
+/github/workspace/src/hyperparams.h:129:6: warning: result of integer division used in a floating point context; possible loss of precision [bugprone-integer-division]
+  129 |     (kBoundedSpaceLength / kResolutionGridSubstances) *
+      |      ^
+/github/workspace/src/hyperparams.h:130:6: warning: result of integer division used in a floating point context; possible loss of precision [bugprone-integer-division]
+  130 |     (kBoundedSpaceLength /
+      |      ^
+/github/workspace/src/hyperparams.h:189:14: warning: invalid case style for global constant 'kLengthBoxMechanics' [readability-identifier-naming]
+  189 | const real_t kLengthBoxMechanics =
+      |              ^~~~~~~~~~~~~~~~~~~
+      |              gKLengthBoxMechanics
+/github/workspace/src/hyperparams.h:194:14: warning: invalid case style for global constant 'kSquaredMaxDistanceNeighborsForce' [readability-identifier-naming]
+  194 | const real_t kSquaredMaxDistanceNeighborsForce = std::pow(
+      |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |              gKSquaredMaxDistanceNeighborsForce
+/github/workspace/src/hyperparams.h:195:54: warning: no header providing "bdm::Math" is directly included [misc-include-cleaner]
+   27 |     0.1 + std::cbrt(kDefaultVolumeNewTumorCell * 6 / Math::kPi) *
+      |                                                      ^
+102078 warnings generated.
+Suppressed 102230 warnings (102068 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+src/utils_aux.h: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmpxixo3_4q.yaml src/utils_aux.h
+/github/workspace/src/utils_aux.h:22:9: warning: header guard does not follow preferred style [llvm-header-guard]
+   22 | #ifndef CORE_UTIL_UTILS_AUX_H_
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+      |         GITHUB_WORKSPACE_SRC_UTILS_AUX_H
+   23 | #define CORE_UTIL_UTILS_AUX_H_
+      |         ~~~~~~~~~~~~~~~~~~~~~~
+      |         GITHUB_WORKSPACE_SRC_UTILS_AUX_H
+/github/workspace/src/utils_aux.h:25:1: warning: #includes are not sorted properly [llvm-include-order]
+   25 | #include <cstdint>
+      | ^
+note: this fix will not be applied because it overlaps with another fix
+/github/workspace/src/utils_aux.h:28:1: warning: included header biodynamo.h is not used directly [misc-include-cleaner]
+   28 | #include "biodynamo.h"
+      | ^~~~~~~~~~~~~~~~~~~~~~
+   29 | 
+/github/workspace/src/utils_aux.h:42:1: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   29 | 
+   30 | namespace bdm {
+   31 | /// Forward declaration of TumorCell class
+   32 | class TumorCell;
+   33 | 
+   34 | /// Sample a positive Gaussian value
+   35 | ///
+   36 | /// Samples a Gaussian value with given mean and standard deviation.
+   37 | /// All negative values are mapped to zero to ensure positive results.
+   38 | ///
+   39 | /// @param mean Mean value of the Gaussian distribution
+   40 | /// @param sigma Standard deviation of the Gaussian distribution
+   41 | /// @return Sampled positive value (negative values mapped to zero)
+   42 | real_t SamplePositiveGaussian(float mean, float sigma);
+      | ^
+/github/workspace/src/utils_aux.h:53:13: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
+   29 | std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius);
+      |             ^
+/github/workspace/src/utils_aux.h:68:12: warning: no header providing "size_t" is directly included [misc-include-cleaner]
+   25 | std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, real_t>
+      |            ^
+/github/workspace/src/utils_aux.h:76:31: warning: no header providing "bdm::StandaloneOperationImpl" is directly included [misc-include-cleaner]
+   29 | struct OutputSummary : public StandaloneOperationImpl {
+      |                               ^
+/github/workspace/src/utils_aux.h:77:3: warning: returning a newly created resource of type 'OutputSummary *' or 'gsl::owner<>' from a function whose return type is not 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+   77 |   BDM_OP_HEADER(OutputSummary);
+      |   ^
+/github/workspace/biodynamo/build/include/core/operation/operation_registry.h:96:34: note: expanded from macro 'BDM_OP_HEADER'
+   96 |   class_name *Clone() override { return new class_name(*this); }
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/utils_aux.h:77:3: warning: no header providing "BDM_OP_HEADER" is directly included [misc-include-cleaner]
+   29 |   BDM_OP_HEADER(OutputSummary);
+      |   ^
+/github/workspace/src/utils_aux.h:80:12: warning: member variable 'frequency_' has public visibility [misc-non-private-member-variables-in-classes]
+   80 |   uint64_t frequency_ = 1;
+      |            ^
+/github/workspace/src/utils_aux.h:80:12: warning: invalid case style for public member 'frequency_' [readability-identifier-naming]
+   80 |   uint64_t frequency_ = 1;
+      |            ^~~~~~~~~~
+      |            frequency
+/github/workspace/src/utils_aux.h:92:8: warning: initializing non-owner argument of type 'OperationImpl *' with a newly created 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+   92 | inline BDM_REGISTER_OP(OutputSummary, "OutputSummary", kCpu);
+      |        ^
+/github/workspace/biodynamo/build/include/core/operation/operation_registry.h:66:38: note: expanded from macro 'BDM_REGISTER_OP'
+   66 |       name, OpComputeTarget::target, new op());
+      |                                      ^~~~~~~~
+/github/workspace/src/utils_aux.h:92:8: warning: no header providing "BDM_REGISTER_OP" is directly included [misc-include-cleaner]
+   92 | inline BDM_REGISTER_OP(OutputSummary, "OutputSummary", kCpu);
+      |        ^
+102077 warnings generated.
+Suppressed 102226 warnings (102064 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+src/tumor_cell.h: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmpuq5_761j.yaml src/tumor_cell.h
+102128 warnings generated.
+Suppressed 102235 warnings (102073 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+/github/workspace/src/tumor_cell.h:22:9: warning: header guard does not follow preferred style [llvm-header-guard]
+   22 | #ifndef TUMOR_CELL_H_
+      |         ^~~~~~~~~~~~~
+      |         GITHUB_WORKSPACE_SRC_TUMOR_CELL_H
+   23 | #define TUMOR_CELL_H_
+      |         ~~~~~~~~~~~~~
+      |         GITHUB_WORKSPACE_SRC_TUMOR_CELL_H
+/github/workspace/src/tumor_cell.h:25:1: warning: included header biodynamo.h is not used directly [misc-include-cleaner]
+   25 | #include "biodynamo.h"
+      | ^~~~~~~~~~~~~~~~~~~~~~
+   26 | 
+/github/workspace/src/tumor_cell.h:61:7: warning: class 'TumorCell' defines a non-default destructor but does not define a copy constructor, a copy assignment operator, a move constructor or a move assignment operator [cppcoreguidelines-special-member-functions]
+   61 | class TumorCell : public Cell {
+      |       ^
+/github/workspace/src/tumor_cell.h:61:26: warning: no header providing "bdm::Cell" is directly included [misc-include-cleaner]
+   26 | class TumorCell : public Cell {
+      |                          ^
+/github/workspace/src/tumor_cell.h:62:3: warning: returning a newly created resource of type 'Agent *' or 'gsl::owner<>' from a function whose return type is not 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+   62 |   BDM_AGENT_HEADER(TumorCell, Cell, 1);
+      |   ^
+/github/workspace/biodynamo/build/include/core/agent/agent.h:59:33: note: expanded from macro 'BDM_AGENT_HEADER'
+   59 |   Agent* New() const override { return new class_name(); }                   \
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.h:62:3: warning: constructor does not initialize these fields: state_, timer_state_, oxygen_dgrid_, immunostimulatory_factor_dgrid_, oncoproteine_level_, transformation_random_rate_, attached_to_cart_, fluid_fraction_, nuclear_volume_, target_cytoplasm_solid_, target_nucleus_solid_, target_fraction_fluid_, target_relation_cytoplasm_nucleus_, type_, oxygen_consumption_rate_, immunostimulatory_factor_secretion_rate_, constant1_oxygen_, constant2_oxygen_, constant1_immunostimulatory_factor_, constant2_immunostimulatory_factor_ [cppcoreguidelines-pro-type-member-init]
+   62 |   BDM_AGENT_HEADER(TumorCell, Cell, 1);
+      |   ^
+/github/workspace/biodynamo/build/include/core/agent/agent.h:56:3: note: expanded from macro 'BDM_AGENT_HEADER'
+   56 |   explicit class_name(TRootIOCtor* io_ctor) {}                               \
+      |   ^
+/github/workspace/src/tumor_cell.h:62:3: warning: do not use 'else' after 'return' [llvm-else-after-return,readability-else-after-return]
+   62 |   BDM_AGENT_HEADER(TumorCell, Cell, 1);
+      |   ^~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/include/core/agent/agent.h:72:3: note: expanded from macro 'BDM_AGENT_HEADER'
+   72 |   BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id)
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/include/core/util/root.h:28:3: note: expanded from macro 'BDM_CLASS_DEF_OVERRIDE'
+   28 |   ClassDefOverride(class_name, class_version_id)
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:342:4: note: expanded from macro 'ClassDefOverride'
+  342 |    _ClassDefOutline_(name,id,,override)              \
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:304:4: note: expanded from macro '_ClassDefOutline_'
+  304 |    _ClassDefBase_(name,id, virtual_keyword, overrd)                                                             \
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:280:9: note: expanded from macro '_ClassDefBase_'
+  280 |       } else if (recurseBlocker == 1) {                                                                         \
+      |         ^~~~
+/github/workspace/src/tumor_cell.h:62:3: warning: no header providing "BDM_AGENT_HEADER" is directly included [misc-include-cleaner]
+   62 |   BDM_AGENT_HEADER(TumorCell, Cell, 1);
+      |   ^
+/github/workspace/src/tumor_cell.h:62:3: warning: parameter 'io_ctor' is unused [misc-unused-parameters]
+/github/workspace/biodynamo/build/include/core/agent/agent.h:56:36: note: expanded from macro 'BDM_AGENT_HEADER'
+   56 |   explicit class_name(TRootIOCtor* io_ctor) {}                               \
+      |                                    ^
+/github/workspace/src/tumor_cell.h:62:3: warning: use c++17 style variable templates [modernize-type-traits]
+   62 |   BDM_AGENT_HEADER(TumorCell, Cell, 1);
+      |   ^
+/github/workspace/biodynamo/build/include/core/agent/agent.h:72:3: note: expanded from macro 'BDM_AGENT_HEADER'
+   72 |   BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id)
+      |   ^
+/github/workspace/biodynamo/build/include/core/util/root.h:28:3: note: expanded from macro 'BDM_CLASS_DEF_OVERRIDE'
+   28 |   ClassDefOverride(class_name, class_version_id)
+      |   ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:342:4: note: expanded from macro 'ClassDefOverride'
+  342 |    _ClassDefOutline_(name,id,,override)              \
+      |    ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:304:4: note: expanded from macro '_ClassDefOutline_'
+  304 |    _ClassDefBase_(name,id, virtual_keyword, overrd)                                                             \
+      |    ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:273:18: note: expanded from macro '_ClassDefBase_'
+  273 |    static_assert(std::is_integral<decltype(id)>::value,                                                         \
+      |                  ^
+/github/workspace/src/tumor_cell.h:65:3: warning: constructor does not initialize these fields: state_, timer_state_, oxygen_dgrid_, immunostimulatory_factor_dgrid_, oncoproteine_level_, transformation_random_rate_, attached_to_cart_, fluid_fraction_, nuclear_volume_, target_cytoplasm_solid_, target_nucleus_solid_, target_fraction_fluid_, target_relation_cytoplasm_nucleus_, type_, oxygen_consumption_rate_, immunostimulatory_factor_secretion_rate_, constant1_oxygen_, constant2_oxygen_, constant1_immunostimulatory_factor_, constant2_immunostimulatory_factor_ [cppcoreguidelines-pro-type-member-init]
+   65 |   TumorCell() {}
+      |   ^
+/github/workspace/src/tumor_cell.h:65:3: warning: use '= default' to define a trivial default constructor [modernize-use-equals-default]
+   65 |   TumorCell() {}
+      |   ^           ~~
+      |               = default;
+/github/workspace/src/tumor_cell.h:67:28: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
+   26 |   explicit TumorCell(const Real3& position);
+      |                            ^
+/github/workspace/src/tumor_cell.h:69:11: warning: prefer using 'override' or (rarely) 'final' instead of 'virtual' [cppcoreguidelines-explicit-virtual-functions,modernize-use-override]
+   69 |   virtual ~TumorCell() {}
+      |   ~~~~~~~ ^
+      |                        override
+/github/workspace/src/tumor_cell.h:69:11: warning: use '= default' to define a trivial destructor [modernize-use-equals-default]
+   69 |   virtual ~TumorCell() {}
+      |           ^            ~~
+      |                        = default;
+/github/workspace/src/tumor_cell.h:73:25: warning: no header providing "bdm::NewAgentEvent" is directly included [misc-include-cleaner]
+   26 |   void Initialize(const NewAgentEvent& event) override;
+      |                         ^
+/github/workspace/src/tumor_cell.h:82:29: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   26 |   void SetOncoproteineLevel(real_t level);
+      |                             ^
+/github/workspace/src/tumor_cell.h:147:3: warning: no header providing "bdm::DiffusionGrid" is directly included [misc-include-cleaner]
+   26 |   DiffusionGrid* GetOxygenDiffusionGrid() const { return oxygen_dgrid_; }
+      |   ^
+/github/workspace/src/tumor_cell.h:177:37: warning: no header providing "bdm::InteractionForce" is directly included [misc-include-cleaner]
+   26 |   Real3 CalculateDisplacement(const InteractionForce* force,
+      |                                     ^
+/github/workspace/src/tumor_cell.h:200:18: warning: invalid case style for private member 'state_' [readability-identifier-naming]
+   76 |   TumorCellState state_;
+      |                  ^~~~~~
+      |                  state
+/github/workspace/src/tumor_cell.h:203:7: warning: invalid case style for private member 'timer_state_' [readability-identifier-naming]
+   79 |   int timer_state_;
+      |       ^~~~~~~~~~~~
+      |       timer_state
+/github/workspace/src/tumor_cell.h:206:18: warning: invalid case style for private member 'oxygen_dgrid_' [readability-identifier-naming]
+  147 |   DiffusionGrid* oxygen_dgrid_;
+      |                  ^~~~~~~~~~~~~
+      |                  oxygen_dgrid
+/github/workspace/src/tumor_cell.h:209:18: warning: invalid case style for private member 'immunostimulatory_factor_dgrid_' [readability-identifier-naming]
+  150 |   DiffusionGrid* immunostimulatory_factor_dgrid_;
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                  immunostimulatory_factor_dgrid
+/github/workspace/src/tumor_cell.h:212:10: warning: invalid case style for private member 'oncoproteine_level_' [readability-identifier-naming]
+   83 |   real_t oncoproteine_level_;
+      |          ^~~~~~~~~~~~~~~~~~~
+      |          oncoproteine_level
+/github/workspace/src/tumor_cell.h:217:10: warning: invalid case style for private member 'transformation_random_rate_' [readability-identifier-naming]
+  120 |   real_t transformation_random_rate_;
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |          transformation_random_rate
+/github/workspace/src/tumor_cell.h:220:8: warning: invalid case style for private member 'attached_to_cart_' [readability-identifier-naming]
+  123 |   bool attached_to_cart_;
+      |        ^~~~~~~~~~~~~~~~~
+      |        attached_to_cart
+/github/workspace/src/tumor_cell.h:223:10: warning: invalid case style for private member 'fluid_fraction_' [readability-identifier-naming]
+   86 |   real_t fluid_fraction_;
+      |          ^~~~~~~~~~~~~~~
+      |          fluid_fraction
+/github/workspace/src/tumor_cell.h:226:10: warning: invalid case style for private member 'nuclear_volume_' [readability-identifier-naming]
+   91 |   real_t nuclear_volume_;
+      |          ^~~~~~~~~~~~~~~
+      |          nuclear_volume
+/github/workspace/src/tumor_cell.h:232:10: warning: invalid case style for private member 'target_cytoplasm_solid_' [readability-identifier-naming]
+   96 |   real_t target_cytoplasm_solid_;
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+      |          target_cytoplasm_solid
+/github/workspace/src/tumor_cell.h:235:10: warning: invalid case style for private member 'target_nucleus_solid_' [readability-identifier-naming]
+  101 |   real_t target_nucleus_solid_;
+      |          ^~~~~~~~~~~~~~~~~~~~~
+      |          target_nucleus_solid
+/github/workspace/src/tumor_cell.h:238:10: warning: invalid case style for private member 'target_fraction_fluid_' [readability-identifier-naming]
+  106 |   real_t target_fraction_fluid_;
+      |          ^~~~~~~~~~~~~~~~~~~~~~
+      |          target_fraction_fluid
+/github/workspace/src/tumor_cell.h:241:10: warning: invalid case style for private member 'target_relation_cytoplasm_nucleus_' [readability-identifier-naming]
+  112 |   real_t target_relation_cytoplasm_nucleus_;
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |          target_relation_cytoplasm_nucleus
+/github/workspace/src/tumor_cell.h:246:7: warning: invalid case style for private member 'type_' [readability-identifier-naming]
+  126 |   int type_;
+      |       ^~~~~
+      |       type
+/github/workspace/src/tumor_cell.h:249:9: warning: invalid case style for private member 'older_velocity_' [readability-identifier-naming]
+  129 |   Real3 older_velocity_;
+      |         ^~~~~~~~~~~~~~~
+      |         older_velocity
+/github/workspace/src/tumor_cell.h:252:10: warning: invalid case style for private member 'oxygen_consumption_rate_' [readability-identifier-naming]
+  132 |   real_t oxygen_consumption_rate_;
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~
+      |          oxygen_consumption_rate
+/github/workspace/src/tumor_cell.h:255:10: warning: invalid case style for private member 'immunostimulatory_factor_secretion_rate_' [readability-identifier-naming]
+  138 |   real_t immunostimulatory_factor_secretion_rate_;
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |          immunostimulatory_factor_secretion_rate
+/github/workspace/src/tumor_cell.h:258:10: warning: invalid case style for private member 'constant1_oxygen_' [readability-identifier-naming]
+  258 |   real_t constant1_oxygen_;
+      |          ^~~~~~~~~~~~~~~~~
+      |          constant1_oxygen
+/github/workspace/src/tumor_cell.h:261:10: warning: invalid case style for private member 'constant2_oxygen_' [readability-identifier-naming]
+  261 |   real_t constant2_oxygen_;
+      |          ^~~~~~~~~~~~~~~~~
+      |          constant2_oxygen
+/github/workspace/src/tumor_cell.h:265:10: warning: invalid case style for private member 'constant1_immunostimulatory_factor_' [readability-identifier-naming]
+  265 |   real_t constant1_immunostimulatory_factor_;
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |          constant1_immunostimulatory_factor
+/github/workspace/src/tumor_cell.h:269:10: warning: invalid case style for private member 'constant2_immunostimulatory_factor_' [readability-identifier-naming]
+  269 |   real_t constant2_immunostimulatory_factor_;
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |          constant2_immunostimulatory_factor
+/github/workspace/src/tumor_cell.h:278:8: warning: class 'StateControlGrowProliferate' defines a non-default destructor but does not define a copy constructor, a copy assignment operator, a move constructor or a move assignment operator [cppcoreguidelines-special-member-functions]
+  278 | struct StateControlGrowProliferate : public Behavior {
+      |        ^
+/github/workspace/src/tumor_cell.h:278:45: warning: no header providing "bdm::Behavior" is directly included [misc-include-cleaner]
+   26 | struct StateControlGrowProliferate : public Behavior {
+      |                                             ^
+/github/workspace/src/tumor_cell.h:279:3: warning: returning a newly created resource of type 'Behavior *' or 'gsl::owner<>' from a function whose return type is not 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+  279 |   BDM_BEHAVIOR_HEADER(StateControlGrowProliferate, Behavior, 1);
+      |   ^
+/github/workspace/biodynamo/build/include/core/behavior/behavior.h:134:36: note: expanded from macro 'BDM_BEHAVIOR_HEADER'
+  134 |   Behavior* New() const override { return new class_name(); }                \
+      |                                    ^~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.h:279:3: warning: do not use 'else' after 'return' [llvm-else-after-return,readability-else-after-return]
+  279 |   BDM_BEHAVIOR_HEADER(StateControlGrowProliferate, Behavior, 1);
+      |   ^~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/include/core/behavior/behavior.h:139:3: note: expanded from macro 'BDM_BEHAVIOR_HEADER'
+  139 |   BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id);                      \
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/include/core/util/root.h:28:3: note: expanded from macro 'BDM_CLASS_DEF_OVERRIDE'
+   28 |   ClassDefOverride(class_name, class_version_id)
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:342:4: note: expanded from macro 'ClassDefOverride'
+  342 |    _ClassDefOutline_(name,id,,override)              \
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:304:4: note: expanded from macro '_ClassDefOutline_'
+  304 |    _ClassDefBase_(name,id, virtual_keyword, overrd)                                                             \
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:280:9: note: expanded from macro '_ClassDefBase_'
+  280 |       } else if (recurseBlocker == 1) {                                                                         \
+      |         ^~~~
+/github/workspace/src/tumor_cell.h:279:3: warning: no header providing "BDM_BEHAVIOR_HEADER" is directly included [misc-include-cleaner]
+  279 |   BDM_BEHAVIOR_HEADER(StateControlGrowProliferate, Behavior, 1);
+      |   ^
+/github/workspace/src/tumor_cell.h:279:3: warning: use c++17 style variable templates [modernize-type-traits]
+/github/workspace/biodynamo/build/include/core/behavior/behavior.h:139:3: note: expanded from macro 'BDM_BEHAVIOR_HEADER'
+  139 |   BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id);                      \
+      |   ^
+/github/workspace/biodynamo/build/include/core/util/root.h:28:3: note: expanded from macro 'BDM_CLASS_DEF_OVERRIDE'
+   28 |   ClassDefOverride(class_name, class_version_id)
+      |   ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:342:4: note: expanded from macro 'ClassDefOverride'
+  342 |    _ClassDefOutline_(name,id,,override)              \
+      |    ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:304:4: note: expanded from macro '_ClassDefOutline_'
+  304 |    _ClassDefBase_(name,id, virtual_keyword, overrd)                                                             \
+      |    ^
+/github/workspace/biodynamo/build/third_party/root/include/Rtypes.h:273:18: note: expanded from macro '_ClassDefBase_'
+  273 |    static_assert(std::is_integral<decltype(id)>::value,                                                         \
+      |                  ^
+/github/workspace/src/tumor_cell.h:283:11: warning: prefer using 'override' or (rarely) 'final' instead of 'virtual' [cppcoreguidelines-explicit-virtual-functions,modernize-use-override]
+  283 |   virtual ~StateControlGrowProliferate() {}
+      |   ~~~~~~~ ^
+      |                                          override
+/github/workspace/src/tumor_cell.h:283:11: warning: use '= default' to define a trivial destructor [modernize-use-equals-default]
+  283 |   virtual ~StateControlGrowProliferate() {}
+      |           ^                              ~~
+      |                                          = default;
+/github/workspace/src/tumor_cell.h:286:12: warning: no header providing "bdm::Agent" is directly included [misc-include-cleaner]
+   26 |   void Run(Agent* agent) override;
+      |            ^
+102215 warnings generated.
+Suppressed 102341 warnings (102179 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+src/cart_cell.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmp_yehqeyw.yaml src/cart_cell.cc
+/github/workspace/src/cart_cell.cc:23:1: warning: #includes are not sorted properly [llvm-include-order]
+   23 | #include <algorithm>
+      | ^        ~~~~~~~~~~~
+      |          "hyperparams.h"
+   24 | #include <cstdint>
+      |          ~~~~~~~~~
+      |          "tumor_cell.h"
+   25 | #include <stdexcept>
+      |          ~~~~~~~~~~~
+      |          "utils_aux.h"
+   26 | #include <string>
+      |          ~~~~~~~~
+      |          <algorithm>
+   27 | #include "hyperparams.h"
+      |          ~~~~~~~~~~~~~~~
+      |          <cstdint>
+   28 | #include "tumor_cell.h"
+      |          ~~~~~~~~~~~~~~
+      |          <stdexcept>
+   29 | #include "utils_aux.h"
+      |          ~~~~~~~~~~~~~
+      |          <string>
+/github/workspace/src/cart_cell.cc:33:1: warning: constructor does not initialize these fields: current_live_time_, fluid_fraction_, nuclear_volume_, target_cytoplasm_solid_, target_nucleus_solid_, target_fraction_fluid_, target_relation_cytoplasm_nucleus_, oxygen_consumption_rate_, immunostimulatory_factor_secretion_rate_, constant1_oxygen_, constant2_oxygen_ [cppcoreguidelines-pro-type-member-init]
+   33 | CartCell::CartCell(const Real3& position) {
+      | ^
+/github/workspace/src/cart_cell.cc:33:26: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
+   27 | #include "hyperparams.h"
+   28 | #include "tumor_cell.h"
+   29 | #include "utils_aux.h"
+   30 | 
+   31 | namespace bdm {
+   32 | 
+   33 | CartCell::CartCell(const Real3& position) {
+      |                          ^
+/github/workspace/src/cart_cell.cc:36:3: warning: 'state_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   33 | CartCell::CartCell(const Real3& position) {
+      |                                           : state_(CartCellState::kAlive)
+   34 |   SetPosition(position);
+   35 |   // Default state for new cells
+   36 |   state_ = CartCellState::kAlive;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:38:3: warning: 'timer_state_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   33 | CartCell::CartCell(const Real3& position) {
+      |                                          , timer_state_(0)
+   34 |   SetPosition(position);
+   35 |   // Default state for new cells
+   36 |   state_ = CartCellState::kAlive;
+   37 |   // Initial timer_state for apoptotic state
+   38 |   timer_state_ = 0;
+      |   ^~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:48:3: warning: variable 'rm' of type 'ResourceManager &' can be declared 'const' [misc-const-correctness]
+   48 |   ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
+      |   ^              
+      |                   const
+/github/workspace/src/cart_cell.cc:48:3: warning: no header providing "bdm::ResourceManager" is directly included [misc-include-cleaner]
+   27 |   ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
+      |   ^
+/github/workspace/src/cart_cell.cc:55:3: warning: 'attached_to_tumor_cell_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   33 |   attached_to_tumor_cell_ = false;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:57:3: warning: 'attached_cell_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   33 |   attached_cell_ = nullptr;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:76:1: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   27 | real_t CartCell::GetTargetTotalVolume() const {
+      | ^
+/github/workspace/src/cart_cell.cc:87:5: warning: 3 adjacent parameters of 'ChangeVolumeExponentialRelaxationEquation' of similar type ('real_t') are easily swapped by mistake [bugprone-easily-swappable-parameters]
+   87 |     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   88 |     real_t relaxation_rate_fluid) {
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:87:12: note: the first parameter in the range is 'relaxation_rate_cytoplasm'
+   87 |     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
+      |            ^~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:88:12: note: the last parameter in the range is 'relaxation_rate_fluid'
+   88 |     real_t relaxation_rate_fluid) {
+      |            ^~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:90:3: warning: variable 'current_total_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   90 |   real_t current_total_volume = GetVolume();
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:91:3: warning: variable 'fluid_fraction' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   91 |   real_t fluid_fraction = GetFluidFraction();
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:92:3: warning: variable 'nuclear_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   92 |   real_t nuclear_volume = GetNuclearVolume();
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:94:3: warning: variable 'current_nuclear_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   94 |   real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:95:3: warning: variable 'current_cytoplasm_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   95 |   real_t current_cytoplasm_solid =
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:98:3: warning: variable 'current_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   98 |   real_t current_fluid = fluid_fraction * current_total_volume;
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:110:3: warning: variable 'nuclear_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  110 |   real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:121:3: warning: variable 'target_cytoplasm_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  121 |   real_t target_cytoplasm_solid =
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:132:3: warning: variable 'new_total_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  132 |   real_t new_total_solid = nuclear_solid + cytoplasm_solid;
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:134:3: warning: variable 'total_nuclear' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  134 |   real_t total_nuclear = nuclear_solid + nuclear_fluid;
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:138:3: warning: variable 'new_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  138 |   real_t new_volume = new_total_solid + new_fluid;
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:141:3: warning: variable 'new_fraction_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  141 |   real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:141:44: warning: 1e-16 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  141 |   real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
+      |                                            ^
+/github/workspace/src/cart_cell.cc:156:45: warning: no header providing "bdm::InteractionForce" is directly included [misc-include-cleaner]
+   27 | Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
+      |                                             ^
+/github/workspace/src/cart_cell.cc:175:9: warning: no header providing "bdm::L2F" is directly included [misc-include-cleaner]
+   27 |         L2F([&](Agent* neighbor, real_t /*squared_distance*/) {
+      |         ^
+/github/workspace/src/cart_cell.cc:175:17: warning: no header providing "bdm::Agent" is directly included [misc-include-cleaner]
+   27 |         L2F([&](Agent* neighbor, real_t /*squared_distance*/) {
+      |                 ^
+/github/workspace/src/cart_cell.cc:206:42: warning: 2 adjacent parameters of 'ConsumeSecreteSubstance' of convertible types are easily swapped by mistake [bugprone-easily-swappable-parameters]
+  206 | real_t CartCell::ConsumeSecreteSubstance(int substance_id,
+      |                                          ^~~~~~~~~~~~~~~~~
+  207 |                                          real_t old_concentration) {
+      |                                          ~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:206:46: note: the first parameter in the range is 'substance_id'
+  206 | real_t CartCell::ConsumeSecreteSubstance(int substance_id,
+      |                                              ^~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:207:49: note: the last parameter in the range is 'old_concentration'
+  207 |                                          real_t old_concentration) {
+      |                                                 ^~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_cell.cc:206:42: note: 
+  206 | real_t CartCell::ConsumeSecreteSubstance(int substance_id,
+      |                                          ^
+/github/workspace/src/cart_cell.cc:207:42: note: 'int' and 'real_t' may be implicitly converted: 'int' -> 'real_t' (as 'double'), 'real_t' (as 'double') -> 'int'
+  207 |                                          real_t old_concentration) {
+      |                                          ^
+/github/workspace/src/cart_cell.cc:208:10: warning: variable 'res' is not initialized [cppcoreguidelines-init-variables]
+   23 |   real_t res;
+      |          ^  
+      |              = NAN
+/github/workspace/src/cart_cell.cc:235:3: warning: variable 'volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  235 |   real_t volume = GetVolume();
+      |   ^
+      |          const 
+/github/workspace/src/cart_cell.cc:264:26: warning: 1e-10 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  264 |                          1e-10)) {  // Probability of death= 1/CurrentLiveTime,
+      |                          ^
+/github/workspace/src/cart_cell.cc:294:29: warning: narrowing conversion from 'real_t' (aka 'double') to 'int' [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  294 |         cell->SetTimerState(cell->GetTimerState() + kDtCycle);
+      |                             ^
+/github/workspace/src/cart_cell.cc:312:9: warning: no header providing "bdm::Log" is directly included [misc-include-cleaner]
+   27 |         Log::Error("StateControlCart::Run", "Unknown CartCellState");
+      |         ^
+src/forces_tumor_cart.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmpkduc6546.yaml src/forces_tumor_cart.cc
+/github/workspace/src/forces_tumor_cart.cc:23:1: warning: #includes are not sorted properly [llvm-include-order]
+   23 | #include <algorithm>
+      | ^        ~~~~~~~~~~~
+      |          "hyperparams.h"
+   24 | #include <cmath>
+      |          ~~~~~~~
+      |          "tumor_cell.h"
+   25 | #include "hyperparams.h"
+      |          ~~~~~~~~~~~~~~~
+      |          "utils_aux.h"
+   26 | #include "tumor_cell.h"
+      |          ~~~~~~~~~~~~~~
+      |          <algorithm>
+   27 | #include "utils_aux.h"
+      |          ~~~~~~~~~~~~~
+      |          <cmath>
+/github/workspace/src/forces_tumor_cart.cc:31:1: warning: no header providing "bdm::Real4" is directly included [misc-include-cleaner]
+   25 | #include "hyperparams.h"
+   26 | #include "tumor_cell.h"
+   27 | #include "utils_aux.h"
+   28 | 
+   29 | namespace bdm {
+   30 | 
+   31 | Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
+      | ^
+/github/workspace/src/forces_tumor_cart.cc:31:44: warning: no header providing "bdm::Agent" is directly included [misc-include-cleaner]
+   25 | #include "hyperparams.h"
+   26 | #include "tumor_cell.h"
+   27 | #include "utils_aux.h"
+   28 | 
+   29 | namespace bdm {
+   30 | 
+   31 | Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
+      |                                            ^
+/github/workspace/src/forces_tumor_cart.cc:32:3: warning: 'auto *a' can be declared as 'const auto *a' [readability-qualified-auto]
+   32 |   auto* a = dynamic_cast<const Cell*>(lhs);
+      |   ^
+      |   const 
+/github/workspace/src/forces_tumor_cart.cc:32:32: warning: no header providing "bdm::Cell" is directly included [misc-include-cleaner]
+   25 | #include "hyperparams.h"
+   26 | #include "tumor_cell.h"
+   27 | #include "utils_aux.h"
+   28 | 
+   29 | namespace bdm {
+   30 | 
+   31 | Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
+   32 |   auto* a = dynamic_cast<const Cell*>(lhs);
+      |                                ^
+/github/workspace/src/forces_tumor_cart.cc:33:3: warning: 'auto *b' can be declared as 'const auto *b' [readability-qualified-auto]
+   33 |   auto* b = dynamic_cast<const Cell*>(rhs);
+      |   ^
+      |   const 
+/github/workspace/src/forces_tumor_cart.cc:36:34: warning: statement should be inside braces [readability-braces-around-statements]
+   36 |   if (a->GetUid() == b->GetUid())
+      |                                  ^
+      |                                   {
+   37 |     return {0.0, 0.0, 0.0, 0.0};
+      |                                 
+/github/workspace/src/forces_tumor_cart.cc:39:3: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
+   39 |   Real3 displacement = a->GetPosition() - b->GetPosition();
+      |   ^
+/github/workspace/src/forces_tumor_cart.cc:52:3: warning: variable 'dist_sq' of type 'double' can be declared 'const' [misc-const-correctness]
+   52 |   double dist_sq = displacement[0] * displacement[0] +
+      |   ^
+      |          const 
+102175 warnings generated.
+Suppressed 102299 warnings (102137 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+/github/workspace/src/forces_tumor_cart.cc:55:3: warning: variable 'distance' of type 'double' can be declared 'const' [misc-const-correctness]
+   55 |   double distance = std::max(std::sqrt(dist_sq), 1e-5);
+      |   ^
+      |          const 
+/github/workspace/src/forces_tumor_cart.cc:55:50: warning: 1e-5 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   55 |   double distance = std::max(std::sqrt(dist_sq), 1e-5);
+      |                                                  ^
+/github/workspace/src/forces_tumor_cart.cc:57:3: warning: variable 'radius_a' of type 'double' can be declared 'const' [misc-const-correctness]
+   57 |   double radius_a = a->GetDiameter() / 2.0;
+      |   ^
+      |          const 
+/github/workspace/src/forces_tumor_cart.cc:57:40: warning: 2.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   57 |   double radius_a = a->GetDiameter() / 2.0;
+      |                                        ^
+/github/workspace/src/forces_tumor_cart.cc:58:3: warning: variable 'radius_b' of type 'double' can be declared 'const' [misc-const-correctness]
+   58 |   double radius_b = b->GetDiameter() / 2.0;
+      |   ^
+      |          const 
+/github/workspace/src/forces_tumor_cart.cc:58:40: warning: 2.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   58 |   double radius_b = b->GetDiameter() / 2.0;
+      |                                        ^
+/github/workspace/src/forces_tumor_cart.cc:59:3: warning: variable 'R' of type 'double' can be declared 'const' [misc-const-correctness]
+   59 |   double R = radius_a + radius_b;
+      |   ^
+      |          const 
+/github/workspace/src/forces_tumor_cart.cc:59:10: warning: invalid case style for local variable 'R' [readability-identifier-naming]
+   59 |   double R = radius_a + radius_b;
+      |          ^
+      |          r
+   60 |   // R=16.8254;//Debug
+   61 |   // std::cout << "Debug: R = " << R << ", distance = " << distance <<
+   62 |   // std::endl;// Debug output
+   63 |   double temp_r = 0.0;
+   64 | 
+   65 |   const TumorCell* a_tumor = dynamic_cast<const TumorCell*>(a);
+   66 |   const TumorCell* b_tumor = dynamic_cast<const TumorCell*>(b);
+   67 | 
+   68 |   if (distance < R) {
+      |                  ~
+      |                  r
+   69 |     // 1 - d/R
+   70 |     temp_r = 1.0 - distance / R;
+      |                               ~
+      |                               r
+/github/workspace/src/forces_tumor_cart.cc:65:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+   65 |   const TumorCell* a_tumor = dynamic_cast<const TumorCell*>(a);
+      |         ^~~~~~~~~
+      |         auto
+/github/workspace/src/forces_tumor_cart.cc:66:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+   66 |   const TumorCell* b_tumor = dynamic_cast<const TumorCell*>(b);
+      |         ^~~~~~~~~
+      |         auto
+/github/workspace/src/forces_tumor_cart.cc:74:12: warning: variable 'repulsion' is not initialized [cppcoreguidelines-init-variables]
+   23 |     double repulsion;
+      |            ^        
+      |                      = NAN
+/github/workspace/src/forces_tumor_cart.cc:77:9: warning: implicit conversion 'const TumorCell *' -> 'bool' [readability-implicit-bool-conversion]
+   77 |     if (a_tumor && b_tumor) {            // two tumor cells
+      |         ^
+      |         (       != nullptr)
+/github/workspace/src/forces_tumor_cart.cc:77:20: warning: implicit conversion 'const TumorCell *' -> 'bool' [readability-implicit-bool-conversion]
+   77 |     if (a_tumor && b_tumor) {            // two tumor cells
+      |                    ^      
+      |                    (       != nullptr)
+/github/workspace/src/forces_tumor_cart.cc:80:17: warning: implicit conversion 'const TumorCell *' -> 'bool' [readability-implicit-bool-conversion]
+   80 |     } else if (!a_tumor && !b_tumor) {   // two CAR-T cells
+      |                ~^
+      |                (        == nullptr)
+/github/workspace/src/forces_tumor_cart.cc:80:29: warning: implicit conversion 'const TumorCell *' -> 'bool' [readability-implicit-bool-conversion]
+   80 |     } else if (!a_tumor && !b_tumor) {   // two CAR-T cells
+      |                            ~^      
+      |                            (        == nullptr)
+/github/workspace/src/forces_tumor_cart.cc:94:3: warning: variable 'max_interaction_distance' of type 'double' can be declared 'const' [misc-const-correctness]
+   94 |   double max_interaction_distance = kMaxRelativeAdhesionDistance * R;
+      |   ^
+      |          const 
+/github/workspace/src/forces_tumor_cart.cc:107:12: warning: variable 'adhesion' is not initialized [cppcoreguidelines-init-variables]
+  107 |     double adhesion;
+      |            ^       
+      |                     = NAN
+/github/workspace/src/forces_tumor_cart.cc:108:9: warning: implicit conversion 'const TumorCell *' -> 'bool' [readability-implicit-bool-conversion]
+  108 |     if (a_tumor && b_tumor) {  // two tumor cells
+      |         ^
+      |         (       != nullptr)
+/github/workspace/src/forces_tumor_cart.cc:108:20: warning: implicit conversion 'const TumorCell *' -> 'bool' [readability-implicit-bool-conversion]
+  108 |     if (a_tumor && b_tumor) {  // two tumor cells
+      |                    ^      
+      |                    (       != nullptr)
+/github/workspace/src/forces_tumor_cart.cc:110:17: warning: implicit conversion 'const TumorCell *' -> 'bool' [readability-implicit-bool-conversion]
+  110 |     } else if (!a_tumor && !b_tumor) {  // two CAR-T cells
+      |                ~^
+      |                (        == nullptr)
+/github/workspace/src/forces_tumor_cart.cc:110:29: warning: implicit conversion 'const TumorCell *' -> 'bool' [readability-implicit-bool-conversion]
+  110 |     } else if (!a_tumor && !b_tumor) {  // two CAR-T cells
+      |                            ~^      
+      |                            (        == nullptr)
+/github/workspace/src/forces_tumor_cart.cc:125:26: warning: 1e-16 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  125 |   if (std::abs(temp_r) < 1e-16) {
+      |                          ^
+/github/workspace/src/forces_tumor_cart.cc:128:3: warning: variable 'force_magnitude' of type 'double' can be declared 'const' [misc-const-correctness]
+  128 |   double force_magnitude = temp_r / distance;
+      |   ^
+      |          const 
+/github/workspace/src/forces_tumor_cart.cc:159:1: warning: no header providing "bdm::InteractionForce" is directly included [misc-include-cleaner]
+   25 | InteractionForce* InteractionVelocity::NewCopy() const {
+      | ^
+/github/workspace/src/forces_tumor_cart.cc:160:3: warning: returning a newly created resource of type 'InteractionForce *' or 'gsl::owner<>' from a function whose return type is not 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+  160 |   return new InteractionVelocity();
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/diffusion_thomas_algorithm.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmp5joylp3d.yaml src/diffusion_thomas_algorithm.cc
+102368 warnings generated.
+Suppressed 102373 warnings (102211 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+/github/workspace/src/diffusion_thomas_algorithm.cc:22:1: warning: #includes are not sorted properly [llvm-include-order]
+   22 | #include <string>
+      | ^        ~~~~~~~~
+      |          "cart_cell.h"
+   23 | #include <utility>
+      |          ~~~~~~~~~
+      |          "hyperparams.h"
+   24 | #include <vector>
+      |          ~~~~~~~~
+      |          "tumor_cell.h"
+   25 | #include "cart_cell.h"
+      |          ~~~~~~~~~~~~~
+      |          <string>
+   26 | #include "hyperparams.h"
+      |          ~~~~~~~~~~~~~~~
+      |          <utility>
+   27 | #include "tumor_cell.h"
+      |          ~~~~~~~~~~~~~~
+      |          <vector>
+/github/workspace/src/diffusion_thomas_algorithm.cc:32:51: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   26 | #include "hyperparams.h"
+   27 | #include "tumor_cell.h"
+   28 | 
+   29 | namespace bdm {
+   30 | 
+   31 | DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(
+   32 |     int substance_id, std::string substance_name, real_t dc, real_t mu,
+      |                                                   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:33:5: warning: 2 adjacent parameters of 'DiffusionThomasAlgorithm' of convertible types are easily swapped by mistake [bugprone-easily-swappable-parameters]
+   33 |     int resolution, real_t dt, bool dirichlet_border)  // time step
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:33:9: note: the first parameter in the range is 'resolution'
+   33 |     int resolution, real_t dt, bool dirichlet_border)  // time step
+      |         ^~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:33:28: note: the last parameter in the range is 'dt'
+   33 |     int resolution, real_t dt, bool dirichlet_border)  // time step
+      |                            ^~
+/github/workspace/src/diffusion_thomas_algorithm.cc:33:5: note: 
+   33 |     int resolution, real_t dt, bool dirichlet_border)  // time step
+      |     ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:33:21: note: 'int' and 'real_t' may be implicitly converted: 'int' -> 'real_t' (as 'double'), 'real_t' (as 'double') -> 'int'
+   33 |     int resolution, real_t dt, bool dirichlet_border)  // time step
+      |                     ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:34:7: warning: no header providing "bdm::DiffusionGrid" is directly included [misc-include-cleaner]
+   26 | #include "hyperparams.h"
+   27 | #include "tumor_cell.h"
+   28 | 
+   29 | namespace bdm {
+   30 | 
+   31 | DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(
+   32 |     int substance_id, std::string substance_name, real_t dc, real_t mu,
+   33 |     int resolution, real_t dt, bool dirichlet_border)  // time step
+   34 |     : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
+      |       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:38:3: warning: 'resolution_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |                     resolution) {
+      |                                , resolution_(GetResolution())
+   36 |   SetTimeStep(dt);
+   37 |   // num of voxels in each direction
+   38 |   resolution_ = GetResolution();
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:40:3: warning: 'd_space_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |                     resolution) {
+      |                                , d_space_(kBoundedSpaceLength / resolution_)
+   36 |   SetTimeStep(dt);
+   37 |   // num of voxels in each direction
+   38 |   resolution_ = GetResolution();
+   39 |   // Voxel side length in micrometers
+   40 |   d_space_ = kBoundedSpaceLength / resolution_;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:40:14: warning: result of integer division used in a floating point context; possible loss of precision [bugprone-integer-division]
+   40 |   d_space_ = kBoundedSpaceLength / resolution_;
+      |              ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:40:14: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+/github/workspace/src/diffusion_thomas_algorithm.cc:42:3: warning: 'dirichlet_border_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |                     resolution) {
+      |                                , dirichlet_border_(dirichlet_border)
+   36 |   SetTimeStep(dt);
+   37 |   // num of voxels in each direction
+   38 |   resolution_ = GetResolution();
+   39 |   // Voxel side length in micrometers
+   40 |   d_space_ = kBoundedSpaceLength / resolution_;
+   41 | 
+   42 |   dirichlet_border_ = dirichlet_border;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:44:3: warning: 'jump_i_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |                     resolution) {
+      |                                , jump_i_(1)
+   36 |   SetTimeStep(dt);
+   37 |   // num of voxels in each direction
+   38 |   resolution_ = GetResolution();
+   39 |   // Voxel side length in micrometers
+   40 |   d_space_ = kBoundedSpaceLength / resolution_;
+   41 | 
+   42 |   dirichlet_border_ = dirichlet_border;
+   43 | 
+   44 |   jump_i_ = 1;
+      |   ^~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:45:3: warning: 'jump_j_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |                     resolution) {
+      |                                , jump_j_(resolution_)
+   36 |   SetTimeStep(dt);
+   37 |   // num of voxels in each direction
+   38 |   resolution_ = GetResolution();
+   39 |   // Voxel side length in micrometers
+   40 |   d_space_ = kBoundedSpaceLength / resolution_;
+   41 | 
+   42 |   dirichlet_border_ = dirichlet_border;
+   43 | 
+   44 |   jump_i_ = 1;
+   45 |   jump_j_ = resolution_;
+      |   ^~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:45:13: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+   45 |   jump_j_ = resolution_;
+      |             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:46:3: warning: 'jump_k_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |                     resolution) {
+      |                                , jump_k_(resolution_ * resolution_)
+   36 |   SetTimeStep(dt);
+   37 |   // num of voxels in each direction
+   38 |   resolution_ = GetResolution();
+   39 |   // Voxel side length in micrometers
+   40 |   d_space_ = kBoundedSpaceLength / resolution_;
+   41 | 
+   42 |   dirichlet_border_ = dirichlet_border;
+   43 | 
+   44 |   jump_i_ = 1;
+   45 |   jump_j_ = resolution_;
+   46 |   jump_k_ = resolution_ * resolution_;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:46:13: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+   46 |   jump_k_ = resolution_ * resolution_;
+      |             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:49:3: warning: 'constant1_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |                     resolution) {
+      |                                , constant1_(dc)
+   36 |   SetTimeStep(dt);
+   37 |   // num of voxels in each direction
+   38 |   resolution_ = GetResolution();
+   39 |   // Voxel side length in micrometers
+   40 |   d_space_ = kBoundedSpaceLength / resolution_;
+   41 | 
+   42 |   dirichlet_border_ = dirichlet_border;
+   43 | 
+   44 |   jump_i_ = 1;
+   45 |   jump_j_ = resolution_;
+   46 |   jump_k_ = resolution_ * resolution_;
+   47 | 
+   48 |   // all diffusion coefficients are the same for all directions (isotropic)
+   49 |   constant1_ = dc;
+      |   ^~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:51:3: warning: 'constant1a_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |   constant1a_ = -constant1_;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:53:3: warning: 'constant2_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |   constant2_ = mu;
+      |   ^~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:55:22: warning: 3.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   55 |   constant2_ *= dt / 3.0;
+      |                      ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:57:3: warning: 'constant3_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |   constant3_ = 1.0 + 2 * constant1_ + constant2_;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:58:3: warning: 'constant3a_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   35 |   constant3a_ = 1.0 + constant1_ + constant2_;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:75:32: warning: method 'InitializeThomasAlgorithmVectors' can be made const [readability-make-member-function-const]
+   75 | void DiffusionThomasAlgorithm::InitializeThomasAlgorithmVectors(
+      |                                ^
+   76 |     std::vector<real_t>& thomas_denom, std::vector<real_t>& thomas_c) {
+      |                                                                       const
+/github/workspace/src/diffusion_thomas_algorithm.cc:91:3: warning: variable 'origin' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   91 |   real_t origin = GetDimensionsPtr()[0];
+      |   ^
+      |          const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:91:19: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+   91 |   real_t origin = GetDimensionsPtr()[0];
+      |                   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:92:3: warning: variable 'simulated_time' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   92 |   real_t simulated_time = GetSimulatedTime();
+      |   ^
+      |          const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:98:10: warning: no header providing "size_t" is directly included [misc-include-cleaner]
+   22 |     for (size_t y = 0; y < resolution_; y++) {
+      |          ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:100:9: warning: variable 'real_x' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  100 |         real_t real_x = origin + x * d_space_;
+      |         ^
+      |                const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:100:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  100 |         real_t real_x = origin + x * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:101:9: warning: variable 'real_y' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  101 |         real_t real_y = origin + y * d_space_;
+      |         ^
+      |                const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:101:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  101 |         real_t real_y = origin + y * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:104:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  104 |         real_t real_z = origin + z * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:105:26: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  105 |         SetConcentration(x, y, z,
+      |                          ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:105:29: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  105 |         SetConcentration(x, y, z,
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:105:32: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  105 |         SetConcentration(x, y, z,
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:110:27: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  110 |         real_z = origin + z * d_space_;
+      |                           ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:111:26: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  111 |         SetConcentration(x, y, z,
+      |                          ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:111:29: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  111 |         SetConcentration(x, y, z,
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:111:32: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  111 |         SetConcentration(x, y, z,
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:120:9: warning: variable 'real_x' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  120 |         real_t real_x = origin + x * d_space_;
+      |         ^
+      |                const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:120:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  120 |         real_t real_x = origin + x * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:121:9: warning: variable 'real_z' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  121 |         real_t real_z = origin + z * d_space_;
+      |         ^
+      |                const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:121:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  121 |         real_t real_z = origin + z * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:124:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  124 |         real_t real_y = origin + y * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:125:26: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  125 |         SetConcentration(x, y, z,
+      |                          ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:125:29: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  125 |         SetConcentration(x, y, z,
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:125:32: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  125 |         SetConcentration(x, y, z,
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:130:27: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  130 |         real_y = origin + y * d_space_;
+      |                           ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:131:26: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  131 |         SetConcentration(x, y, z,
+      |                          ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:131:29: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  131 |         SetConcentration(x, y, z,
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:131:32: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  131 |         SetConcentration(x, y, z,
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:140:9: warning: variable 'real_y' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  140 |         real_t real_y = origin + y * d_space_;
+      |         ^
+      |                const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:140:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  140 |         real_t real_y = origin + y * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:141:9: warning: variable 'real_z' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  141 |         real_t real_z = origin + z * d_space_;
+      |         ^
+      |                const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:141:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  141 |         real_t real_z = origin + z * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:144:34: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  144 |         real_t real_x = origin + x * d_space_;
+      |                                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:145:26: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  145 |         SetConcentration(x, y, z,
+      |                          ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:145:29: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  145 |         SetConcentration(x, y, z,
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:145:32: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  145 |         SetConcentration(x, y, z,
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:150:27: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  150 |         real_x = origin + x * d_space_;
+      |                           ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:151:26: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  151 |         SetConcentration(x, y, z,
+      |                          ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:151:29: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  151 |         SetConcentration(x, y, z,
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:151:32: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to 'real_t' (aka 'double') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  151 |         SetConcentration(x, y, z,
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:161:39: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  161 |   ChangeConcentrationBy(idx, amount - GetAllConcentrations()[idx],
+      |                                       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:162:25: warning: no header providing "bdm::InteractionMode" is directly included [misc-include-cleaner]
+  162 |                         InteractionMode::kAdditive, false);
+      |                         ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:189:32: warning: function 'DiffuseChemical' has cognitive complexity of 31 (threshold 25) [readability-function-cognitive-complexity]
+  189 | void DiffusionThomasAlgorithm::DiffuseChemical(real_t dt) {
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:192:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  192 |   if (dirichlet_border_) {
+      |   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:198:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  198 |   for (unsigned int k = 0; k < resolution_; k++) {
+      |   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:199:5: note: +2, including nesting penalty of 1, nesting level increased to 2
+  199 |     for (unsigned int j = 0; j < resolution_; j++) {
+      |     ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:204:7: note: +3, including nesting penalty of 2, nesting level increased to 3
+  204 |       for (unsigned int i = 1; i < resolution_; i++) {
+      |       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:212:7: note: +3, including nesting penalty of 2, nesting level increased to 3
+  212 |       for (int i = resolution_ - 2; i >= 0; i--) {
+      |       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:222:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  222 |   if (dirichlet_border_) {
+      |   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:228:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  228 |   for (unsigned int k = 0; k < resolution_; k++) {
+      |   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:229:5: note: +2, including nesting penalty of 1, nesting level increased to 2
+  229 |     for (unsigned int i = 0; i < resolution_; i++) {
+      |     ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:234:7: note: +3, including nesting penalty of 2, nesting level increased to 3
+  234 |       for (unsigned int j = 1; j < resolution_; j++) {
+      |       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:242:7: note: +3, including nesting penalty of 2, nesting level increased to 3
+  242 |       for (int j = resolution_ - 2; j >= 0; j--) {
+      |       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:252:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  252 |   if (dirichlet_border_) {
+      |   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:258:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  258 |   for (unsigned int j = 0; j < resolution_; j++) {
+      |   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:259:5: note: +2, including nesting penalty of 1, nesting level increased to 2
+  259 |     for (unsigned int i = 0; i < resolution_; i++) {
+      |     ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:263:7: note: +3, including nesting penalty of 2, nesting level increased to 3
+  263 |       for (unsigned int k = 1; k < resolution_; k++) {
+      |       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:271:7: note: +3, including nesting penalty of 2, nesting level increased to 3
+  271 |       for (int k = resolution_ - 2; k >= 0; k--) {
+      |       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:280:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  280 |   if (dirichlet_border_) {
+      |   ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:189:55: warning: parameter 'dt' is unused [misc-unused-parameters]
+  189 | void DiffusionThomasAlgorithm::DiffuseChemical(real_t dt) {
+      |                                                       ^~
+      |                                                        /*dt*/
+/github/workspace/src/diffusion_thomas_algorithm.cc:200:17: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  200 |       int ind = GetBoxIndex(0, j, k);
+      |                 ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:202:29: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  202 |       SetConcentration(ind, GetAllConcentrations()[ind] / thomas_denom_x_[0]);
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:205:15: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  205 |         ind = GetBoxIndex(i, j, k);
+      |               ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:206:9: warning: 'auto *all_concentrations' can be declared as 'const auto *all_concentrations' [readability-qualified-auto]
+  206 |         auto* all_concentrations = GetAllConcentrations();
+      |         ^
+      |         const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:207:32: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  207 |         SetConcentration(ind, (all_concentrations[ind] +
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:208:45: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  208 |                                constant1_ * all_concentrations[ind - jump_i_]) /
+      |                                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:212:20: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  212 |       for (int i = resolution_ - 2; i >= 0; i--) {
+      |                    ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:213:15: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  213 |         ind = GetBoxIndex(i, j, k);
+      |               ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:214:9: warning: 'auto *all_concentrations' can be declared as 'const auto *all_concentrations' [readability-qualified-auto]
+  214 |         auto* all_concentrations = GetAllConcentrations();
+      |         ^
+      |         const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:216:18: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  216 |             ind, all_concentrations[ind] -
+      |                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:217:39: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  217 |                      thomas_c_x_[i] * all_concentrations[ind + jump_i_]);
+      |                                       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:230:17: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  230 |       int ind = GetBoxIndex(i, 0, k);
+      |                 ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:232:29: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  232 |       SetConcentration(ind, GetAllConcentrations()[ind] / thomas_denom_y_[0]);
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:235:15: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  235 |         ind = GetBoxIndex(i, j, k);
+      |               ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:236:9: warning: 'auto *all_concentrations' can be declared as 'const auto *all_concentrations' [readability-qualified-auto]
+  236 |         auto* all_concentrations = GetAllConcentrations();
+      |         ^
+      |         const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:237:32: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  237 |         SetConcentration(ind, (all_concentrations[ind] +
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:238:45: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  238 |                                constant1_ * all_concentrations[ind - jump_j_]) /
+      |                                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:242:20: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  242 |       for (int j = resolution_ - 2; j >= 0; j--) {
+      |                    ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:243:15: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  243 |         ind = GetBoxIndex(i, j, k);
+      |               ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:244:9: warning: 'auto *all_concentrations' can be declared as 'const auto *all_concentrations' [readability-qualified-auto]
+  244 |         auto* all_concentrations = GetAllConcentrations();
+      |         ^
+      |         const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:246:18: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  246 |             ind, all_concentrations[ind] -
+      |                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:247:39: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  247 |                      thomas_c_y_[j] * all_concentrations[ind + jump_j_]);
+      |                                       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:260:17: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  260 |       int ind = GetBoxIndex(i, j, 0);
+      |                 ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:261:29: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  261 |       SetConcentration(ind, GetAllConcentrations()[ind] / thomas_denom_z_[0]);
+      |                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:264:15: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  264 |         ind = GetBoxIndex(i, j, k);
+      |               ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:265:9: warning: 'auto *all_concentrations' can be declared as 'const auto *all_concentrations' [readability-qualified-auto]
+  265 |         auto* all_concentrations = GetAllConcentrations();
+      |         ^
+      |         const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:266:32: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  266 |         SetConcentration(ind, (all_concentrations[ind] +
+      |                                ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:267:45: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  267 |                                constant1_ * all_concentrations[ind - jump_k_]) /
+      |                                             ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:271:20: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  271 |       for (int k = resolution_ - 2; k >= 0; k--) {
+      |                    ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:272:15: warning: narrowing conversion from 'size_t' (aka 'unsigned long') to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  272 |         ind = GetBoxIndex(i, j, k);
+      |               ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:273:9: warning: 'auto *all_concentrations' can be declared as 'const auto *all_concentrations' [readability-qualified-auto]
+  273 |         auto* all_concentrations = GetAllConcentrations();
+      |         ^
+      |         const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:275:18: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  275 |             ind, all_concentrations[ind] -
+      |                  ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:276:39: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+  276 |                      thomas_c_z_[k] * all_concentrations[ind + jump_k_]);
+      |                                       ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:287:3: warning: redundant return statement at the end of a function with a void return type [readability-redundant-control-flow]
+  286 | 
+  287 |   return;
+      |   ^~~~~~~
+  288 | }
+/github/workspace/src/diffusion_thomas_algorithm.cc:295:3: warning: variable 'current_time' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  295 |   real_t current_time = GetSimulatedTime();
+      |   ^
+      |          const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:298:27: warning: lambda capture 'current_time' is not used [clang-diagnostic-unused-lambda-capture]
+  298 |   rm->ForEachAgent([this, current_time](bdm::Agent* agent) {
+      |                         ~~^~~~~~~~~~~~
+/github/workspace/src/diffusion_thomas_algorithm.cc:298:46: warning: no header providing "bdm::Agent" is directly included [misc-include-cleaner]
+   26 |   rm->ForEachAgent([this, current_time](bdm::Agent* agent) {
+      |                                              ^
+/github/workspace/src/diffusion_thomas_algorithm.cc:302:7: warning: variable 'conc' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  302 |       real_t conc = this->GetValue(pos);
+      |       ^
+      |              const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:303:7: warning: variable 'new_conc' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  303 |       real_t new_conc = cell->ConsumeSecreteSubstance(GetContinuumId(), conc);
+      |       ^
+      |              const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:309:7: warning: variable 'conc' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  309 |       real_t conc = GetValue(pos);
+      |       ^
+      |              const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:310:7: warning: variable 'new_conc' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  310 |       real_t new_conc = cell->ConsumeSecreteSubstance(GetContinuumId(), conc);
+      |       ^
+      |              const 
+/github/workspace/src/diffusion_thomas_algorithm.cc:316:3: warning: redundant return statement at the end of a function with a void return type [readability-redundant-control-flow]
+  315 | 
+  316 |   return;
+      |   ^~~~~~~
+  317 | }
+src/cart_tumor.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmp1umic79j.yaml src/cart_tumor.cc
+103294 warnings generated.
+Suppressed 103456 warnings (103271 in non-user code, 185 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+/github/workspace/src/cart_tumor.cc:22:1: warning: #includes are not sorted properly [llvm-include-order]
+   22 | #include <iostream>
+      | ^        ~~~~~~~~~~
+      |          "core/environment/uniform_grid_environment.h"
+   23 | #include <memory>
+      |          ~~~~~~~~
+      |          "core/operation/mechanical_forces_op.h"
+   24 | #include <vector>
+      |          ~~~~~~~~
+      |          "diffusion_thomas_algorithm.h"
+   25 | #include "core/environment/uniform_grid_environment.h"
+      |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |          "forces_tumor_cart.h"
+   26 | #include "core/operation/mechanical_forces_op.h"
+      |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |          "hyperparams.h"
+   27 | #include "diffusion_thomas_algorithm.h"
+      |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |          "tumor_cell.h"
+   28 | #include "forces_tumor_cart.h"
+      |          ~~~~~~~~~~~~~~~~~~~~~
+      |          "utils_aux.h"
+   29 | #include "hyperparams.h"
+      |          ~~~~~~~~~~~~~~~
+      |          <iostream>
+   30 | #include "tumor_cell.h"
+      |          ~~~~~~~~~~~~~~
+      |          <memory>
+   31 | #include "utils_aux.h"
+      |          ~~~~~~~~~~~~~
+      |          <vector>
+/github/workspace/src/cart_tumor.cc:37:23: warning: no header providing "bdm::Param" is directly included [misc-include-cleaner]
+   27 | #include "diffusion_thomas_algorithm.h"
+   28 | #include "forces_tumor_cart.h"
+   29 | #include "hyperparams.h"
+   30 | #include "tumor_cell.h"
+   31 | #include "utils_aux.h"
+   32 | 
+   33 | namespace bdm {
+   34 | 
+   35 | int Simulate(int argc, const char** argv) {
+   36 |   // Set simulation bounds
+   37 |   auto set_param = [](Param* param) {
+      |                       ^
+/github/workspace/src/cart_tumor.cc:40:24: warning: result of integer division used in a floating point context; possible loss of precision [bugprone-integer-division]
+   40 |     param->min_bound = -kBoundedSpaceLength / 2;
+      |                        ^
+/github/workspace/src/cart_tumor.cc:42:9: warning: result of integer division used in a floating point context; possible loss of precision [bugprone-integer-division]
+   42 |         kBoundedSpaceLength / 2;  // Cube of 1000x1000x1000 centered at origin
+      |         ^
+/github/workspace/src/cart_tumor.cc:46:3: warning: no header providing "bdm::Simulation" is directly included [misc-include-cleaner]
+   27 |   Simulation simulation(argc, argv, set_param);
+      |   ^
+/github/workspace/src/cart_tumor.cc:54:7: warning: initializing non-owner argument of type 'InteractionForce *' with a newly created 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+   54 |       new InteractionVelocity());
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_tumor.cc:59:21: warning: narrowing conversion from 'real_t' (aka 'double') to 'int32_t' (aka 'int') [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+   59 |   env->SetBoxLength(kLengthBoxMechanics);
+      |                     ^
+/github/workspace/src/cart_tumor.cc:89:3: warning: no header providing "bdm::ModelInitializer" is directly included [misc-include-cleaner]
+   26 |   ModelInitializer::AddBoundaryConditions(
+      |   ^
+/github/workspace/src/cart_tumor.cc:90:16: warning: no header providing "bdm::BoundaryConditionType" is directly included [misc-include-cleaner]
+   25 |       kOxygen, BoundaryConditionType::kDirichlet,
+      |                ^
+/github/workspace/src/cart_tumor.cc:91:24: warning: no header providing "bdm::ConstantBoundaryCondition" is directly included [misc-include-cleaner]
+   91 |       std::make_unique<ConstantBoundaryCondition>(
+      |                        ^
+/github/workspace/src/cart_tumor.cc:102:53: warning: 3 adjacent parameters of 'operator()' of similar type ('real_t') are easily swapped by mistake [bugprone-easily-swappable-parameters]
+  102 |   ModelInitializer::InitializeSubstance(kOxygen, [](real_t x, real_t y,
+      |                                                     ^~~~~~~~~~~~~~~~~~~
+  103 |                                                     real_t z) {
+      |                                                     ~~~~~~~~
+/github/workspace/src/cart_tumor.cc:102:60: note: the first parameter in the range is 'x'
+  102 |   ModelInitializer::InitializeSubstance(kOxygen, [](real_t x, real_t y,
+      |                                                            ^
+/github/workspace/src/cart_tumor.cc:103:60: note: the last parameter in the range is 'z'
+  103 |                                                     real_t z) {
+      |                                                            ^
+/github/workspace/src/cart_tumor.cc:102:53: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   27 |   ModelInitializer::InitializeSubstance(kOxygen, [](real_t x, real_t y,
+      |                                                     ^
+/github/workspace/src/cart_tumor.cc:102:60: warning: parameter 'x' is unused [misc-unused-parameters]
+  102 |   ModelInitializer::InitializeSubstance(kOxygen, [](real_t x, real_t y,
+      |                                                            ^
+      |                                                             /*x*/
+/github/workspace/src/cart_tumor.cc:102:70: warning: parameter 'y' is unused [misc-unused-parameters]
+  102 |   ModelInitializer::InitializeSubstance(kOxygen, [](real_t x, real_t y,
+      |                                                                      ^
+      |                                                                       /*y*/
+/github/workspace/src/cart_tumor.cc:103:60: warning: parameter 'z' is unused [misc-unused-parameters]
+  103 |                                                     real_t z) {
+      |                                                            ^
+      |                                                             /*z*/
+/github/workspace/src/cart_tumor.cc:109:3: warning: variable 'positions' of type 'std::vector<Real3>' (aka 'vector<MathArray<double, 3>>') can be declared 'const' [misc-const-correctness]
+  109 |   std::vector<Real3> positions =
+      |   ^
+      |                      const 
+/github/workspace/src/cart_tumor.cc:109:15: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
+   25 |   std::vector<Real3> positions =
+      |               ^
+/github/workspace/src/cart_tumor.cc:112:5: warning: initializing non-owner 'TumorCell *' with a newly created 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+  112 |     TumorCell* tumor_cell = new TumorCell(pos);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_tumor.cc:112:5: warning: use auto when initializing with new to avoid duplicating the type name [modernize-use-auto]
+  112 |     TumorCell* tumor_cell = new TumorCell(pos);
+      |     ^~~~~~~~~
+      |     auto
+/github/workspace/src/cart_tumor.cc:113:29: warning: initializing non-owner argument of type 'Behavior *' with a newly created 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+  113 |     tumor_cell->AddBehavior(new StateControlGrowProliferate());
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/cart_tumor.cc:121:37: warning: no header providing "bdm::kCpu" is directly included [misc-include-cleaner]
+   27 |   summary_op->AddOperationImpl(bdm::kCpu, new bdm::OutputSummary());
+      |                                     ^
+/github/workspace/src/cart_tumor.cc:121:43: warning: initializing non-owner argument of type 'OperationImpl *' with a newly created 'gsl::owner<>' [cppcoreguidelines-owning-memory]
+  121 |   summary_op->AddOperationImpl(bdm::kCpu, new bdm::OutputSummary());
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~
+102210 warnings generated.
+src/tumor_cell.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmplz_b27om.yaml src/tumor_cell.cc
+/github/workspace/src/tumor_cell.cc:23:1: warning: #includes are not sorted properly [llvm-include-order]
+   23 | #include <algorithm>
+      | ^        ~~~~~~~~~~~
+      |          "hyperparams.h"
+   24 | #include <stdexcept>
+      |          ~~~~~~~~~~~
+      |          "utils_aux.h"
+   25 | #include <string>
+      |          ~~~~~~~~
+      |          <algorithm>
+   26 | #include "hyperparams.h"
+      |          ~~~~~~~~~~~~~~~
+      |          <stdexcept>
+   27 | #include "utils_aux.h"
+      |          ~~~~~~~~~~~~~
+      |          <string>
+/github/workspace/src/tumor_cell.cc:31:1: warning: constructor does not initialize these fields: oncoproteine_level_, transformation_random_rate_, fluid_fraction_, nuclear_volume_, target_cytoplasm_solid_, target_nucleus_solid_, target_fraction_fluid_, target_relation_cytoplasm_nucleus_, type_, oxygen_consumption_rate_, immunostimulatory_factor_secretion_rate_, constant1_oxygen_, constant2_oxygen_, constant1_immunostimulatory_factor_, constant2_immunostimulatory_factor_ [cppcoreguidelines-pro-type-member-init]
+   31 | TumorCell::TumorCell(const Real3& position) {
+      | ^
+/github/workspace/src/tumor_cell.cc:31:28: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
+   26 | #include "hyperparams.h"
+   27 | #include "utils_aux.h"
+   28 | 
+   29 | namespace bdm {
+   30 | 
+   31 | TumorCell::TumorCell(const Real3& position) {
+      |                            ^
+/github/workspace/src/tumor_cell.cc:33:3: warning: 'state_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   31 | TumorCell::TumorCell(const Real3& position) {
+      |                                             : state_(TumorCellState::kAlive)
+   32 |   SetPosition(position);
+   33 |   state_ = TumorCellState::kAlive;  // Default state for new cells
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:34:3: warning: 'timer_state_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+   31 | TumorCell::TumorCell(const Real3& position) {
+      |                                            , timer_state_(0)
+   32 |   SetPosition(position);
+   33 |   state_ = TumorCellState::kAlive;  // Default state for new cells
+   34 |   timer_state_ = 0;                 // Initial timer_state
+      |   ^~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:47:8: warning: 1e-16 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   47 |       (1e-16 + kDefaultVolumeNucleusTumorCell));  // Set target relation between
+      |        ^
+/github/workspace/src/tumor_cell.cc:71:3: warning: 'attached_to_cart_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
+Suppressed 102300 warnings (102138 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+   31 |   attached_to_cart_ = false;            // Initially not attached to a cart
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:89:34: warning: no header providing "bdm::NewAgentEvent" is directly included [misc-include-cleaner]
+   26 | void TumorCell::Initialize(const NewAgentEvent& event) {
+      |                                  ^
+/github/workspace/src/tumor_cell.cc:94:27: warning: no header providing "bdm::CellDivisionEvent" is directly included [misc-include-cleaner]
+   26 |     if (event.GetUid() == CellDivisionEvent::kUid) {
+      |                           ^
+/github/workspace/src/tumor_cell.cc:124:7: warning: variable 'new_nuclear_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  124 |       real_t new_nuclear_volume = mother->GetNuclearVolume() /
+      |       ^
+      |              const 
+/github/workspace/src/tumor_cell.cc:124:7: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   26 |       real_t new_nuclear_volume = mother->GetNuclearVolume() /
+      |       ^
+/github/workspace/src/tumor_cell.cc:125:35: warning: 2.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  125 |                                   2.0;  // Divide mother's nuclear volume by 2
+      |                                   ^
+/github/workspace/src/tumor_cell.cc:153:16: warning: 1.5 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  153 |   if (level >= 1.5) {  // between 1.5 and 2.0
+      |                ^
+/github/workspace/src/tumor_cell.cc:155:38: warning: 1.5 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  155 |   } else if (level >= 1.0 && level < 1.5) {
+      |                                      ^
+/github/workspace/src/tumor_cell.cc:157:23: warning: 0.5 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  157 |   } else if (level >= 0.5 && level < 1.0) {
+      |                       ^
+/github/workspace/src/tumor_cell.cc:167:44: warning: 38.6 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  167 |       1 / (std::max(SamplePositiveGaussian(38.6, 3.7) * 60., 1e-16));
+      |                                            ^
+/github/workspace/src/tumor_cell.cc:167:50: warning: 3.7 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  167 |       1 / (std::max(SamplePositiveGaussian(38.6, 3.7) * 60., 1e-16));
+      |                                                  ^
+/github/workspace/src/tumor_cell.cc:167:57: warning: 60. is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  167 |       1 / (std::max(SamplePositiveGaussian(38.6, 3.7) * 60., 1e-16));
+      |                                                         ^
+/github/workspace/src/tumor_cell.cc:167:62: warning: 1e-16 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  167 |       1 / (std::max(SamplePositiveGaussian(38.6, 3.7) * 60., 1e-16));
+      |                                                              ^
+/github/workspace/src/tumor_cell.cc:180:5: warning: 3 adjacent parameters of 'ChangeVolumeExponentialRelaxationEquation' of similar type ('real_t') are easily swapped by mistake [bugprone-easily-swappable-parameters]
+  180 |     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  181 |     real_t relaxation_rate_fluid) {
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:180:12: note: the first parameter in the range is 'relaxation_rate_cytoplasm'
+  180 |     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
+      |            ^~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:181:12: note: the last parameter in the range is 'relaxation_rate_fluid'
+  181 |     real_t relaxation_rate_fluid) {
+      |            ^~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:183:3: warning: variable 'current_total_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  183 |   real_t current_total_volume = GetVolume();
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:184:3: warning: variable 'fluid_fraction' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  184 |   real_t fluid_fraction = GetFluidFraction();
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:185:3: warning: variable 'nuclear_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  185 |   real_t nuclear_volume = GetNuclearVolume();
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:187:3: warning: variable 'current_nuclear_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  187 |   real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:188:3: warning: variable 'current_cytoplasm_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  188 |   real_t current_cytoplasm_solid =
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:198:3: warning: variable 'current_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  198 |   real_t current_fluid = fluid_fraction * current_total_volume;
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:210:3: warning: variable 'nuclear_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  210 |   real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:221:3: warning: variable 'target_cytoplasm_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  221 |   real_t target_cytoplasm_solid =
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:232:3: warning: variable 'new_total_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  232 |   real_t new_total_solid = nuclear_solid + cytoplasm_solid;
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:234:3: warning: variable 'total_nuclear' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  234 |   real_t total_nuclear = nuclear_solid + nuclear_fluid;
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:238:3: warning: variable 'new_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  238 |   real_t new_volume = new_total_solid + new_fluid;
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:241:3: warning: variable 'new_fraction_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  241 |   real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:241:44: warning: 1e-16 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  241 |   real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
+      |                                            ^
+/github/workspace/src/tumor_cell.cc:275:46: warning: no header providing "bdm::InteractionForce" is directly included [misc-include-cleaner]
+   26 | Real3 TumorCell::CalculateDisplacement(const InteractionForce* force,
+      |                                              ^
+/github/workspace/src/tumor_cell.cc:287:3: warning: no header providing "uint64_t" is directly included [misc-include-cleaner]
+   24 |   uint64_t non_zero_neighbor_forces = 0;
+      |   ^
+/github/workspace/src/tumor_cell.cc:291:9: warning: no header providing "bdm::L2F" is directly included [misc-include-cleaner]
+   26 |         L2F([&](Agent* neighbor, real_t squared_distance) {
+      |         ^
+/github/workspace/src/tumor_cell.cc:291:17: warning: no header providing "bdm::Agent" is directly included [misc-include-cleaner]
+   26 |         L2F([&](Agent* neighbor, real_t squared_distance) {
+      |                 ^
+/github/workspace/src/tumor_cell.cc:291:41: warning: parameter 'squared_distance' is unused [misc-unused-parameters]
+  291 |         L2F([&](Agent* neighbor, real_t squared_distance) {
+      |                                         ^~~~~~~~~~~~~~~~
+      |                                          /*squared_distance*/
+/github/workspace/src/tumor_cell.cc:322:43: warning: 2 adjacent parameters of 'ConsumeSecreteSubstance' of convertible types are easily swapped by mistake [bugprone-easily-swappable-parameters]
+  322 | real_t TumorCell::ConsumeSecreteSubstance(int substance_id,
+      |                                           ^~~~~~~~~~~~~~~~~
+  323 |                                           real_t old_concentration) {
+      |                                           ~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:322:47: note: the first parameter in the range is 'substance_id'
+  322 | real_t TumorCell::ConsumeSecreteSubstance(int substance_id,
+      |                                               ^~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:323:50: note: the last parameter in the range is 'old_concentration'
+  323 |                                           real_t old_concentration) {
+      |                                                  ^~~~~~~~~~~~~~~~~
+/github/workspace/src/tumor_cell.cc:322:43: note: 
+  322 | real_t TumorCell::ConsumeSecreteSubstance(int substance_id,
+      |                                           ^
+/github/workspace/src/tumor_cell.cc:323:43: note: 'int' and 'real_t' may be implicitly converted: 'int' -> 'real_t' (as 'double'), 'real_t' (as 'double') -> 'int'
+  323 |                                           real_t old_concentration) {
+      |                                           ^
+/github/workspace/src/tumor_cell.cc:326:10: warning: variable 'res' is not initialized [cppcoreguidelines-init-variables]
+   23 |   real_t res;
+      |          ^  
+      |              = NAN
+/github/workspace/src/tumor_cell.cc:353:3: warning: variable 'new_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  353 |   real_t new_volume = GetVolume();
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:376:35: warning: function 'Run' has cognitive complexity of 31 (threshold 25) [readability-function-cognitive-complexity]
+  376 | void StateControlGrowProliferate::Run(Agent* agent) {
+      |                                   ^
+/github/workspace/src/tumor_cell.cc:378:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  378 |   if (sim->GetScheduler()->GetSimulatedSteps() % kStepsPerCycle != 0) {
+      |   ^
+/github/workspace/src/tumor_cell.cc:395:3: note: +1, including nesting penalty of 0, nesting level increased to 1
+  395 |   if (auto* cell = dynamic_cast<TumorCell*>(agent)) {
+      |   ^
+/github/workspace/src/tumor_cell.cc:396:5: note: +2, including nesting penalty of 1, nesting level increased to 2
+  396 |     if (cell->IsAttachedToCart()) {
+      |     ^
+/github/workspace/src/tumor_cell.cc:413:5: note: +2, including nesting penalty of 1, nesting level increased to 2
+  413 |     switch (cell->GetState()) {
+      |     ^
+/github/workspace/src/tumor_cell.cc:421:9: note: +3, including nesting penalty of 2, nesting level increased to 3
+  421 |         if (ShouldEnterNecrosis(
+      |         ^
+/github/workspace/src/tumor_cell.cc:435:9: note: +3, including nesting penalty of 2, nesting level increased to 3
+  435 |         if (oxygen_level <
+      |         ^
+/github/workspace/src/tumor_cell.cc:443:9: note: +3, including nesting penalty of 2, nesting level increased to 3
+  443 |         if (oxygen_level < kOxygenLimitForProliferation) {
+      |         ^
+/github/workspace/src/tumor_cell.cc:505:9: note: +3, including nesting penalty of 2, nesting level increased to 3
+  505 |         if (final_rate_transition > 0) {
+      |         ^
+/github/workspace/src/tumor_cell.cc:510:9: note: +3, including nesting penalty of 2, nesting level increased to 3
+  510 |         if (time_to_wait <
+      |         ^
+/github/workspace/src/tumor_cell.cc:533:9: note: +3, including nesting penalty of 2, nesting level increased to 3
+  533 |         if (cell->GetVolume() >=
+      |         ^
+/github/workspace/src/tumor_cell.cc:568:9: note: +3, including nesting penalty of 2, nesting level increased to 3
+  568 |         if (kTimeLysis <
+      |         ^
+/github/workspace/src/tumor_cell.cc:601:9: note: +3, including nesting penalty of 2, nesting level increased to 3
+  601 |         if (kTimeApoptosis <
+      |         ^
+/github/workspace/src/tumor_cell.cc:617:5: note: +1, nesting level increased to 1
+  617 |   } else {
+      |     ^
+/github/workspace/src/tumor_cell.cc:401:5: warning: variable 'current_position' of type 'Real3' (aka 'MathArray<double, 3>') can be declared 'const' [misc-const-correctness]
+  401 |     Real3 current_position = cell->GetPosition();
+      |     ^
+      |           const 
+/github/workspace/src/tumor_cell.cc:404:5: warning: variable 'oxygen_level' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  404 |     real_t oxygen_level = oxygen_dgrid->GetValue(current_position);
+      |     ^
+      |            const 
+/github/workspace/src/tumor_cell.cc:410:12: warning: variable 'multiplier' is not initialized [cppcoreguidelines-init-variables]
+  410 |     real_t multiplier;
+      |            ^         
+      |                       = NAN
+/github/workspace/src/tumor_cell.cc:411:12: warning: variable 'final_rate_transition' is not initialized [cppcoreguidelines-init-variables]
+  411 |     real_t final_rate_transition;
+      |            ^                    
+      |                                  = NAN
+/github/workspace/src/tumor_cell.cc:417:13: warning: narrowing conversion from 'real_t' (aka 'double') to 'int' [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  417 |             cell->GetTimerState() +
+      |             ^
+/github/workspace/src/tumor_cell.cc:504:13: warning: 1e100 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  504 |             1e100;  // Set a very large time to avoid division by zero
+      |             ^
+/github/workspace/src/tumor_cell.cc:524:13: warning: narrowing conversion from 'real_t' (aka 'double') to 'int' [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  524 |             cell->GetTimerState() +
+      |             ^
+/github/workspace/src/tumor_cell.cc:559:13: warning: narrowing conversion from 'real_t' (aka 'double') to 'int' [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  559 |             cell->GetTimerState() +
+      |             ^
+/github/workspace/src/tumor_cell.cc:592:13: warning: narrowing conversion from 'real_t' (aka 'double') to 'int' [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
+  592 |             cell->GetTimerState() +
+      |             ^
+/github/workspace/src/tumor_cell.cc:612:9: warning: no header providing "bdm::Log" is directly included [misc-include-cleaner]
+   26 |         Log::Error("StateControlGrowProliferate::Run",
+      |         ^
+/github/workspace/src/tumor_cell.cc:624:35: warning: method 'ShouldEnterNecrosis' can be made static [readability-convert-member-functions-to-static]
+  624 | bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,
+      |                                   ^
+  625 |                                                       TumorCell* cell) const {
+      |                                                                        ~~~~~
+/github/workspace/src/tumor_cell.cc:639:3: warning: variable 'probability_necrosis' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+  639 |   real_t probability_necrosis =
+      |   ^
+      |          const 
+/github/workspace/src/tumor_cell.cc:646:3: warning: variable 'enter_necrosis' of type 'bool' can be declared 'const' [misc-const-correctness]
+  646 |   bool enter_necrosis = random->Uniform(0, 1) < probability_necrosis;
+      |   ^
+      |        const 
+/github/workspace/src/tumor_cell.cc:668:19: warning: 5 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  668 |     cell->SetType(5);  // Set type to 5 to indicate dead cell
+      |                   ^
+102264 warnings generated.
+src/utils_aux.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmp_xr510k8.yaml src/utils_aux.cc
+Suppressed 102378 warnings (102216 in non-user code, 162 NOLINT).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+/github/workspace/src/utils_aux.cc:23:1: warning: #includes are not sorted properly [llvm-include-order]
+   23 | #include <cmath>
+      | ^        ~~~~~~~
+      |          "hyperparams.h"
+   24 | #include <fstream>
+      |          ~~~~~~~~~
+      |          "tumor_cell.h"
+   25 | #include <tuple>
+      |          ~~~~~~~
+      |          <cmath>
+   26 | #include <vector>
+      |          ~~~~~~~~
+      |          <fstream>
+   27 | #include "hyperparams.h"
+      |          ~~~~~~~~~~~~~~~
+      |          <tuple>
+   28 | #include "tumor_cell.h"
+      |          ~~~~~~~~~~~~~~
+      |          <vector>
+/github/workspace/src/utils_aux.cc:34:1: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
+   27 | #include "hyperparams.h"
+   28 | #include "tumor_cell.h"
+   29 | 
+   30 | namespace bdm {
+   31 | 
+   32 | // Samples a Gaussian value with given mean and standard deviation but all
+   33 | // negative values are mapped to zero
+   34 | real_t SamplePositiveGaussian(float mean, float sigma) {
+      | ^
+/github/workspace/src/utils_aux.cc:43:13: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
+   27 | std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius) {
+      |             ^
+/github/workspace/src/utils_aux.cc:45:3: warning: variable 'cell_radius' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   45 |   real_t cell_radius =
+      |   ^
+      |          const 
+/github/workspace/src/utils_aux.cc:46:46: warning: 6 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   46 |       std::cbrt(kDefaultVolumeNewTumorCell * 6 / Math::kPi) / 2;
+      |                                              ^
+/github/workspace/src/utils_aux.cc:46:50: warning: no header providing "bdm::Math" is directly included [misc-include-cleaner]
+   27 |       std::cbrt(kDefaultVolumeNewTumorCell * 6 / Math::kPi) / 2;
+      |                                                  ^
+/github/workspace/src/utils_aux.cc:51:3: warning: variable 'spacing_x' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   51 |   real_t spacing_x = cell_radius * std::sqrt(3.0);
+      |   ^
+      |          const 
+/github/workspace/src/utils_aux.cc:51:46: warning: 3.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   51 |   real_t spacing_x = cell_radius * std::sqrt(3.0);
+      |                                              ^
+/github/workspace/src/utils_aux.cc:52:3: warning: variable 'spacing_y' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   52 |   real_t spacing_y = cell_radius * 2.0;
+      |   ^
+      |          const 
+/github/workspace/src/utils_aux.cc:52:36: warning: 2.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   52 |   real_t spacing_y = cell_radius * 2.0;
+      |                                    ^
+/github/workspace/src/utils_aux.cc:53:3: warning: variable 'spacing_z' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   53 |   real_t spacing_z = cell_radius * std::sqrt(3.0);
+      |   ^
+      |          const 
+/github/workspace/src/utils_aux.cc:53:46: warning: 3.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   53 |   real_t spacing_z = cell_radius * std::sqrt(3.0);
+      |                                              ^
+/github/workspace/src/utils_aux.cc:56:3: warning: Variable 'z' with floating point type 'real_t' should not be used as a loop counter [clang-analyzer-security.FloatLoopCounter]
+   56 |   for (real_t z = -sphere_radius; z < sphere_radius; z += spacing_z, ++zc) {
+      |   ^                               ~                  ~
+/github/workspace/src/utils_aux.cc:56:3: note: Variable 'z' with floating point type 'real_t' should not be used as a loop counter
+   56 |   for (real_t z = -sphere_radius; z < sphere_radius; z += spacing_z, ++zc) {
+      |   ^                               ~                  ~
+/github/workspace/src/utils_aux.cc:58:5: warning: Variable 'x' with floating point type 'real_t' should not be used as a loop counter [clang-analyzer-security.FloatLoopCounter]
+   58 |     for (real_t x = -sphere_radius; x < sphere_radius; x += spacing_x, ++xc) {
+      |     ^                               ~                  ~
+/github/workspace/src/utils_aux.cc:58:5: note: Variable 'x' with floating point type 'real_t' should not be used as a loop counter
+   58 |     for (real_t x = -sphere_radius; x < sphere_radius; x += spacing_x, ++xc) {
+      |     ^                               ~                  ~
+/github/workspace/src/utils_aux.cc:60:7: warning: Variable 'y' with floating point type 'real_t' should not be used as a loop counter [clang-analyzer-security.FloatLoopCounter]
+   60 |       for (real_t y = -sphere_radius; y < sphere_radius; y += spacing_y, ++yc) {
+      |       ^                               ~                  ~
+/github/workspace/src/utils_aux.cc:60:7: note: Variable 'y' with floating point type 'real_t' should not be used as a loop counter
+   60 |       for (real_t y = -sphere_radius; y < sphere_radius; y += spacing_y, ++yc) {
+      |       ^                               ~                  ~
+/github/workspace/src/utils_aux.cc:62:9: warning: variable 'px' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   62 |         real_t px = x + (zc % 2) * 0.5 * cell_radius;
+      |         ^
+      |                const 
+/github/workspace/src/utils_aux.cc:62:36: warning: 0.5 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+   62 |         real_t px = x + (zc % 2) * 0.5 * cell_radius;
+      |                                    ^
+/github/workspace/src/utils_aux.cc:63:9: warning: variable 'py' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   63 |         real_t py = y + (xc % 2) * cell_radius;
+      |         ^
+      |                const 
+/github/workspace/src/utils_aux.cc:64:9: warning: variable 'pz' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   64 |         real_t pz = z;
+      |         ^
+      |                const 
+/github/workspace/src/utils_aux.cc:66:9: warning: variable 'dist' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   66 |         real_t dist = std::sqrt(px * px + py * py + pz * pz);
+      |         ^
+      |                const 
+/github/workspace/src/utils_aux.cc:80:12: warning: no header providing "size_t" is directly included [misc-include-cleaner]
+   24 | std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, real_t>
+      |            ^
+/github/workspace/src/utils_aux.cc:92:30: warning: no header providing "bdm::Agent" is directly included [misc-include-cleaner]
+   27 |   rm->ForEachAgent([&](const Agent* agent) {
+      |                              ^
+/github/workspace/src/utils_aux.cc:93:9: warning: 'auto *tumor_cell' can be declared as 'const auto *tumor_cell' [readability-qualified-auto]
+   93 |     if (auto* tumor_cell = dynamic_cast<const TumorCell*>(agent)) {
+      |         ^
+      |         const 
+/github/workspace/src/utils_aux.cc:96:7: warning: variable 'dist_sq' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
+   96 |       real_t dist_sq = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
+      |       ^
+      |              const 
+/github/workspace/src/utils_aux.cc:115:14: warning: 5 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  115 |         case 5:
+      |              ^
+/github/workspace/src/utils_aux.cc:135:54: warning: no header providing "std::ios" is directly included [misc-include-cleaner]
+   25 |     std::ofstream file("output/final_data.csv", std::ios::app);
+      |                                                      ^
+/github/workspace/src/utils_aux.cc:148:7: warning: variable 'total_minutes' of type 'double' can be declared 'const' [misc-const-correctness]
+  148 |       double total_minutes =
+      |       ^
+      |              const 
+/github/workspace/src/utils_aux.cc:150:7: warning: variable 'total_hours' of type 'double' can be declared 'const' [misc-const-correctness]
+  150 |       double total_hours = total_minutes / 60.0;
+      |       ^
+      |              const 
+/github/workspace/src/utils_aux.cc:150:44: warning: 60.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  150 |       double total_hours = total_minutes / 60.0;
+      |                                            ^
+/github/workspace/src/utils_aux.cc:151:7: warning: variable 'total_days' of type 'double' can be declared 'const' [misc-const-correctness]
+  151 |       double total_days = total_hours / 24.0;
+      |       ^
+      |              const 
+/github/workspace/src/utils_aux.cc:151:41: warning: 24.0 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
+  151 |       double total_days = total_hours / 24.0;
+      |                                         ^
+/github/workspace/src/utils_aux.cc:154:14: warning: variable 'total_num_tumor_cells' is not initialized [cppcoreguidelines-init-variables]
+  154 |       size_t total_num_tumor_cells;
+      |              ^                    
+      |                                    = 0
+/github/workspace/src/utils_aux.cc:155:7: warning: multiple declarations in a single statement reduces readability [readability-isolate-declaration]
+  155 |       size_t num_tumor_cells_type1, num_tumor_cells_type2,
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  156 |           num_tumor_cells_type3, num_tumor_cells_type4,
+      |           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  157 |           num_tumor_cells_type5_dead;
+      |           ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/github/workspace/src/utils_aux.cc:155:14: warning: variable 'num_tumor_cells_type1' is not initialized [cppcoreguidelines-init-variables]
+  155 |       size_t num_tumor_cells_type1, num_tumor_cells_type2,
+      |              ^
+note: this fix will not be applied because it overlaps with another fix
+/github/workspace/src/utils_aux.cc:155:37: warning: variable 'num_tumor_cells_type2' is not initialized [cppcoreguidelines-init-variables]
+  155 |       size_t num_tumor_cells_type1, num_tumor_cells_type2,
+      |                                     ^
+note: this fix will not be applied because it overlaps with another fix
+/github/workspace/src/utils_aux.cc:156:11: warning: variable 'num_tumor_cells_type3' is not initialized [cppcoreguidelines-init-variables]
+  156 |           num_tumor_cells_type3, num_tumor_cells_type4,
+      |           ^
+note: this fix will not be applied because it overlaps with another fix
+/github/workspace/src/utils_aux.cc:156:34: warning: variable 'num_tumor_cells_type4' is not initialized [cppcoreguidelines-init-variables]
+  156 |           num_tumor_cells_type3, num_tumor_cells_type4,
+      |                                  ^
+note: this fix will not be applied because it overlaps with another fix
+/github/workspace/src/utils_aux.cc:157:11: warning: variable 'num_tumor_cells_type5_dead' is not initialized [cppcoreguidelines-init-variables]
+  157 |           num_tumor_cells_type5_dead;
+      |           ^
+note: this fix will not be applied because it overlaps with another fix
+/github/workspace/src/utils_aux.cc:158:14: warning: variable 'tumor_radius' is not initialized [cppcoreguidelines-init-variables]
+   23 |       real_t tumor_radius;
+      |              ^           
+      |                           = NAN

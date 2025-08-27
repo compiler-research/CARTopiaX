@@ -22,8 +22,15 @@
 #ifndef CART_CELL_H_
 #define CART_CELL_H_
 
-#include "biodynamo.h"
+#include "core/agent/agent.h"
+#include "core/agent/cell.h"
+#include "core/behavior/behavior.h"
+#include "core/diffusion/diffusion_grid.h"
+#include "core/container/math_array.h"
+#include "core/real_t.h"
+#include "core/interaction_force.h"
 #include "tumor_cell.h"
+
 
 namespace bdm {
 
@@ -50,9 +57,13 @@ class CartCell : public Cell {
   BDM_AGENT_HEADER(CartCell, Cell, 1);
 
  public:
-  CartCell() {}
+  CartCell() = default;
   explicit CartCell(const Real3& position);
-  virtual ~CartCell() {}
+  
+  // Copy and move constructors/destructors (assignment operators are deleted by base class)
+  CartCell(const CartCell&) = default;
+  CartCell(CartCell&&) = default;
+  ~CartCell() override = default;
 
   /// Getters and Setters
   void SetState(CartCellState state) { state_ = state; }
@@ -172,60 +183,79 @@ class CartCell : public Cell {
 
  private:
   /// Current state of the CAR-T cell
-  CartCellState state_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  CartCellState state_ = CartCellState::kAlive;
 
   /// Timer to track time in the current state (in minutes)
   /// Used for apoptotic state timing
-  int timer_state_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  int timer_state_ = 0;
 
   /// Pointer to the oxygen diffusion grid
-  DiffusionGrid* oxygen_dgrid_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  DiffusionGrid* oxygen_dgrid_ = nullptr;
 
+  // NOLINTNEXTLINE(readability-identifier-naming)
   /// Pointer to the immunostimulatory factor diffusion grid
-  DiffusionGrid* immunostimulatory_factor_dgrid_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  DiffusionGrid* immunostimulatory_factor_dgrid_ = nullptr;
 
   /// Flag indicating if the cell is attached to a tumor cell
-  bool attached_to_tumor_cell_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  bool attached_to_tumor_cell_ = false;
 
   /// Current time until apoptosis
-  real_t current_live_time_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t current_live_time_ = 0.0;
 
   /// Fluid fraction of the cell volume
-  real_t fluid_fraction_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t fluid_fraction_ = 0.0;
 
   /// Volume of the nucleus
-  real_t nuclear_volume_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t nuclear_volume_ = 0.0;
 
   /// Target cytoplasm solid volume for exponential relaxation
   /// Used during volume changes following exponential relaxation equation
-  real_t target_cytoplasm_solid_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t target_cytoplasm_solid_ = 0.0;
 
   /// Target nucleus solid volume for exponential relaxation
-  real_t target_nucleus_solid_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t target_nucleus_solid_ = 0.0;
 
   /// Target fluid fraction for exponential relaxation
-  real_t target_fraction_fluid_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t target_fraction_fluid_ = 0.0;
 
   /// Target relation between cytoplasm and nucleus volumes
-  real_t target_relation_cytoplasm_nucleus_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t target_relation_cytoplasm_nucleus_ = 0.0;
 
   /// Velocity of the cell in the previous time step
-  Real3 older_velocity_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  Real3 older_velocity_ = {0.0, 0.0, 0.0};
 
   /// Rate of oxygen consumption by the cell
-  real_t oxygen_consumption_rate_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t oxygen_consumption_rate_ = 0.0;
 
   /// Rate of immunostimulatory factor secretion by the cell
-  real_t immunostimulatory_factor_secretion_rate_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t immunostimulatory_factor_secretion_rate_ = 0.0;
 
   /// Constant 1 for oxygen consumption/secretion differential equation solution
-  real_t constant1_oxygen_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t constant1_oxygen_ = 0.0;
 
   /// Constant 2 for oxygen consumption/secretion differential equation solution
-  real_t constant2_oxygen_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  real_t constant2_oxygen_ = 0.0;
 
   /// Pointer to the attached tumor cell
-  TumorCell* attached_cell_;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  TumorCell* attached_cell_ = nullptr;
 };
 
 /// Behavior class for controlling CAR-T cell state transitions
@@ -238,8 +268,11 @@ struct StateControlCart : public Behavior {
   BDM_BEHAVIOR_HEADER(StateControlCart, Behavior, 1);
 
   StateControlCart() { AlwaysCopyToNew(); }
-
-  virtual ~StateControlCart() {}
+  
+  // Copy and move constructors/destructors (assignment operators handled by base class)
+  StateControlCart(const StateControlCart&) = default;
+  StateControlCart(StateControlCart&&) = default;
+  ~StateControlCart() override = default;
 
   /// Execute the state control behavior
   void Run(Agent* agent) override;

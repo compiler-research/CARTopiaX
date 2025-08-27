@@ -26,6 +26,7 @@
 #include <tuple>
 #include <vector>
 #include "biodynamo.h"
+#include "core/container/math_array.h"
 
 namespace bdm {
 /// Forward declaration of TumorCell class

@@ -24,6 +24,7 @@
 
 #include "biodynamo.h"
 #include "core/interaction_force.h"
+#include "core/container/math_array.h"
 
 namespace bdm {
 
@@ -37,6 +38,10 @@ namespace bdm {
 class InteractionVelocity : public InteractionForce {
  public:
   InteractionVelocity() = default;
+  InteractionVelocity(const InteractionVelocity&) = default;
+  InteractionVelocity& operator=(const InteractionVelocity&) = default;
+  InteractionVelocity(InteractionVelocity&&) = default;
+  InteractionVelocity& operator=(InteractionVelocity&&) = default;
 
   ~InteractionVelocity() override = default;
 
@@ -52,7 +57,7 @@ class InteractionVelocity : public InteractionForce {
   /// magnitude)
   Real4 Calculate(const Agent* lhs, const Agent* rhs) const override;
 
-  InteractionForce* NewCopy() const override;
+  [[nodiscard]] InteractionForce* NewCopy() const override;
 };
 
 }  // namespace bdm

@@ -21,8 +21,6 @@
 #ifndef CART_TUMOR_H_
 #define CART_TUMOR_H_
 
-#include "biodynamo.h"
-
 namespace bdm {
 
 /// List the diffused substances

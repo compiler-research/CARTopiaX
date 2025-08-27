@@ -23,6 +23,7 @@
 #define TUMOR_CELL_H_
 
 #include "biodynamo.h"
+#include "core/container/math_array.h"
 
 namespace bdm {
 

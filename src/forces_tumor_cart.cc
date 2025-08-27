@@ -22,6 +22,7 @@
 #include "forces_tumor_cart.h"
 #include <algorithm>
 #include <cmath>
+#include "core/container/math_array.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
 #include "utils_aux.h"
