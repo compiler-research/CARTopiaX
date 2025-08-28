@@ -1,25 +1,6 @@
 102215 warnings generated.
 Suppressed 102341 warnings (102179 in non-user code, 162 NOLINT).
 Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
-src/cart_cell.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmp_yehqeyw.yaml src/cart_cell.cc
-/github/workspace/src/forces_tumor_cart.cc:32:3: warning: 'auto *a' can be declared as 'const auto *a' [readability-qualified-auto]
-   32 |   auto* a = dynamic_cast<const Cell*>(lhs);
-      |   ^
-      |   const 
-/github/workspace/src/forces_tumor_cart.cc:33:3: warning: 'auto *b' can be declared as 'const auto *b' [readability-qualified-auto]
-   33 |   auto* b = dynamic_cast<const Cell*>(rhs);
-      |   ^
-      |   const 
-/github/workspace/src/forces_tumor_cart.cc:36:34: warning: statement should be inside braces [readability-braces-around-statements]
-   36 |   if (a->GetUid() == b->GetUid())
-      |                                  ^
-      |                                   {
-   37 |     return {0.0, 0.0, 0.0, 0.0};
-      |                                 
-/github/workspace/src/forces_tumor_cart.cc:52:3: warning: variable 'dist_sq' of type 'double' can be declared 'const' [misc-const-correctness]
-   52 |   double dist_sq = displacement[0] * displacement[0] +
-      |   ^
-      |          const 
 102175 warnings generated.
 Suppressed 102299 warnings (102137 in non-user code, 162 NOLINT).
 Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
