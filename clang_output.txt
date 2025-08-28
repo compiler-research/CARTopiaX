@@ -2,102 +2,6 @@
 Suppressed 102341 warnings (102179 in non-user code, 162 NOLINT).
 Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
 src/cart_cell.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmp_yehqeyw.yaml src/cart_cell.cc
-/github/workspace/src/cart_cell.cc:33:1: warning: constructor does not initialize these fields: current_live_time_, fluid_fraction_, nuclear_volume_, target_cytoplasm_solid_, target_nucleus_solid_, target_fraction_fluid_, target_relation_cytoplasm_nucleus_, oxygen_consumption_rate_, immunostimulatory_factor_secretion_rate_, constant1_oxygen_, constant2_oxygen_ [cppcoreguidelines-pro-type-member-init]
-   33 | CartCell::CartCell(const Real3& position) {
-      | ^
-/github/workspace/src/cart_cell.cc:36:3: warning: 'state_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
-   33 | CartCell::CartCell(const Real3& position) {
-      |                                           : state_(CartCellState::kAlive)
-   34 |   SetPosition(position);
-   35 |   // Default state for new cells
-   36 |   state_ = CartCellState::kAlive;
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:38:3: warning: 'timer_state_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
-   33 | CartCell::CartCell(const Real3& position) {
-      |                                          , timer_state_(0)
-   34 |   SetPosition(position);
-   35 |   // Default state for new cells
-   36 |   state_ = CartCellState::kAlive;
-   37 |   // Initial timer_state for apoptotic state
-   38 |   timer_state_ = 0;
-      |   ^~~~~~~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:48:3: warning: variable 'rm' of type 'ResourceManager &' can be declared 'const' [misc-const-correctness]
-   48 |   ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
-      |   ^              
-      |                   const
-/github/workspace/src/cart_cell.cc:48:3: warning: no header providing "bdm::ResourceManager" is directly included [misc-include-cleaner]
-   27 |   ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
-      |   ^
-/github/workspace/src/cart_cell.cc:55:3: warning: 'attached_to_tumor_cell_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
-   33 |   attached_to_tumor_cell_ = false;
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:57:3: warning: 'attached_cell_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
-   33 |   attached_cell_ = nullptr;
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:76:1: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
-   27 | real_t CartCell::GetTargetTotalVolume() const {
-      | ^
-/github/workspace/src/cart_cell.cc:87:12: note: the first parameter in the range is 'relaxation_rate_cytoplasm'
-   87 |     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
-      |            ^~~~~~~~~~~~~~~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:88:12: note: the last parameter in the range is 'relaxation_rate_fluid'
-   88 |     real_t relaxation_rate_fluid) {
-      |            ^~~~~~~~~~~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:90:3: warning: variable 'current_total_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-   90 |   real_t current_total_volume = GetVolume();
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:91:3: warning: variable 'fluid_fraction' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-   91 |   real_t fluid_fraction = GetFluidFraction();
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:92:3: warning: variable 'nuclear_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-   92 |   real_t nuclear_volume = GetNuclearVolume();
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:94:3: warning: variable 'current_nuclear_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-   94 |   real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:95:3: warning: variable 'current_cytoplasm_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-   95 |   real_t current_cytoplasm_solid =
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:98:3: warning: variable 'current_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-   98 |   real_t current_fluid = fluid_fraction * current_total_volume;
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:110:3: warning: variable 'nuclear_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-  110 |   real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:121:3: warning: variable 'target_cytoplasm_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-  121 |   real_t target_cytoplasm_solid =
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:132:3: warning: variable 'new_total_solid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-  132 |   real_t new_total_solid = nuclear_solid + cytoplasm_solid;
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:134:3: warning: variable 'total_nuclear' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-  134 |   real_t total_nuclear = nuclear_solid + nuclear_fluid;
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:138:3: warning: variable 'new_volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-  138 |   real_t new_volume = new_total_solid + new_fluid;
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:208:10: warning: variable 'res' is not initialized [cppcoreguidelines-init-variables]
-   23 |   real_t res;
-      |          ^  
-      |              = NAN
-/github/workspace/src/cart_cell.cc:235:3: warning: variable 'volume' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-  235 |   real_t volume = GetVolume();
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:294:29: warning: narrowing conversion from 'real_t' (aka 'double') to 'int' [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
-  294 |         cell->SetTimerState(cell->GetTimerState() + kDtCycle);
-      |                             ^
 /github/workspace/src/forces_tumor_cart.cc:32:3: warning: 'auto *a' can be declared as 'const auto *a' [readability-qualified-auto]
    32 |   auto* a = dynamic_cast<const Cell*>(lhs);
       |   ^
@@ -222,9 +126,6 @@ Use -header-filter=.* to display errors from all non-system headers. Use -system
   128 |   double force_magnitude = temp_r / distance;
       |   ^
       |          const 
-/github/workspace/src/forces_tumor_cart.cc:159:1: warning: no header providing "bdm::InteractionForce" is directly included [misc-include-cleaner]
-   25 | InteractionForce* InteractionVelocity::NewCopy() const {
-      | ^
 /github/workspace/src/forces_tumor_cart.cc:160:3: warning: returning a newly created resource of type 'InteractionForce *' or 'gsl::owner<>' from a function whose return type is not 'gsl::owner<>' [cppcoreguidelines-owning-memory]
   160 |   return new InteractionVelocity();
       |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

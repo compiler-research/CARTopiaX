@@ -28,6 +28,7 @@
 #include "core/util/root.h"
 #include "core/agent/agent.h"
 #include "core/agent/cell.h"
+#include "core/resource_manager.h"
 #include "core/behavior/behavior.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/container/math_array.h"
@@ -41,41 +42,31 @@
 
 namespace bdm {
 
-CartCell::CartCell(const Real3& position) {
+
+CartCell::CartCell(const Real3& position)
+    : state_(CartCellState::kAlive),
+      timer_state_(0),
+      oxygen_dgrid_(nullptr),
+      immunostimulatory_factor_dgrid_(nullptr),
+      attached_to_tumor_cell_(false),
+      current_live_time_(kAverageMaximumTimeUntillApoptosisCart),
+      fluid_fraction_(kDefaultFractionFluidCartCell),
+      nuclear_volume_(kDefaultVolumeNucleusCartCell),
+      target_cytoplasm_solid_(0.0),
+      target_nucleus_solid_(0.0),
+      target_fraction_fluid_(0.0),
+      target_relation_cytoplasm_nucleus_(0.0),
+      older_velocity_({0, 0, 0}),
+      oxygen_consumption_rate_(kDefaultOxygenConsumption),
+      immunostimulatory_factor_secretion_rate_(0.0),
+      constant1_oxygen_(0.0),
+      constant2_oxygen_(0.0),
+      attached_cell_(nullptr) {
   SetPosition(position);
-  // Default state for new cells
-  state_ = CartCellState::kAlive;
-  // Initial timer_state for apoptotic state
-  timer_state_ = 0;
-
-  // volumes
-  //  Set default volume
   SetVolume(kDefaultVolumeNewCartCell);
-  // Set default fluid fraction
-  SetFluidFraction(kDefaultFractionFluidCartCell);
-  // Set default nuclear volume
-  SetNuclearVolume(kDefaultVolumeNucleusCartCell);
-
-  ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
-  // Pointer to oxygen diffusion grid
+  const ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
   oxygen_dgrid_ = rm.GetDiffusionGrid("oxygen");
-  // Pointer to immunostimulatory_factor diffusion grid
-  immunostimulatory_factor_dgrid_ =
-      rm.GetDiffusionGrid("immunostimulatory_factor");
-  // Initially not attached to a tumor cell
-  attached_to_tumor_cell_ = false;
-  // Initialize attached cell pointer to null
-  attached_cell_ = nullptr;
-
-  // Initialize the velocity of the cell in the previous step to zero
-  older_velocity_ = {0, 0, 0};
-
-  SetCurrentLiveTime(kAverageMaximumTimeUntillApoptosisCart);
-
-  // Add Consumption and Secretion
-  //  Set default oxygen consumption rate
-  SetOxygenConsumptionRate(kDefaultOxygenConsumption);
-  // Compute constants for all ConsumptionSecretion of Oxygen
+  immunostimulatory_factor_dgrid_ = rm.GetDiffusionGrid("immunostimulatory_factor");
   ComputeConstantsConsumptionSecretion();
 }
 
@@ -96,18 +87,18 @@ real_t CartCell::GetTargetTotalVolume() const {
 // convergence
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void CartCell::ChangeVolumeExponentialRelaxationEquation(
-    real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
-    real_t relaxation_rate_fluid) {
+  real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
+  real_t relaxation_rate_fluid) {
   // Exponential relaxation towards the target volume
-  real_t current_total_volume = GetVolume();
-  real_t fluid_fraction = GetFluidFraction();
-  real_t nuclear_volume = GetNuclearVolume();
+  const real_t current_total_volume = GetVolume();
+  const real_t fluid_fraction = GetFluidFraction();
+  const real_t nuclear_volume = GetNuclearVolume();
 
-  real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
-  real_t current_cytoplasm_solid =
+  const real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
+  const real_t current_cytoplasm_solid =
       (current_total_volume - nuclear_volume) * (1 - fluid_fraction);
 
-  real_t current_fluid = fluid_fraction * current_total_volume;
+  const real_t current_fluid = fluid_fraction * current_total_volume;
 
   // Update fluid volume
   real_t new_fluid =
@@ -119,7 +110,7 @@ void CartCell::ChangeVolumeExponentialRelaxationEquation(
     new_fluid = 0.0;
   }
 
-  real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
+  const real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
   // real_t cytoplasm_fluid = new_fluid - nuclear_fluid;
 
   real_t nuclear_solid = current_nuclear_solid +
@@ -130,24 +121,24 @@ void CartCell::ChangeVolumeExponentialRelaxationEquation(
     nuclear_solid = 0.0;
   }
 
-  real_t target_cytoplasm_solid =
-      GetTargetRelationCytoplasmNucleus() * GetTargetNucleusSolid();
+  const real_t target_cytoplasm_solid =
+    GetTargetRelationCytoplasmNucleus() * GetTargetNucleusSolid();
   real_t cytoplasm_solid =
-      current_cytoplasm_solid +
-      kDtCycle * relaxation_rate_cytoplasm *
-          (target_cytoplasm_solid - current_cytoplasm_solid);
+    current_cytoplasm_solid +
+    kDtCycle * relaxation_rate_cytoplasm *
+      (target_cytoplasm_solid - current_cytoplasm_solid);
   // Clamp to zero to prevent negative volumes
   if (cytoplasm_solid < 0.0) {
     cytoplasm_solid = 0.0;
   }
 
-  real_t new_total_solid = nuclear_solid + cytoplasm_solid;
+  const real_t new_total_solid = nuclear_solid + cytoplasm_solid;
 
-  real_t total_nuclear = nuclear_solid + nuclear_fluid;
+  const real_t total_nuclear = nuclear_solid + nuclear_fluid;
 
   // real_t total_cytoplasm= cytoplasm_solid + cytoplasm_fluid;
 
-  real_t new_volume = new_total_solid + new_fluid;
+  const real_t new_volume = new_total_solid + new_fluid;
 
   // Avoid division by zero
   real_t new_fraction_fluid = new_fluid / (kEpsilon + new_volume);
@@ -218,7 +209,7 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 real_t CartCell::ConsumeSecreteSubstance(int substance_id,
                                          real_t old_concentration) {
-  real_t res;
+  real_t res = NAN;
   if (substance_id == oxygen_dgrid_->GetContinuumId()) {
     // consuming oxygen
     res = (old_concentration + constant1_oxygen_) / constant2_oxygen_;
@@ -245,7 +236,7 @@ void CartCell::ComputeConstantsConsumptionSecretion() {
   // V_k    = volume of the cell k
   // V_voxel = volume of the voxel containing the cell
   // dt     = simulation time step
-  real_t volume = GetVolume();
+  const real_t volume = GetVolume();
   // compute the constants for the differential equation explicit solution: for
   // oxygen and immunostimulatory factor
   // dt*(cell_volume/voxel_volume)*quantity_secretion*substance_saturation =  dt
@@ -304,7 +295,7 @@ void StateControlCart::Run(Agent* agent) {
         break;
       }
       case CartCellState::kApoptotic: {
-        cell->SetTimerState(cell->GetTimerState() + kDtCycle);
+        cell->SetTimerState(static_cast<int>(static_cast<real_t>(cell->GetTimerState()) + kDtCycle));
 
         cell->ChangeVolumeExponentialRelaxationEquation(
             kVolumeRelaxarionRateCytoplasmApoptotic,
