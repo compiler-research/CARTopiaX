@@ -106,6 +106,9 @@ constexpr int kStepsPerCycle = kDtCycle / kDt;
 /// Epsilon for avoiding division by 0
 constexpr real_t kEpsilon = 1e-10;
 
+/// kEpsilon distance
+constexpr real_t kEpsilonDistance = 1e-5;
+
 /// Output little summary each half a day
 constexpr int kOutputCsvInterval = 12 * 60 / kDt;
 

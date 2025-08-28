@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <cmath>
 #include "core/container/math_array.h"
+#include "core/real_t.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
 #include "utils_aux.h"
@@ -51,35 +52,36 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
       displacement[2] -
       (kBoundedSpaceLength)*round(displacement[2] / (kBoundedSpaceLength));
 
-  const double dist_sq = displacement[0] * displacement[0] +
+  const real_t dist_sq = displacement[0] * displacement[0] +
                    displacement[1] * displacement[1] +
                    displacement[2] * displacement[2];
-  double distance = std::max(std::sqrt(dist_sq), 1e-5);
+  const real_t distance = std::max(std::sqrt(dist_sq), kEpsilonDistance);
 
-  double radius_a = a->GetDiameter() / 2.0;
-  double radius_b = b->GetDiameter() / 2.0;
-  double R = radius_a + radius_b;
-  // R=16.8254;//Debug
-  // std::cout << "Debug: R = " << R << ", distance = " << distance <<
+  constexpr real_t kHalf = 2.0;
+  const real_t radius_a = a->GetDiameter() / kHalf;
+  const real_t radius_b = b->GetDiameter() / kHalf;
+  const real_t combined_radius = radius_a + radius_b;
+  // combined_radius=16.8254;//Debug
+  // std::cout << "Debug: combined_radius = " << combined_radius << ", distance = " << distance <<
   // std::endl;// Debug output
-  double temp_r = 0.0;
+  real_t temp_r = 0.0;
 
-  const TumorCell* a_tumor = dynamic_cast<const TumorCell*>(a);
-  const TumorCell* b_tumor = dynamic_cast<const TumorCell*>(b);
+  const auto* a_tumor = dynamic_cast<const TumorCell*>(a);
+  const auto* b_tumor = dynamic_cast<const TumorCell*>(b);
 
-  if (distance < R) {
-    // 1 - d/R
-    temp_r = 1.0 - distance / R;
-    // (1 - d/R)^2
+  if (distance < combined_radius) {
+    // 1 - d/combined_radius
+    temp_r = 1.0 - distance / combined_radius;
+    // (1 - d/combined_radius)^2
     temp_r *= temp_r;
 
-    double repulsion;
+    real_t repulsion = NAN;
     // std::cout << "temp_r = " << temp_r<< std::endl;// Debug output
 
-    if (a_tumor && b_tumor) {            // two tumor cells
+    if ((a_tumor != nullptr) && (b_tumor != nullptr)) {            // two tumor cells
       repulsion = kRepulsionTumorTumor;  // std::sqrt(kRepulsionTumorTumor *
                                          // kRepulsionTumorTumor);
-    } else if (!a_tumor && !b_tumor) {   // two CAR-T cells
+    } else if ((a_tumor == nullptr) && (b_tumor == nullptr)) {   // two CAR-T cells
       repulsion =
           kRepulsionCartCart;  // std::sqrt(kRepulsionCartCart*kRepulsionCartCart);
     } else {                   // one tumor cell and one CAR-T
@@ -93,20 +95,20 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
   // output
 
   // Adhesion
-  double max_interaction_distance = kMaxRelativeAdhesionDistance * R;
+  const real_t max_interaction_distance = kMaxRelativeAdhesionDistance * combined_radius;
   // max_interaction_distance=21.0318;//Debug
   // std::cout << "max_interaction_distance = " << max_interaction_distance <<
   // std::endl;// Debug output
 
   if (distance < max_interaction_distance) {
     // 1 - d/S
-    double temp_a = 1.0 - distance / max_interaction_distance;
+    real_t temp_a = 1.0 - distance / max_interaction_distance;
     // (1-d/S)^2
     temp_a *= temp_a;
 
     // std::cout << "temp_a = " << temp_a << std::endl;// Debug output
 
-    double adhesion;
+    real_t adhesion;
     if (a_tumor && b_tumor) {  // two tumor cells
       adhesion = kAdhesionTumorTumor;
     } else if (!a_tumor && !b_tumor) {  // two CAR-T cells
@@ -124,16 +126,16 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
     // output
   }
 
-  if (std::abs(temp_r) < 1e-16) {
+  if (std::abs(temp_r) < kEpsilon) {
     return {0.0, 0.0, 0.0, 0.0};
   }
-  double force_magnitude = temp_r / distance;
+  real_t force_magnitude = temp_r / distance;
 
   // Debug Output volcities
   // std::ofstream file("output/intercation_velocities.csv", std::ios::app);
   // if (file.is_open()) {
 
-  //   double total_minutes =
+  //   real_t total_minutes =
   //   Simulation::GetActive()->GetScheduler()->GetSimulatedTime(); Real3
   //   position = a->GetPosition();
   //   // Write data to CSV file
