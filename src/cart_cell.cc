@@ -25,6 +25,17 @@
 #include <stdexcept>
 #include <string>
 #include "hyperparams.h"
+#include "core/util/root.h"
+#include "core/agent/agent.h"
+#include "core/agent/cell.h"
+#include "core/behavior/behavior.h"
+#include "core/diffusion/diffusion_grid.h"
+#include "core/container/math_array.h"
+#include "core/functor.h"
+#include "core/agent/new_agent_event.h"
+#include "core/real_t.h"
+#include "core/util/log.h"
+#include "core/interaction_force.h"
 #include "tumor_cell.h"
 #include "utils_aux.h"
 
@@ -83,6 +94,7 @@ real_t CartCell::GetTargetTotalVolume() const {
 // volume (and proportions) smoothly toward a desired target volume over time
 // whe the cell is apoptotic. The relaxations rate controls the speed of
 // convergence
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void CartCell::ChangeVolumeExponentialRelaxationEquation(
     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
     real_t relaxation_rate_fluid) {
@@ -138,7 +150,7 @@ void CartCell::ChangeVolumeExponentialRelaxationEquation(
   real_t new_volume = new_total_solid + new_fluid;
 
   // Avoid division by zero
-  real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
+  real_t new_fraction_fluid = new_fluid / (kEpsilon + new_volume);
 
   // Update the cell's properties
   // if the volume has changed
@@ -203,6 +215,7 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
 
 // Compute new oxygen or immunostimulatory factor concentration after
 // consumption/ secretion
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 real_t CartCell::ConsumeSecreteSubstance(int substance_id,
                                          real_t old_concentration) {
   real_t res;
@@ -261,7 +274,7 @@ void StateControlCart::Run(Agent* agent) {
         if (sim->GetRandom()->Uniform(1.0) <
             kDtCycle /
                 std::max(cell->GetCurrentLiveTime(),
-                         1e-10)) {  // Probability of death= 1/CurrentLiveTime,
+                         kEpsilon)) {  // Probability of death= 1/CurrentLiveTime,
                                     // avoiding division by 0
           // the cell Dies
           cell->SetState(CartCellState::kApoptotic);

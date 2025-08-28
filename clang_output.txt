@@ -2,40 +2,9 @@
 Suppressed 102341 warnings (102179 in non-user code, 162 NOLINT).
 Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
 src/cart_cell.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmp_yehqeyw.yaml src/cart_cell.cc
-/github/workspace/src/cart_cell.cc:23:1: warning: #includes are not sorted properly [llvm-include-order]
-   23 | #include <algorithm>
-      | ^        ~~~~~~~~~~~
-      |          "hyperparams.h"
-   24 | #include <cstdint>
-      |          ~~~~~~~~~
-      |          "tumor_cell.h"
-   25 | #include <stdexcept>
-      |          ~~~~~~~~~~~
-      |          "utils_aux.h"
-   26 | #include <string>
-      |          ~~~~~~~~
-      |          <algorithm>
-   27 | #include "hyperparams.h"
-      |          ~~~~~~~~~~~~~~~
-      |          <cstdint>
-   28 | #include "tumor_cell.h"
-      |          ~~~~~~~~~~~~~~
-      |          <stdexcept>
-   29 | #include "utils_aux.h"
-      |          ~~~~~~~~~~~~~
-      |          <string>
 /github/workspace/src/cart_cell.cc:33:1: warning: constructor does not initialize these fields: current_live_time_, fluid_fraction_, nuclear_volume_, target_cytoplasm_solid_, target_nucleus_solid_, target_fraction_fluid_, target_relation_cytoplasm_nucleus_, oxygen_consumption_rate_, immunostimulatory_factor_secretion_rate_, constant1_oxygen_, constant2_oxygen_ [cppcoreguidelines-pro-type-member-init]
    33 | CartCell::CartCell(const Real3& position) {
       | ^
-/github/workspace/src/cart_cell.cc:33:26: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
-   27 | #include "hyperparams.h"
-   28 | #include "tumor_cell.h"
-   29 | #include "utils_aux.h"
-   30 | 
-   31 | namespace bdm {
-   32 | 
-   33 | CartCell::CartCell(const Real3& position) {
-      |                          ^
 /github/workspace/src/cart_cell.cc:36:3: warning: 'state_' should be initialized in a member initializer of the constructor [cppcoreguidelines-prefer-member-initializer]
    33 | CartCell::CartCell(const Real3& position) {
       |                                           : state_(CartCellState::kAlive)
@@ -68,11 +37,6 @@ src/cart_cell.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell
 /github/workspace/src/cart_cell.cc:76:1: warning: no header providing "bdm::real_t" is directly included [misc-include-cleaner]
    27 | real_t CartCell::GetTargetTotalVolume() const {
       | ^
-/github/workspace/src/cart_cell.cc:87:5: warning: 3 adjacent parameters of 'ChangeVolumeExponentialRelaxationEquation' of similar type ('real_t') are easily swapped by mistake [bugprone-easily-swappable-parameters]
-   87 |     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
-      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   88 |     real_t relaxation_rate_fluid) {
-      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 /github/workspace/src/cart_cell.cc:87:12: note: the first parameter in the range is 'relaxation_rate_cytoplasm'
    87 |     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
       |            ^~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,39 +87,6 @@ src/cart_cell.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell
   138 |   real_t new_volume = new_total_solid + new_fluid;
       |   ^
       |          const 
-/github/workspace/src/cart_cell.cc:141:3: warning: variable 'new_fraction_fluid' of type 'real_t' (aka 'double') can be declared 'const' [misc-const-correctness]
-  141 |   real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
-      |   ^
-      |          const 
-/github/workspace/src/cart_cell.cc:141:44: warning: 1e-16 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
-  141 |   real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
-      |                                            ^
-/github/workspace/src/cart_cell.cc:156:45: warning: no header providing "bdm::InteractionForce" is directly included [misc-include-cleaner]
-   27 | Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
-      |                                             ^
-/github/workspace/src/cart_cell.cc:175:9: warning: no header providing "bdm::L2F" is directly included [misc-include-cleaner]
-   27 |         L2F([&](Agent* neighbor, real_t /*squared_distance*/) {
-      |         ^
-/github/workspace/src/cart_cell.cc:175:17: warning: no header providing "bdm::Agent" is directly included [misc-include-cleaner]
-   27 |         L2F([&](Agent* neighbor, real_t /*squared_distance*/) {
-      |                 ^
-/github/workspace/src/cart_cell.cc:206:42: warning: 2 adjacent parameters of 'ConsumeSecreteSubstance' of convertible types are easily swapped by mistake [bugprone-easily-swappable-parameters]
-  206 | real_t CartCell::ConsumeSecreteSubstance(int substance_id,
-      |                                          ^~~~~~~~~~~~~~~~~
-  207 |                                          real_t old_concentration) {
-      |                                          ~~~~~~~~~~~~~~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:206:46: note: the first parameter in the range is 'substance_id'
-  206 | real_t CartCell::ConsumeSecreteSubstance(int substance_id,
-      |                                              ^~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:207:49: note: the last parameter in the range is 'old_concentration'
-  207 |                                          real_t old_concentration) {
-      |                                                 ^~~~~~~~~~~~~~~~~
-/github/workspace/src/cart_cell.cc:206:42: note: 
-  206 | real_t CartCell::ConsumeSecreteSubstance(int substance_id,
-      |                                          ^
-/github/workspace/src/cart_cell.cc:207:42: note: 'int' and 'real_t' may be implicitly converted: 'int' -> 'real_t' (as 'double'), 'real_t' (as 'double') -> 'int'
-  207 |                                          real_t old_concentration) {
-      |                                          ^
 /github/workspace/src/cart_cell.cc:208:10: warning: variable 'res' is not initialized [cppcoreguidelines-init-variables]
    23 |   real_t res;
       |          ^  
@@ -164,64 +95,13 @@ src/cart_cell.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell
   235 |   real_t volume = GetVolume();
       |   ^
       |          const 
-/github/workspace/src/cart_cell.cc:264:26: warning: 1e-10 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers]
-  264 |                          1e-10)) {  // Probability of death= 1/CurrentLiveTime,
-      |                          ^
 /github/workspace/src/cart_cell.cc:294:29: warning: narrowing conversion from 'real_t' (aka 'double') to 'int' [bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions]
   294 |         cell->SetTimerState(cell->GetTimerState() + kDtCycle);
       |                             ^
-/github/workspace/src/cart_cell.cc:312:9: warning: no header providing "bdm::Log" is directly included [misc-include-cleaner]
-   27 |         Log::Error("StateControlCart::Run", "Unknown CartCellState");
-      |         ^
-src/forces_tumor_cart.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/cart_cell.cc\",\"lines\":[[1,321]]},{\"name\":\"src/cart_cell.h\",\"lines\":[[1,250]]},{\"name\":\"src/cart_tumor.cc\",\"lines\":[[1,133]]},{\"name\":\"src/cart_tumor.h\",\"lines\":[[1,36]]},{\"name\":\"src/diffusion_thomas_algorithm.cc\",\"lines\":[[1,319]]},{\"name\":\"src/diffusion_thomas_algorithm.h\",\"lines\":[[1,194]]},{\"name\":\"src/forces_tumor_cart.cc\",\"lines\":[[1,163]]},{\"name\":\"src/forces_tumor_cart.h\",\"lines\":[[1,60]]},{\"name\":\"src/hyperparams.h\",\"lines\":[[1,216]]},{\"name\":\"src/tumor_cell.cc\",\"lines\":[[1,673]]},{\"name\":\"src/tumor_cell.h\",\"lines\":[[1,301]]},{\"name\":\"src/utils_aux.cc\",\"lines\":[[1,176]]},{\"name\":\"src/utils_aux.h\",\"lines\":[[1,96]]}] --enable-check-profile -store-check-profile=clang-tidy-review-profile --config-file=.clang-tidy --export-fixes=/tmp/tmpb2o1s_sd/tmpkduc6546.yaml src/forces_tumor_cart.cc
-/github/workspace/src/forces_tumor_cart.cc:23:1: warning: #includes are not sorted properly [llvm-include-order]
-   23 | #include <algorithm>
-      | ^        ~~~~~~~~~~~
-      |          "hyperparams.h"
-   24 | #include <cmath>
-      |          ~~~~~~~
-      |          "tumor_cell.h"
-   25 | #include "hyperparams.h"
-      |          ~~~~~~~~~~~~~~~
-      |          "utils_aux.h"
-   26 | #include "tumor_cell.h"
-      |          ~~~~~~~~~~~~~~
-      |          <algorithm>
-   27 | #include "utils_aux.h"
-      |          ~~~~~~~~~~~~~
-      |          <cmath>
-/github/workspace/src/forces_tumor_cart.cc:31:1: warning: no header providing "bdm::Real4" is directly included [misc-include-cleaner]
-   25 | #include "hyperparams.h"
-   26 | #include "tumor_cell.h"
-   27 | #include "utils_aux.h"
-   28 | 
-   29 | namespace bdm {
-   30 | 
-   31 | Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
-      | ^
-/github/workspace/src/forces_tumor_cart.cc:31:44: warning: no header providing "bdm::Agent" is directly included [misc-include-cleaner]
-   25 | #include "hyperparams.h"
-   26 | #include "tumor_cell.h"
-   27 | #include "utils_aux.h"
-   28 | 
-   29 | namespace bdm {
-   30 | 
-   31 | Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
-      |                                            ^
 /github/workspace/src/forces_tumor_cart.cc:32:3: warning: 'auto *a' can be declared as 'const auto *a' [readability-qualified-auto]
    32 |   auto* a = dynamic_cast<const Cell*>(lhs);
       |   ^
       |   const 
-/github/workspace/src/forces_tumor_cart.cc:32:32: warning: no header providing "bdm::Cell" is directly included [misc-include-cleaner]
-   25 | #include "hyperparams.h"
-   26 | #include "tumor_cell.h"
-   27 | #include "utils_aux.h"
-   28 | 
-   29 | namespace bdm {
-   30 | 
-   31 | Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
-   32 |   auto* a = dynamic_cast<const Cell*>(lhs);
-      |                                ^
 /github/workspace/src/forces_tumor_cart.cc:33:3: warning: 'auto *b' can be declared as 'const auto *b' [readability-qualified-auto]
    33 |   auto* b = dynamic_cast<const Cell*>(rhs);
       |   ^
@@ -232,9 +112,6 @@ src/forces_tumor_cart.cc: clang-tidy-18 -p=build -line-filter=[{\"name\":\"src/c
       |                                   {
    37 |     return {0.0, 0.0, 0.0, 0.0};
       |                                 
-/github/workspace/src/forces_tumor_cart.cc:39:3: warning: no header providing "bdm::Real3" is directly included [misc-include-cleaner]
-   39 |   Real3 displacement = a->GetPosition() - b->GetPosition();
-      |   ^
 /github/workspace/src/forces_tumor_cart.cc:52:3: warning: variable 'dist_sq' of type 'double' can be declared 'const' [misc-const-correctness]
    52 |   double dist_sq = displacement[0] * displacement[0] +
       |   ^

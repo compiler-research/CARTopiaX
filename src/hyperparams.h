@@ -103,6 +103,9 @@ constexpr real_t kDt = kDtMechanics;
 /// computed to avoid errors with fmod
 constexpr int kStepsPerCycle = kDtCycle / kDt;
 
+/// Epsilon for avoiding division by 0
+constexpr real_t kEpsilon = 1e-10;
+
 /// Output little summary each half a day
 constexpr int kOutputCsvInterval = 12 * 60 / kDt;
 
