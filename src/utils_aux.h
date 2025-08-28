@@ -23,10 +23,13 @@
 #define CORE_UTIL_UTILS_AUX_H_
 
 #include <cstdint>
+#include <cstddef>
 #include <tuple>
 #include <vector>
-#include "biodynamo.h"
+#include "core/real_t.h"
 #include "core/container/math_array.h"
+#include "core/operation/operation.h"
+#include "core/operation/operation_registry.h"
 
 namespace bdm {
 /// Forward declaration of TumorCell class
@@ -77,8 +80,15 @@ ComputeNumberTumorCellsAndRadius();
 struct OutputSummary : public StandaloneOperationImpl {
   BDM_OP_HEADER(OutputSummary);
 
-  /// Frequency of output (every N simulation steps)
-  uint64_t frequency_ = 1;
+  public:
+    void SetFrequency(uint64_t frequency) { frequency_ = frequency; }
+    uint64_t GetFrequency() const { return frequency_; }
+
+  private:
+    /// Frequency of output (every N simulation steps)
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    uint64_t frequency_ = 1;
+
 
   /// Collects current simulation data and writes it to CSV files
   ///

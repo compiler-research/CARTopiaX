@@ -28,6 +28,7 @@
 #include "core/behavior/behavior.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/container/math_array.h"
+#include "core/agent/new_agent_event.h"
 #include "core/real_t.h"
 #include "core/interaction_force.h"
 #include "tumor_cell.h"

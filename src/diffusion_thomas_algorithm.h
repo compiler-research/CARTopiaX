@@ -164,12 +164,15 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   std::vector<real_t> thomas_c_z_;
 
   /// Index jump for i-direction (x-axis)
+  // NOLINTNEXTLINE(readability-identifier-naming)
   int jump_i_;
 
   /// Index jump for j-direction (y-axis)
+  // NOLINTNEXTLINE(readability-identifier-naming)
   int jump_j_;
 
   /// Index jump for k-direction (z-axis)
+  // NOLINTNEXTLINE(readability-identifier-naming)
   int jump_k_;
 
 

@@ -115,9 +115,7 @@ int Simulate(int argc, const char** argv) {
   }
 
   // OutputSummary operation
-  auto* summary_op = new bdm::Operation("OutputSummary");
-  // Set the interval for outputting CSV files
-  summary_op->frequency_ = kOutputCsvInterval;
+  auto* summary_op = new bdm::Operation("OutputSummary", kOutputCsvInterval);
   summary_op->AddOperationImpl(bdm::kCpu, new bdm::OutputSummary());
   scheduler->ScheduleOp(summary_op);
 
