@@ -23,6 +23,7 @@
 #define TUMOR_HYPERPARAMS_H_
 
 #include <cmath>
+#include <cstddef>
 #include "core/real_t.h"
 #include "core/util/math.h"
 
@@ -69,6 +70,12 @@ constexpr real_t kDefaultVolumeNucleusTumorCell = 540.0;
 /// Default fraction of fluid volume in a new tumor cell
 constexpr real_t kDefaultFractionFluidTumorCell = 0.75;
 
+/// Average time for transformation Random Rate in hours
+constexpr real_t kAverageTimeTransformationRandomRate = 38.6;
+
+/// Standard Deviation for transformation Random Rate in hours
+constexpr real_t kStandardDeviationTransformationRandomRate = 3.7;
+
 /// volume relaxation rate (min^-1) for each state
 constexpr real_t kVolumeRelaxarionRateAliveCytoplasm =
     0.13 / 60.;                                                   // 0.27/ 60.0;
@@ -82,6 +89,11 @@ constexpr real_t kVolumeRelaxarionRateFluidNecroticSwelling = 0.050 / 60.0;
 constexpr real_t kVolumeRelaxarionRateCytoplasmNecroticLysed = 0.0032 / 60.00;
 constexpr real_t kVolumeRelaxarionRateNucleusNecroticLysed = 0.013 / 60.;
 constexpr real_t kVolumeRelaxarionRateFluidNecroticLysed = 0.050 / 60.0;
+
+/// Thresholds in oncoprotein levels for differentiating 4 cancer cell types
+constexpr real_t kThresholdCancerCellType1 = 1.5;
+constexpr real_t kThresholdCancerCellType2 = 1.0;
+constexpr real_t kThresholdCancerCellType3 = 0.5;
 
 ///
 /// General Hyperparameters
@@ -193,8 +205,11 @@ constexpr real_t kDnew = 1.5 * kDtMechanics;
 /// -0.5)
 constexpr real_t kDold = -0.5 * kDtMechanics;
 
+/// Large time to avoid division by 0
+constexpr real_t kTimeTooLarge = 1e100;  
+
 /// Do not change this line
-const real_t gKLengthBoxMechanics =
+const size_t gKLengthBoxMechanics =
     22;  // Length of the box for mechanics in micrometers
 
 /// Max Distance for considering two cells as neighbours for force calculations

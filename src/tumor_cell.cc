@@ -23,15 +23,43 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
+#include <cstdint>
+#include "core/real_t.h"
+#include "core/agent/agent.h"
+#include "core/container/math_array.h"
+#include "core/interaction_force.h"
+#include "core/functor.h"
+#include "core/util/log.h"
+#include "core/agent/new_agent_event.h"
+#include "core/agent/cell_division_event.h"
 #include "hyperparams.h"
 #include "utils_aux.h"
 
 namespace bdm {
 
-TumorCell::TumorCell(const Real3& position) {
+TumorCell::TumorCell(const Real3& position)
+    : state_(TumorCellState::kAlive),
+      timer_state_(0),
+      oxygen_dgrid_(nullptr),
+      immunostimulatory_factor_dgrid_(nullptr),
+      oncoproteine_level_(0.0),
+      transformation_random_rate_(0.0),
+      attached_to_cart_(false),
+      fluid_fraction_(0.0),
+      nuclear_volume_(0.0),
+      target_cytoplasm_solid_(0.0),
+      target_nucleus_solid_(0.0),
+      target_fraction_fluid_(0.0),
+      target_relation_cytoplasm_nucleus_(0.0),
+      type_(0),
+      older_velocity_{0, 0, 0},
+      oxygen_consumption_rate_(0.0),
+      immunostimulatory_factor_secretion_rate_(0.0),
+      constant1_oxygen_(0.0),
+      constant2_oxygen_(0.0),
+      constant1_immunostimulatory_factor_(0.0),
+      constant2_immunostimulatory_factor_(0.0) {
   SetPosition(position);
-  state_ = TumorCellState::kAlive;  // Default state for new cells
-  timer_state_ = 0;                 // Initial timer_state
 
   // volumes
   SetVolume(kDefaultVolumeNewTumorCell);  // Set default volume
@@ -44,7 +72,7 @@ TumorCell::TumorCell(const Real3& position) {
       kDefaultFractionFluidTumorCell);  // Set target fraction of fluid
   SetTargetRelationCytoplasmNucleus(
       (kDefaultVolumeNewTumorCell - kDefaultVolumeNucleusTumorCell) /
-      (1e-16 + kDefaultVolumeNucleusTumorCell));  // Set target relation between
+      (kEpsilon + kDefaultVolumeNucleusTumorCell));  // Set target relation between
                                                   // cytoplasm and nucleus
   SetTargetNucleusSolid(
       kDefaultVolumeNucleusTumorCell *
@@ -68,11 +96,6 @@ TumorCell::TumorCell(const Real3& position) {
           "immunostimulatory_factor");  // Pointer to immunostimulatory_factor
                                         // diffusion grid
   SetTransformationRandomRate();        // Set state transition random rate
-  attached_to_cart_ = false;            // Initially not attached to a cart
-
-  older_velocity_ = {
-      0, 0,
-      0};  // Initialize the velocity of the cell in the previous step to zero
 
   // Add Consumption and Secretion
   SetOxygenConsumptionRate(
@@ -121,8 +144,8 @@ void TumorCell::Initialize(const NewAgentEvent& event) {
       this->ComputeConstantsConsumptionSecretion();
 
       // divde mother's nuclear volume by 2
-      real_t new_nuclear_volume = mother->GetNuclearVolume() /
-                                  2.0;  // Divide mother's nuclear volume by 2
+      const real_t new_nuclear_volume = mother->GetNuclearVolume() /
+                                  2.0;  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       mother->SetNuclearVolume(
           new_nuclear_volume);  // Set mother's nuclear volume to the new volume
       this->SetNuclearVolume(new_nuclear_volume);
@@ -150,11 +173,11 @@ void TumorCell::Initialize(const NewAgentEvent& event) {
 void TumorCell::SetOncoproteineLevel(real_t level) {
   oncoproteine_level_ = level;  // oncoproteine_level_
   // cell type
-  if (level >= 1.5) {  // between 1.5 and 2.0
+  if (level >= kThresholdCancerCellType1) {  // between 1.5 and 2.0
     type_ = 1;
-  } else if (level >= 1.0 && level < 1.5) {
+  } else if (level >= kThresholdCancerCellType2 && level < kThresholdCancerCellType1) {
     type_ = 2;
-  } else if (level >= 0.5 && level < 1.0) {
+  } else if (level >= kThresholdCancerCellType3 && level < kThresholdCancerCellType2) {
     type_ = 3;
   } else {  // between 0.0 and 0.5
     type_ = 4;
@@ -164,7 +187,7 @@ void TumorCell::SetOncoproteineLevel(real_t level) {
 void TumorCell::SetTransformationRandomRate() {
   // avoid division by zero
   transformation_random_rate_ =
-      1 / (std::max(SamplePositiveGaussian(38.6, 3.7) * 60., 1e-16));
+      1 / (std::max(SamplePositiveGaussian(kAverageTimeTransformationRandomRate, kStandardDeviationTransformationRandomRate) * 60., kEpsilon));// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 }
 
 real_t TumorCell::GetTargetTotalVolume() const {
@@ -176,16 +199,17 @@ real_t TumorCell::GetTargetTotalVolume() const {
 // differential equation using a discrete update step. It is used to grow or
 // shrink the volume (and proportions) smoothly toward a desired target volume
 // over time. The relaxations rate controls the speed of convergence
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void TumorCell::ChangeVolumeExponentialRelaxationEquation(
     real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
     real_t relaxation_rate_fluid) {
   // Exponential relaxation towards the target volume
-  real_t current_total_volume = GetVolume();
-  real_t fluid_fraction = GetFluidFraction();
-  real_t nuclear_volume = GetNuclearVolume();
+  const real_t current_total_volume = GetVolume();
+  const real_t fluid_fraction = GetFluidFraction();
+  const real_t nuclear_volume = GetNuclearVolume();
 
-  real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
-  real_t current_cytoplasm_solid =
+  const real_t current_nuclear_solid = nuclear_volume * (1 - fluid_fraction);
+  const real_t current_cytoplasm_solid =
       (current_total_volume - nuclear_volume) * (1 - fluid_fraction);
 
   //     std::cout << "time=" <<
@@ -195,7 +219,7 @@ void TumorCell::ChangeVolumeExponentialRelaxationEquation(
   // ", current_cytoplasm_solid=" << current_cytoplasm_solid <<
   // std::endl;
 
-  real_t current_fluid = fluid_fraction * current_total_volume;
+  const real_t current_fluid = fluid_fraction * current_total_volume;
 
   // Update fluid volume
   real_t new_fluid =
@@ -207,7 +231,7 @@ void TumorCell::ChangeVolumeExponentialRelaxationEquation(
     new_fluid = 0.0;
   }
 
-  real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
+  const real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
   // real_t cytoplasm_fluid = new_fluid - nuclear_fluid;
 
   real_t nuclear_solid = current_nuclear_solid +
@@ -218,7 +242,7 @@ void TumorCell::ChangeVolumeExponentialRelaxationEquation(
     nuclear_solid = 0.0;
   }
 
-  real_t target_cytoplasm_solid =
+  const real_t target_cytoplasm_solid =
       GetTargetRelationCytoplasmNucleus() * GetTargetNucleusSolid();
   real_t cytoplasm_solid =
       current_cytoplasm_solid +
@@ -229,16 +253,16 @@ void TumorCell::ChangeVolumeExponentialRelaxationEquation(
     cytoplasm_solid = 0.0;
   }
 
-  real_t new_total_solid = nuclear_solid + cytoplasm_solid;
+  const real_t new_total_solid = nuclear_solid + cytoplasm_solid;
 
-  real_t total_nuclear = nuclear_solid + nuclear_fluid;
+  const real_t total_nuclear = nuclear_solid + nuclear_fluid;
 
   // real_t total_cytoplasm= cytoplasm_solid + cytoplasm_fluid;
 
-  real_t new_volume = new_total_solid + new_fluid;
+  const real_t new_volume = new_total_solid + new_fluid;
 
   // Avoid division by zero
-  real_t new_fraction_fluid = new_fluid / (1e-16 + new_volume);
+  const real_t new_fraction_fluid = new_fluid / (kEpsilon + new_volume);
 
   // Debug Debug Output params
   //  std::ofstream file("output/volumes.csv", std::ios::app);
@@ -288,7 +312,7 @@ Real3 TumorCell::CalculateDisplacement(const InteractionForce* force,
   if (!IsStatic()) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     auto calculate_neighbor_forces =
-        L2F([&](Agent* neighbor, real_t squared_distance) {
+        L2F([&](Agent* neighbor, real_t /*squared_distance*/) {
           auto neighbor_force = force->Calculate(this, neighbor);
           if (neighbor_force[0] != 0 || neighbor_force[1] != 0 ||
               neighbor_force[2] != 0) {
@@ -319,11 +343,12 @@ Real3 TumorCell::CalculateDisplacement(const InteractionForce* force,
 
 // Compute new oxygen or immunostimulatory factor concentration after
 // consumption/ secretion
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 real_t TumorCell::ConsumeSecreteSubstance(int substance_id,
                                           real_t old_concentration) {
   // constant1_oxygen_ = 0;  // Debug
   // constant2_oxygen_ = 1.3;  // Debug
-  real_t res;
+  real_t res = 0.0;
   if (substance_id == oxygen_dgrid_->GetContinuumId()) {
     // consuming oxygen
     res = (old_concentration + constant1_oxygen_) / constant2_oxygen_;
@@ -350,7 +375,7 @@ void TumorCell::ComputeConstantsConsumptionSecretion() {
   // V_voxel = volume of the voxel containing the cell
   // dt     = simulation time step
 
-  real_t new_volume = GetVolume();
+  const real_t new_volume = GetVolume();
   // compute the constants for the differential equation explicit solution: for
   // oxygen and immunostimulatory factor
   // dt*(cell_volume/voxel_volume)*quantity_secretion*substance_saturation =  dt
@@ -398,23 +423,20 @@ void StateControlGrowProliferate::Run(Agent* agent) {
       return;
     }
     // Oxygen levels
-    Real3 current_position = cell->GetPosition();
+    const Real3 current_position = cell->GetPosition();
     auto* oxygen_dgrid =
         cell->GetOxygenDiffusionGrid();  // Pointer to the oxygen diffusion grid
-    real_t oxygen_level = oxygen_dgrid->GetValue(current_position);
+    const real_t oxygen_level = oxygen_dgrid->GetValue(current_position);
     // oxygen_level = 30.;  // Debug
 
     // Debug
     // std::cout << oxygen_level << std::endl;
 
-    real_t multiplier;
-    real_t final_rate_transition;
-
     switch (cell->GetState()) {
       case TumorCellState::kAlive: {  // the cell is growing to real_t its size
                                       // before mitosis
         cell->SetTimerState(
-            cell->GetTimerState() +
+            static_cast<int>(cell->GetTimerState()) +
             kDtCycle);  // Increase timer_state to track time in this state
                         // (kDtCycle minutes per step)
 
@@ -423,105 +445,13 @@ void StateControlGrowProliferate::Run(Agent* agent) {
                 cell)) {  // Enter necrosis if oxygen level is too low
           return;         // Exit the function to prevent further processing
         }
-
-        // volume change
-        cell->ChangeVolumeExponentialRelaxationEquation(
-            kVolumeRelaxarionRateAliveCytoplasm,
-            kVolumeRelaxarionRateAliveNucleus,
-            kVolumeRelaxarionRateAliveFluid);  // The cell grows to real_t its
-                                               // size
-        // cell state control
-        multiplier = 1.0;  // Default multiplier for transition cycle
-        if (oxygen_level <
-            kOxygenSaturationInProliferation) {  // oxygen threshold for
-                                                 // considering an effect on the
-                                                 // proliferation cycle
-          multiplier =
-              (oxygen_level - kOxygenLimitForProliferation) /
-              (kOxygenSaturationInProliferation - kOxygenLimitForProliferation);
-        }
-        if (oxygen_level < kOxygenLimitForProliferation) {
-          multiplier =
-              0.0;  // If oxygen is below the limit, set multiplier to 0
-        }
-        // double multiplier1 = multiplier; //Debug
-
-        final_rate_transition =
-            cell->GetTransformationRandomRate() * multiplier *
-            cell->GetOncoproteineLevel();  // Calculate the rate of state change
-                                           // based on oxygen level and
-                                           // oncoproteine (min^-1)
-
-        // Debug
-        //  int current_time = sim->GetScheduler()->GetSimulatedSteps()* kDt; //
-        //  Get the current time step in minutes std::ofstream
-        //  file("output/simulation_data_mine" +
-        //  std::to_string(current_time/(12*60)) + ".csv", std::ios::app); if
-        //  (file.is_open()) { file  << oxygen_level << ","
-        //       << cell->GetOncoproteineLevel() << ","
-        //       <<cell->GetTransformationRandomRate()<< ","
-        //       << final_rate_transition << "\n";
-        //  }
-        // End Debug
-
-        // Debug Debug Output params
-        // std::ofstream file2("output/params_o2_oncoproteine.csv",
-        // std::ios::app); if (file2.is_open()) {
-
-        //   // Write data to CSV file
-        //   file2 << currennt_time << ",multiplier1,"
-        //   << multiplier1 << ",multiplier2,"
-        //   << multiplier2 << ",transition_rate,"
-        // << final_rate_transition
-        //   <<"\n";
-        // }
-        // End Debug Output
-        // End Debug
-
-        // //volume change
-        // cell->ChangeVolumeExponentialRelaxationEquation(kVolumeRelaxarionRateAliveCytoplasm,
-        //                                                 kVolumeRelaxarionRateAliveNucleus,
-        //                                                 kVolumeRelaxarionRateAliveFluid);
-        //                                                 // The cell grows to
-        //                                                 real_t its size
-        // //cell state control
-        // multiplier = 1.0; // Default multiplier for transition cycle
-        // if (oxygen_level < kOxygenSaturationInProliferation) {//oxygen
-        // threshold for considering an effect on the proliferation cycle
-        //   multiplier =
-        //   (oxygen_level-kOxygenLimitForProliferation)/(kOxygenSaturationInProliferation-kOxygenLimitForProliferation);
-        // }
-        // if(oxygen_level < kOxygenLimitForProliferation) {
-        //   multiplier = 0.0; // If oxygen is below the limit, set multiplier
-        //   to 0
-        // }
-
-        // final_rate_transition= cell->GetTransformationRandomRate() *
-        // multiplier * cell->GetOncoproteineLevel(); // Calculate the rate of
-        // state change based on oxygen level and oncoproteine (min^-1)
-
-        real_t time_to_wait =
-            1e100;  // Set a very large time to avoid division by zero
-        if (final_rate_transition > 0) {
-          time_to_wait =
-              1. / final_rate_transition;  // Calculate the time to transition
-                                           // (in minutes )
-        }
-        if (time_to_wait <
-            cell->GetTimerState()) {  // If the timer_state exceeds the time to
-                                      // transition, change state (this is a
-                                      // fixed duration transition)
-          // mitosis: cell divides
-          cell->SetState(TumorCellState::kAlive);
-          cell->Divide();
-          cell->SetTimerState(0);  // Reset timer_state
-        }
+        ManageLivingCell(cell, oxygen_level);
         break;
       }
       case TumorCellState::kNecroticSwelling: {  // the cell is swelling before
                                                  // lysing
         cell->SetTimerState(
-            cell->GetTimerState() +
+            static_cast<int>(cell->GetTimerState()) +
             kDtCycle);  // Increase timer_state to track time in this state
                         // (kDtCycle minutes per step)
         // volume change
@@ -556,7 +486,7 @@ void StateControlGrowProliferate::Run(Agent* agent) {
       case TumorCellState::kNecroticLysed: {  // the cell is shirinking and will
                                               // be removed after a certain time
         cell->SetTimerState(
-            cell->GetTimerState() +
+            static_cast<int>(cell->GetTimerState()) +
             kDtCycle);  // Increase timer_state to track time in this state
                         // (kDtCycle minutes per step)
         // volume change
@@ -589,7 +519,7 @@ void StateControlGrowProliferate::Run(Agent* agent) {
         //  cell->SetType(5); // Set type to 5 to indicate dead cell
 
         cell->SetTimerState(
-            cell->GetTimerState() +
+            static_cast<int>(cell->GetTimerState()) +
             kDtCycle);  // Increase timer_state to track time in this state
                         // (kDtCycle minutes per step)
         // volume change CHANGe check if it should indeed be reduced to 0
@@ -617,6 +547,104 @@ void StateControlGrowProliferate::Run(Agent* agent) {
   } else {
     Log::Error("StateControlGrowProliferate::Run",
                "SimObject is not a TumorCell");
+  }
+}
+
+// ManageLivingCell function to handle living cell behavior
+void StateControlGrowProliferate::ManageLivingCell(TumorCell* cell, real_t oxygen_level) {
+  real_t multiplier;
+  real_t final_rate_transition;
+  // volume change
+  cell->ChangeVolumeExponentialRelaxationEquation(
+      kVolumeRelaxarionRateAliveCytoplasm,
+      kVolumeRelaxarionRateAliveNucleus,
+      kVolumeRelaxarionRateAliveFluid);  // The cell grows to real_t its
+                                          // size
+  // cell state control
+  multiplier = 1.0;  // Default multiplier for transition cycle
+  if (oxygen_level <
+      kOxygenSaturationInProliferation) {  // oxygen threshold for
+                                            // considering an effect on the
+                                            // proliferation cycle
+    multiplier =
+        (oxygen_level - kOxygenLimitForProliferation) /
+        (kOxygenSaturationInProliferation - kOxygenLimitForProliferation);
+  }
+  if (oxygen_level < kOxygenLimitForProliferation) {
+    multiplier =
+        0.0;  // If oxygen is below the limit, set multiplier to 0
+  }
+  // double multiplier1 = multiplier; //Debug
+
+  final_rate_transition =
+      cell->GetTransformationRandomRate() * multiplier *
+      cell->GetOncoproteineLevel();  // Calculate the rate of state change
+                                      // based on oxygen level and
+                                      // oncoproteine (min^-1)
+
+  // Debug
+  //  int current_time = sim->GetScheduler()->GetSimulatedSteps()* kDt; //
+  //  Get the current time step in minutes std::ofstream
+  //  file("output/simulation_data_mine" +
+  //  std::to_string(current_time/(12*60)) + ".csv", std::ios::app); if
+  //  (file.is_open()) { file  << oxygen_level << ","
+  //       << cell->GetOncoproteineLevel() << ","
+  //       <<cell->GetTransformationRandomRate()<< ","
+  //       << final_rate_transition << "\n";
+  //  }
+  // End Debug
+
+  // Debug Debug Output params
+  // std::ofstream file2("output/params_o2_oncoproteine.csv",
+  // std::ios::app); if (file2.is_open()) {
+
+  //   // Write data to CSV file
+  //   file2 << currennt_time << ",multiplier1,"
+  //   << multiplier1 << ",multiplier2,"
+  //   << multiplier2 << ",transition_rate,"
+  // << final_rate_transition
+  //   <<"\n";
+  // }
+  // End Debug Output
+  // End Debug
+
+  // //volume change
+  // cell->ChangeVolumeExponentialRelaxationEquation(kVolumeRelaxarionRateAliveCytoplasm,
+  //                                                 kVolumeRelaxarionRateAliveNucleus,
+  //                                                 kVolumeRelaxarionRateAliveFluid);
+  //                                                 // The cell grows to
+  //                                                 real_t its size
+  // //cell state control
+  // multiplier = 1.0; // Default multiplier for transition cycle
+  // if (oxygen_level < kOxygenSaturationInProliferation) {//oxygen
+  // threshold for considering an effect on the proliferation cycle
+  //   multiplier =
+  //   (oxygen_level-kOxygenLimitForProliferation)/(kOxygenSaturationInProliferation-kOxygenLimitForProliferation);
+  // }
+  // if(oxygen_level < kOxygenLimitForProliferation) {
+  //   multiplier = 0.0; // If oxygen is below the limit, set multiplier
+  //   to 0
+  // }
+
+  // final_rate_transition= cell->GetTransformationRandomRate() *
+  // multiplier * cell->GetOncoproteineLevel(); // Calculate the rate of
+  // state change based on oxygen level and oncoproteine (min^-1)
+
+  real_t time_to_wait =
+      kTimeTooLarge;  // Set a very large time to avoid division by zero
+  if (final_rate_transition > 0) {
+    time_to_wait =
+        1. / final_rate_transition;  // Calculate the time to transition
+                                      // (in minutes )
+  }
+  if (time_to_wait <
+      cell->GetTimerState()) {  // If the timer_state exceeds the time to
+                                // transition, change state (this is a
+                                // fixed duration transition)
+    // mitosis: cell divides
+    cell->SetState(TumorCellState::kAlive);
+    cell->Divide();
+    cell->SetTimerState(0);  // Reset timer_state
   }
 }
 
@@ -665,7 +693,8 @@ bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,
     cell->SetTargetNucleusSolid(0);
     cell->SetTargetFractionFluid(1.0);  // Set target fraction of fluid to 1.0
     cell->SetTargetRelationCytoplasmNucleus(0.0);
-    cell->SetType(5);  // Set type to 5 to indicate dead cell
+    // Set type to 5 to indicate dead cell
+    cell->SetType(5); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   }
   return enter_necrosis;  // Return whether the cell entered necrosis
 }

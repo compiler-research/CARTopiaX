@@ -358,6 +358,13 @@ struct StateControlGrowProliferate : public Behavior {
   /// @param cell Pointer to the tumor cell being evaluated
   /// @return True if the cell should enter necrosis, false otherwise
   bool ShouldEnterNecrosis(real_t oxygen_level, TumorCell* cell) const;
+
+  /// Manage the behavior of a living tumor cell
+  ///
+  /// @param cell Pointer to the tumor cell being managed
+  /// @param oxygen_level Current oxygen concentration at the cell's location
+  void ManageLivingCell(TumorCell* cell, real_t oxygen_level);
+
 };
 
 }  // namespace bdm

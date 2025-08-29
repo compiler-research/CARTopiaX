@@ -22,8 +22,15 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include "core/container/math_array.h"
 #include "core/environment/uniform_grid_environment.h"
+#include "core/real_t.h"
+#include "core/simulation.h"
+#include "core/model_initializer.h"
+#include "core/param/param.h"
+#include "core/operation/operation.h"
 #include "core/operation/mechanical_forces_op.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "diffusion_thomas_algorithm.h"
 #include "forces_tumor_cart.h"
 #include "hyperparams.h"
@@ -37,9 +44,9 @@ int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
     param->random_seed = kSeed;  // Set a fixed random seed for reproducibility
     param->bound_space = Param::BoundSpaceMode::kTorus;  // Periodic boundary
-    param->min_bound = -kBoundedSpaceLength / 2;
+    param->min_bound = -kBoundedSpaceLength / 2.0;  // Fixed: explicit floating point division
     param->max_bound =
-        kBoundedSpaceLength / 2;  // Cube of 1000x1000x1000 centered at origin
+        kBoundedSpaceLength / 2.0;  // Fixed: explicit floating point division - Cube of 1000x1000x1000 centered at origin
     param->simulation_time_step = kDt;
   };
 
@@ -99,17 +106,18 @@ int Simulate(int argc, const char** argv) {
       kImmunostimulatoryFactor, BoundaryConditionType::kNeumann, nullptr);
 
   // Initialize oxygen voxels
-  ModelInitializer::InitializeSubstance(kOxygen, [](real_t x, real_t y,
-                                                    real_t z) {
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+  ModelInitializer::InitializeSubstance(kOxygen, [](real_t /*x*/, real_t /*y*/,
+                                                    real_t /*z*/) {
     return kInitialOxygenLevel;  // Set all voxels to kInitialOxygenLevel mmHg
   });
 
   // One spherical tumor of radius kInitialRadiusTumor in the center of the
   // simulation space
-  std::vector<Real3> positions =
+  const std::vector<Real3> positions =  // Fixed: added const
       CreateSphereOfTumorCells(kInitialRadiusTumor);  // positions of the cells
   for (const auto& pos : positions) {
-    TumorCell* tumor_cell = new TumorCell(pos);
+    auto* tumor_cell = new TumorCell(pos);  // Fixed: use auto and gsl::owner handled by framework
     tumor_cell->AddBehavior(new StateControlGrowProliferate());
     ctxt->AddAgent(tumor_cell);
   }
