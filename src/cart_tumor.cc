@@ -48,10 +48,12 @@ int Simulate(int argc, const char** argv) {
     param->random_seed = kSeed;  // Set a fixed random seed for reproducibility
     param->bound_space = Param::BoundSpaceMode::kTorus;  // Periodic boundary
     param->min_bound =
-        -kBoundedSpaceLength / 2.0;  // Fixed: explicit floating point division
+        -kBoundedSpaceLength /
+        2.0;  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     param->max_bound =
-        kBoundedSpaceLength / 2.0;  // Fixed: explicit floating point division -
-                                    // Cube of 1000x1000x1000 centered at origin
+        kBoundedSpaceLength /
+        2.0;  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+              // Cube of 1000x1000x1000 centered at origin
     param->simulation_time_step = kDt;
   };
 
@@ -119,11 +121,10 @@ int Simulate(int argc, const char** argv) {
 
   // One spherical tumor of radius kInitialRadiusTumor in the center of the
   // simulation space
-  const std::vector<Real3> positions =                // Fixed: added const
-      CreateSphereOfTumorCells(kInitialRadiusTumor);  // positions of the cells
+  const std::vector<Real3> positions =
+      CreateSphereOfTumorCells(kInitialRadiusTumor);
   for (const auto& pos : positions) {
-    auto* tumor_cell = new TumorCell(
-        pos);  // Fixed: use auto and gsl::owner handled by framework
+    auto* tumor_cell = new TumorCell(pos);
     tumor_cell->AddBehavior(new StateControlGrowProliferate());
     ctxt->AddAgent(tumor_cell);
   }
