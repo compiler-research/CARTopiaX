@@ -51,7 +51,7 @@ TumorCell::TumorCell(const Real3& position)
       target_nucleus_solid_(0.0),
       target_fraction_fluid_(0.0),
       target_relation_cytoplasm_nucleus_(0.0),
-      type_(0),
+      type_(TumorCellType::kType0),
       older_velocity_{0, 0, 0},
       oxygen_consumption_rate_(0.0),
       immunostimulatory_factor_secretion_rate_(0.0),
@@ -174,13 +174,15 @@ void TumorCell::SetOncoproteineLevel(real_t level) {
   oncoproteine_level_ = level;  // oncoproteine_level_
   // cell type
   if (level >= kThresholdCancerCellType1) {  // between 1.5 and 2.0
-    type_ = 1;
+    type_ = TumorCellType::kType1;
   } else if (level >= kThresholdCancerCellType2 && level < kThresholdCancerCellType1) {
-    type_ = 2;
+    type_ = TumorCellType::kType2;
   } else if (level >= kThresholdCancerCellType3 && level < kThresholdCancerCellType2) {
-    type_ = 3;
-  } else {  // between 0.0 and 0.5
-    type_ = 4;
+    type_ = TumorCellType::kType3;
+  } else if (level >= kThresholdCancerCellType4 && level < kThresholdCancerCellType3) {
+    type_ = TumorCellType::kType4;
+  } else {  // undefined type
+    type_ = TumorCellType::kType0;
   }
 }
 
@@ -694,7 +696,7 @@ bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,
     cell->SetTargetFractionFluid(1.0);  // Set target fraction of fluid to 1.0
     cell->SetTargetRelationCytoplasmNucleus(0.0);
     // Set type to 5 to indicate dead cell
-    cell->SetType(5); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    cell->SetType(TumorCellType::kType5);
   }
   return enter_necrosis;  // Return whether the cell entered necrosis
 }

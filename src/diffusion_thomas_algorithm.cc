@@ -46,7 +46,7 @@ DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(
       jump_k_(static_cast<int>(resolution_ * resolution_)),
       constant1_(dc * dt / (d_space_ * d_space_)),
       constant1a_(-constant1_),
-      constant2_(mu * dt / kDirectionsDivisor),
+      constant2_(mu * dt / 3.0),// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       constant3_(1.0 + 2 * constant1_ + constant2_),
       constant3a_(1.0 + constant1_ + constant2_),
       thomas_c_x_(resolution_, constant1a_),

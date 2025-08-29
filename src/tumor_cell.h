@@ -24,7 +24,6 @@
 
 #include "core/util/root.h"
 #include "core/agent/agent.h"
-#include "core/agent/agent.h"  // Ensure bdm::Agent is directly included
 #include "core/agent/cell.h"
 #include "core/behavior/behavior.h"
 #include "core/diffusion/diffusion_grid.h"
@@ -58,6 +57,26 @@ enum class TumorCellState : int {
                   ///< controlled form of cell death.
 };
 
+/// Enumeration representing the different types of tumor cells
+///
+/// This enum class defines the various types of tumor cells depending on their
+/// agressiveness from 1 (most agressive) until 4 (least agressive) based on the
+/// expressed oncoprotein level. Type 5 cells are dead cells
+enum class TumorCellType : int {
+  kType0 =
+      0,  ///< Unclassified tumor cells
+  kType1 =
+      1,  ///< Most aggressive tumor cells
+  kType2 =
+      2,  ///< Moderately aggressive tumor cells
+  kType3 =
+      3,  ///< Less aggressive tumor cells
+  kType4 =
+      4,  ///< Least aggressive tumor cells
+  kType5 =
+      5   ///< Dead tumor cells
+};
+
 /// Tumor cell class implementation
 ///
 /// This class represents a cancer cell that forms a heterogeneous tumor in the
@@ -88,7 +107,7 @@ class TumorCell : public Cell {
         target_nucleus_solid_(0.0),
         target_fraction_fluid_(0.0),
         target_relation_cytoplasm_nucleus_(0.0),
-        type_(0),
+        type_(TumorCellType::kType0),
         oxygen_consumption_rate_(0.0),
         immunostimulatory_factor_secretion_rate_(0.0),
         constant1_oxygen_(0.0),
@@ -159,8 +178,8 @@ class TumorCell : public Cell {
   void SetAttachedToCart(bool attached) { attached_to_cart_ = attached; }
   bool IsAttachedToCart() const { return attached_to_cart_; }
 
-  void SetType(int type) { type_ = type; }
-  int GetType() const { return type_; }
+  void SetType(TumorCellType type) { type_ = type; }
+  TumorCellType GetType() const { return type_; }
 
   Real3 GetOlderVelocity() const { return older_velocity_; }
   void SetOlderVelocity(const Real3& velocity) { older_velocity_ = velocity; }
@@ -178,6 +197,8 @@ class TumorCell : public Cell {
   }
 
   real_t GetTargetTotalVolume() const;
+
+  int GetTypeAsInt() const { return static_cast<int>(type_); }
 
   /// Returns the diffusion grid for oxygen
   DiffusionGrid* GetOxygenDiffusionGrid() const { return oxygen_dgrid_; }
@@ -293,7 +314,7 @@ class TumorCell : public Cell {
   /// Types 1-4: 1 is the most mutated and proliferative type, 4 is the least
   /// aggressive. Type 5 means the cell is dead.
   // NOLINTNEXTLINE(readability-identifier-naming)
-  int type_ = 0;
+  TumorCellType type_ = TumorCellType::kType0;
 
   /// Velocity of the cell in the previous time step
   // NOLINTNEXTLINE(readability-identifier-naming)

@@ -94,6 +94,7 @@ constexpr real_t kVolumeRelaxarionRateFluidNecroticLysed = 0.050 / 60.0;
 constexpr real_t kThresholdCancerCellType1 = 1.5;
 constexpr real_t kThresholdCancerCellType2 = 1.0;
 constexpr real_t kThresholdCancerCellType3 = 0.5;
+constexpr real_t kThresholdCancerCellType4 = 0.0;
 
 ///
 /// General Hyperparameters
@@ -191,8 +192,6 @@ constexpr real_t kAdhesionCartCart = 0.0;
 constexpr real_t kAdhesionCartTumor = 0.0;
 /// Adhesion coeficient between tumor cells and CAR-T cells
 constexpr real_t kAdhesionTumorCart = 0.0;
-/// Divisor for dividing directions
-constexpr real_t kDirectionsDivisor = 3.0;
 
 /// Do not change
 // coefficientes for the two step Adams-Bashforth approximation of the time

@@ -23,7 +23,14 @@
 #include <cmath>
 #include <fstream>
 #include <tuple>
+#include <ios>
 #include <vector>
+#include <cstdint>
+#include <cstddef>
+#include "core/agent/agent.h"
+#include "core/real_t.h"
+#include "core/util/math.h"
+#include "core/container/math_array.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
 
@@ -42,28 +49,34 @@ real_t SamplePositiveGaussian(float mean, float sigma) {
 
 std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius) {
   // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-  real_t cell_radius =
-      std::cbrt(kDefaultVolumeNewTumorCell * 6 / Math::kPi) / 2;
+  const real_t cell_radius =
+      std::cbrt(kDefaultVolumeNewTumorCell * 6 / Math::kPi) / 2;// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
   std::vector<Real3> positions;
 
   // Hexagonal close-packing spacing
-  real_t spacing_x = cell_radius * std::sqrt(3.0);
-  real_t spacing_y = cell_radius * 2.0;
-  real_t spacing_z = cell_radius * std::sqrt(3.0);
+  const real_t spacing_x = cell_radius * std::sqrt(3.0);// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  const real_t spacing_y = cell_radius * 2.0;// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  const real_t spacing_z = cell_radius * std::sqrt(3.0);// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-  int zc = 0;
-  for (real_t z = -sphere_radius; z < sphere_radius; z += spacing_z, ++zc) {
-    int xc = 0;
-    for (real_t x = -sphere_radius; x < sphere_radius; x += spacing_x, ++xc) {
-      int yc = 0;
-      for (real_t y = -sphere_radius; y < sphere_radius; y += spacing_y, ++yc) {
+  // Use integer counters instead of floating-point loop variables
+  int z_steps = static_cast<int>((2 * sphere_radius) / spacing_z) + 1;
+  int x_steps = static_cast<int>((2 * sphere_radius) / spacing_x) + 1;
+  int y_steps = static_cast<int>((2 * sphere_radius) / spacing_y) + 1;
+
+  for (int zi = 0; zi < z_steps; ++zi) {
+    const real_t z = -sphere_radius + zi * spacing_z;
+    for (int xi = 0; xi < x_steps; ++xi) {
+      const real_t x = -sphere_radius + xi * spacing_x;
+      for (int yi = 0; yi < y_steps; ++yi) {
+        const real_t y = -sphere_radius + yi * spacing_y;
+        
         // Compute cell center with HCP offset
-        real_t px = x + (zc % 2) * 0.5 * cell_radius;
-        real_t py = y + (xc % 2) * cell_radius;
-        real_t pz = z;
+        const real_t px = x + (zi % 2) * 0.5 * cell_radius;// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+        const real_t py = y + (xi % 2) * cell_radius;// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+        const real_t pz = z;
 
-        real_t dist = std::sqrt(px * px + py * py + pz * pz);
+        const real_t dist = std::sqrt(px * px + py * py + pz * pz);
 
         if (dist <= sphere_radius) {
           positions.push_back({px, py, pz});
@@ -90,29 +103,29 @@ ComputeNumberTumorCellsAndRadius() {
   real_t max_dist_sq = 0.0;
 
   rm->ForEachAgent([&](const Agent* agent) {
-    if (auto* tumor_cell = dynamic_cast<const TumorCell*>(agent)) {
+    if (const auto* tumor_cell = dynamic_cast<const TumorCell*>(agent)) {
       total_num_tumor_cells++;
       const auto& pos = agent->GetPosition();
-      real_t dist_sq = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
+      const real_t dist_sq = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
       if (dist_sq > max_dist_sq) {
         max_dist_sq = dist_sq;
       }
 
       // Count tumor cells by type
       switch (tumor_cell->GetType()) {
-        case 1:
+        case TumorCellType::kType1:
           num_tumor_cells_type1++;
           break;
-        case 2:
+        case TumorCellType::kType2:
           num_tumor_cells_type2++;
           break;
-        case 3:
+        case TumorCellType::kType3:
           num_tumor_cells_type3++;
           break;
-        case 4:
+        case TumorCellType::kType4:
           num_tumor_cells_type4++;
           break;
-        case 5:
+        case TumorCellType::kType5:
           num_tumor_cells_type5_dead++;
           break;
         default:
@@ -145,21 +158,25 @@ void OutputSummary::operator()() {
       }
 
       // Calculate time in days, hours, minutes
-      double total_minutes =
+      const double total_minutes =
           Simulation::GetActive()->GetScheduler()->GetSimulatedTime();
-      double total_hours = total_minutes / 60.0;
-      double total_days = total_hours / 24.0;
+      const double total_hours = total_minutes / 60.0;// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      const double total_days = total_hours / 24.0;// NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
       // Count total cells, tumor cells of each type and tumor radius
-      size_t total_num_tumor_cells;
-      size_t num_tumor_cells_type1, num_tumor_cells_type2,
-          num_tumor_cells_type3, num_tumor_cells_type4,
-          num_tumor_cells_type5_dead;
-      real_t tumor_radius;
+      size_t total_num_tumor_cells = 0;
+      size_t num_tumor_cells_type1 = 0;
+      size_t num_tumor_cells_type2 = 0;
+      size_t num_tumor_cells_type3 = 0;
+      size_t num_tumor_cells_type4 = 0;
+      size_t num_tumor_cells_type5_dead = 0;
+      real_t tumor_radius = 0.0;
+      
       std::tie(total_num_tumor_cells, num_tumor_cells_type1,
                num_tumor_cells_type2, num_tumor_cells_type3,
                num_tumor_cells_type4, num_tumor_cells_type5_dead,
                tumor_radius) = ComputeNumberTumorCellsAndRadius();
+      
       // Write data to CSV file
       file << total_days << "," << total_hours << "," << total_minutes << ","
            << tumor_radius << ","
