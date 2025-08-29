@@ -40,12 +40,7 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   DiffusionThomasAlgorithm()
       : resolution_(0),
         d_space_(0.0),
-        thomas_denom_x_(),
-        thomas_c_x_(),
-        thomas_denom_y_(),
-        thomas_c_y_(),
-        thomas_denom_z_(),
-        thomas_c_z_(),
+        dirichlet_border_(false),
         jump_i_(0),
         jump_j_(0),
         jump_k_(0),
@@ -54,7 +49,12 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
         constant2_(0.0),
         constant3_(0.0),
         constant3a_(0.0),
-        dirichlet_border_(false) {}
+        thomas_c_x_(),
+        thomas_denom_x_(),
+        thomas_c_y_(),
+        thomas_denom_y_(),
+        thomas_c_z_(),
+        thomas_denom_z_() {}
 
   DiffusionThomasAlgorithm(int substance_id, std::string substance_name,
                            real_t dc, real_t mu, int resolution, real_t dt,
@@ -69,19 +69,17 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
 
   /// These methods are overridden but empty because they are not used.
   /// This should be fixed in future versions of BioDynaMo.
-  void DiffuseWithClosedEdge(real_t dt) override {};
-  void DiffuseWithOpenEdge(real_t dt) override {};
-  void DiffuseWithNeumann(real_t dt) override {};
-  void DiffuseWithPeriodic(real_t dt) override {};
-  void DiffuseWithDirichlet(real_t dt) override {};
+  void DiffuseWithClosedEdge(real_t /*dt*/) override {}
+  void DiffuseWithOpenEdge(real_t /*dt*/) override {}
+  void DiffuseWithNeumann(real_t /*dt*/) override {}
+  void DiffuseWithPeriodic(real_t /*dt*/) override {}
+  void DiffuseWithDirichlet(real_t /*dt*/) override {}
 
   /// Perform chemical diffusion using Thomas algorithm
   ///
   /// Computes the diffusion of the substance using the Thomas algorithm
   /// for solving tridiagonal systems efficiently.
-  ///
-  /// @param dt Time step for the diffusion computation
-  void DiffuseChemical(real_t dt);
+  void DiffuseChemical();
 
   /// Execute one simulation step
   ///
@@ -139,29 +137,9 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   // NOLINTNEXTLINE(readability-identifier-naming)
   real_t d_space_;
 
-  /// Denominators for x-direction Thomas algorithm
+  /// Flag indicating Dirichlet boundary conditions
   // NOLINTNEXTLINE(readability-identifier-naming)
-  std::vector<real_t> thomas_denom_x_;
-
-  /// Coefficients for x-direction Thomas algorithm
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  std::vector<real_t> thomas_c_x_;
-
-  /// Denominators for y-direction Thomas algorithm
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  std::vector<real_t> thomas_denom_y_;
-
-  /// Coefficients for y-direction Thomas algorithm
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  std::vector<real_t> thomas_c_y_;
-
-  /// Denominators for z-direction Thomas algorithm
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  std::vector<real_t> thomas_denom_z_;
-
-  /// Coefficients for z-direction Thomas algorithm
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  std::vector<real_t> thomas_c_z_;
+  bool dirichlet_border_;
 
   /// Index jump for i-direction (x-axis)
   // NOLINTNEXTLINE(readability-identifier-naming)
@@ -174,7 +152,6 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   /// Index jump for k-direction (z-axis)
   // NOLINTNEXTLINE(readability-identifier-naming)
   int jump_k_;
-
 
   /// First diffusion constant
   // NOLINTNEXTLINE(readability-identifier-naming)
@@ -196,9 +173,29 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   // NOLINTNEXTLINE(readability-identifier-naming)
   real_t constant3a_;
 
-  /// Flag indicating Dirichlet boundary conditions
+  /// Coefficients for x-direction Thomas algorithm
   // NOLINTNEXTLINE(readability-identifier-naming)
-  bool dirichlet_border_;
+  std::vector<real_t> thomas_c_x_;
+
+  /// Denominators for x-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  std::vector<real_t> thomas_denom_x_;
+
+  /// Coefficients for y-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  std::vector<real_t> thomas_c_y_;
+
+  /// Denominators for y-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  std::vector<real_t> thomas_denom_y_;
+
+  /// Coefficients for z-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  std::vector<real_t> thomas_c_z_;
+
+  /// Denominators for z-direction Thomas algorithm
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  std::vector<real_t> thomas_denom_z_;
 
   /// Initialize Thomas algorithm coefficient vectors
   ///
@@ -208,7 +205,7 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   /// @param thomas_denom Reference to denominator vector to initialize
   /// @param thomas_c Reference to coefficient vector to initialize
   void InitializeThomasAlgorithmVectors(std::vector<real_t>& thomas_denom,
-                                        std::vector<real_t>& thomas_c);
+                                        std::vector<real_t>& thomas_c) const;
 
   /// Apply Dirichlet boundary conditions to the diffusion grid
   ///
@@ -223,6 +220,46 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   /// @param z Z-coordinate in voxel space
   /// @return Linear index in the flattened 3D array
   size_t GetBoxIndex(size_t x, size_t y, size_t z) const;
+
+  /// Apply boundary conditions if Dirichlet boundaries are enabled
+  void ApplyBoundaryConditionsIfNeeded();
+
+  /// Solve Thomas algorithm for a specific direction
+  ///
+  /// @param direction Direction to solve (0=X, 1=Y, 2=Z)
+  void SolveDirectionThomas(unsigned int direction);
+
+  /// Perform forward elimination step of Thomas algorithm
+  ///
+  /// @param direction Direction being solved (0=X, 1=Y, 2=Z)
+  /// @param outer Outer loop index
+  /// @param middle Middle loop index
+  /// @param thomas_denom Precomputed denominators for this direction
+  /// @param jump Index jump value for this direction
+  void ForwardElimination(unsigned int direction, unsigned int outer, 
+                         unsigned int middle, const std::vector<real_t>& thomas_denom, 
+                         unsigned int jump);
+
+  /// Perform back substitution step of Thomas algorithm
+  ///
+  /// @param direction Direction being solved (0=X, 1=Y, 2=Z)
+  /// @param outer Outer loop index
+  /// @param middle Middle loop index
+  /// @param thomas_c Precomputed coefficients for this direction
+  /// @param jump Index jump value for this direction
+  void BackSubstitution(unsigned int direction, unsigned int outer, 
+                       unsigned int middle, const std::vector<real_t>& thomas_c, 
+                       unsigned int jump);
+
+  /// Get the linear index for given direction and loop indices
+  ///
+  /// @param direction Direction (0=X, 1=Y, 2=Z)
+  /// @param outer Outer loop index
+  /// @param middle Middle loop index
+  /// @param inner Inner loop index
+  /// @return Linear index in the flattened array
+  size_t GetLoopIndex(unsigned int direction, unsigned int outer, 
+                     unsigned int middle, unsigned int inner) const;
 
   BDM_CLASS_DEF_OVERRIDE(DiffusionThomasAlgorithm, 1);
 };

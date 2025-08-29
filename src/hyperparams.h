@@ -179,6 +179,8 @@ constexpr real_t kAdhesionCartCart = 0.0;
 constexpr real_t kAdhesionCartTumor = 0.0;
 /// Adhesion coeficient between tumor cells and CAR-T cells
 constexpr real_t kAdhesionTumorCart = 0.0;
+/// Divisor for dividing directions
+constexpr real_t kDirectionsDivisor = 3.0;
 
 /// Do not change
 // coefficientes for the two step Adams-Bashforth approximation of the time
