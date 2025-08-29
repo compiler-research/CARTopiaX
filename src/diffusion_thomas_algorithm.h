@@ -22,12 +22,13 @@
 #ifndef DIFFUSION_THOMAS_ALGORITHM_H_
 #define DIFFUSION_THOMAS_ALGORITHM_H_
 
+#include <cstddef>
 #include <string>
 #include <vector>
-#include <cstddef>
+
+#include "core/diffusion/diffusion_grid.h"
 #include "core/real_t.h"
 #include "core/util/root.h"
-#include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {
 
@@ -62,7 +63,9 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
 
   /// Concentration setters
   void SetConcentration(real_t x, real_t y, real_t z, real_t amount) {
-    SetConcentration(GetBoxIndex(static_cast<size_t>(x), static_cast<size_t>(y), static_cast<size_t>(z)), amount);
+    SetConcentration(GetBoxIndex(static_cast<size_t>(x), static_cast<size_t>(y),
+                                 static_cast<size_t>(z)),
+                     amount);
   }
 
   void SetConcentration(size_t idx, real_t amount);
@@ -128,7 +131,6 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   void ComputeConsumptionsSecretions();
 
  private:
-
   /// Number of voxels in each spatial direction
   // NOLINTNEXTLINE(readability-identifier-naming)
   size_t resolution_;
@@ -236,9 +238,10 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   /// @param middle Middle loop index
   /// @param thomas_denom Precomputed denominators for this direction
   /// @param jump Index jump value for this direction
-  void ForwardElimination(unsigned int direction, unsigned int outer, 
-                         unsigned int middle, const std::vector<real_t>& thomas_denom, 
-                         unsigned int jump);
+  void ForwardElimination(unsigned int direction, unsigned int outer,
+                          unsigned int middle,
+                          const std::vector<real_t>& thomas_denom,
+                          unsigned int jump);
 
   /// Perform back substitution step of Thomas algorithm
   ///
@@ -247,9 +250,9 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   /// @param middle Middle loop index
   /// @param thomas_c Precomputed coefficients for this direction
   /// @param jump Index jump value for this direction
-  void BackSubstitution(unsigned int direction, unsigned int outer, 
-                       unsigned int middle, const std::vector<real_t>& thomas_c, 
-                       unsigned int jump);
+  void BackSubstitution(unsigned int direction, unsigned int outer,
+                        unsigned int middle,
+                        const std::vector<real_t>& thomas_c, unsigned int jump);
 
   /// Get the linear index for given direction and loop indices
   ///
@@ -258,8 +261,8 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
   /// @param middle Middle loop index
   /// @param inner Inner loop index
   /// @return Linear index in the flattened array
-  size_t GetLoopIndex(unsigned int direction, unsigned int outer, 
-                     unsigned int middle, unsigned int inner) const;
+  size_t GetLoopIndex(unsigned int direction, unsigned int outer,
+                      unsigned int middle, unsigned int inner) const;
 
   BDM_CLASS_DEF_OVERRIDE(DiffusionThomasAlgorithm, 1);
 };

@@ -24,6 +24,7 @@
 
 #include <cmath>
 #include <cstddef>
+
 #include "core/real_t.h"
 #include "core/util/math.h"
 
@@ -147,7 +148,8 @@ constexpr int kResolutionGridSubstances = 50;  // 50 // voxels per axis
 constexpr real_t kVoxelVolume =
     (static_cast<real_t>(kBoundedSpaceLength) / kResolutionGridSubstances) *
     (static_cast<real_t>(kBoundedSpaceLength) / kResolutionGridSubstances) *
-    (static_cast<real_t>(kBoundedSpaceLength) / kResolutionGridSubstances);  // Do not modify this line
+    (static_cast<real_t>(kBoundedSpaceLength) /
+     kResolutionGridSubstances);  // Do not modify this line
 /// Diffusion coefficient of oxygen in μm²/min
 constexpr real_t kDiffusionCoefficientOxygen =
     100000;  // 100000 micrometers^2/minute
@@ -205,7 +207,7 @@ constexpr real_t kDnew = 1.5 * kDtMechanics;
 constexpr real_t kDold = -0.5 * kDtMechanics;
 
 /// Large time to avoid division by 0
-constexpr real_t kTimeTooLarge = 1e100;  
+constexpr real_t kTimeTooLarge = 1e100;
 
 /// Do not change this line
 const size_t gKLengthBoxMechanics =

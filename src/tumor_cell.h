@@ -22,17 +22,17 @@
 #ifndef TUMOR_CELL_H_
 #define TUMOR_CELL_H_
 
-#include "core/util/root.h"
 #include "core/agent/agent.h"
 #include "core/agent/cell.h"
-#include "core/behavior/behavior.h"
-#include "core/diffusion/diffusion_grid.h"
 #include "core/agent/new_agent_event.h"
-#include "core/real_t.h"
+#include "core/behavior/behavior.h"
+#include "core/container/math_array.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/interaction_force.h"
+#include "core/real_t.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/container/math_array.h"
+#include "core/util/root.h"
 
 namespace bdm {
 
@@ -63,18 +63,12 @@ enum class TumorCellState : int {
 /// agressiveness from 1 (most agressive) until 4 (least agressive) based on the
 /// expressed oncoprotein level. Type 5 cells are dead cells
 enum class TumorCellType : int {
-  kType0 =
-      0,  ///< Unclassified tumor cells
-  kType1 =
-      1,  ///< Most aggressive tumor cells
-  kType2 =
-      2,  ///< Moderately aggressive tumor cells
-  kType3 =
-      3,  ///< Less aggressive tumor cells
-  kType4 =
-      4,  ///< Least aggressive tumor cells
-  kType5 =
-      5   ///< Dead tumor cells
+  kType0 = 0,  ///< Unclassified tumor cells
+  kType1 = 1,  ///< Most aggressive tumor cells
+  kType2 = 2,  ///< Moderately aggressive tumor cells
+  kType3 = 3,  ///< Less aggressive tumor cells
+  kType4 = 4,  ///< Least aggressive tumor cells
+  kType5 = 5   ///< Dead tumor cells
 };
 
 /// Tumor cell class implementation
@@ -361,9 +355,11 @@ struct StateControlGrowProliferate : public Behavior {
 
   // Special member functions
   StateControlGrowProliferate(const StateControlGrowProliferate&) = default;
-  StateControlGrowProliferate& operator=(const StateControlGrowProliferate&) = default;
+  StateControlGrowProliferate& operator=(const StateControlGrowProliferate&) =
+      default;
   StateControlGrowProliferate(StateControlGrowProliferate&&) = default;
-  StateControlGrowProliferate& operator=(StateControlGrowProliferate&&) = default;
+  StateControlGrowProliferate& operator=(StateControlGrowProliferate&&) =
+      default;
 
   ~StateControlGrowProliferate() override = default;
 
@@ -385,7 +381,6 @@ struct StateControlGrowProliferate : public Behavior {
   /// @param cell Pointer to the tumor cell being managed
   /// @param oxygen_level Current oxygen concentration at the cell's location
   void ManageLivingCell(TumorCell* cell, real_t oxygen_level);
-
 };
 
 }  // namespace bdm

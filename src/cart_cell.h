@@ -22,17 +22,17 @@
 #ifndef CART_CELL_H_
 #define CART_CELL_H_
 
-#include "core/util/root.h"
 #include "core/agent/agent.h"
 #include "core/agent/cell.h"
-#include "core/behavior/behavior.h"
-#include "core/diffusion/diffusion_grid.h"
-#include "core/container/math_array.h"
 #include "core/agent/new_agent_event.h"
-#include "core/real_t.h"
+#include "core/behavior/behavior.h"
+#include "core/container/math_array.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/interaction_force.h"
-#include "tumor_cell.h"
+#include "core/real_t.h"
+#include "core/util/root.h"
 
+#include "tumor_cell.h"
 
 namespace bdm {
 
@@ -61,8 +61,9 @@ class CartCell : public Cell {
  public:
   CartCell() = default;
   explicit CartCell(const Real3& position);
-  
-  // Copy and move constructors/destructors (assignment operators are deleted by base class)
+
+  // Copy and move constructors/destructors (assignment operators are deleted by
+  // base class)
   CartCell(const CartCell&) = default;
   CartCell(CartCell&&) = default;
   ~CartCell() override = default;
@@ -270,8 +271,9 @@ struct StateControlCart : public Behavior {
   BDM_BEHAVIOR_HEADER(StateControlCart, Behavior, 1);
 
   StateControlCart() { AlwaysCopyToNew(); }
-  
-  // Copy and move constructors/destructors (assignment operators handled by base class)
+
+  // Copy and move constructors/destructors (assignment operators handled by
+  // base class)
   StateControlCart(const StateControlCart&) = default;
   StateControlCart(StateControlCart&&) = default;
   ~StateControlCart() override = default;

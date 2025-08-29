@@ -19,29 +19,30 @@
  * for the compiler-research.org organization.
  */
 
-#include "cart_cell.h"
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
-#include "hyperparams.h"
-#include "core/util/root.h"
+
 #include "core/agent/agent.h"
 #include "core/agent/cell.h"
-#include "core/resource_manager.h"
-#include "core/behavior/behavior.h"
-#include "core/diffusion/diffusion_grid.h"
-#include "core/container/math_array.h"
-#include "core/functor.h"
 #include "core/agent/new_agent_event.h"
-#include "core/real_t.h"
-#include "core/util/log.h"
+#include "core/behavior/behavior.h"
+#include "core/container/math_array.h"
+#include "core/diffusion/diffusion_grid.h"
+#include "core/functor.h"
 #include "core/interaction_force.h"
+#include "core/real_t.h"
+#include "core/resource_manager.h"
+#include "core/util/log.h"
+#include "core/util/root.h"
+
+#include "cart_cell.h"
+#include "hyperparams.h"
 #include "tumor_cell.h"
 #include "utils_aux.h"
 
 namespace bdm {
-
 
 CartCell::CartCell(const Real3& position)
     : state_(CartCellState::kAlive),
@@ -66,7 +67,8 @@ CartCell::CartCell(const Real3& position)
   SetVolume(kDefaultVolumeNewCartCell);
   const ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
   oxygen_dgrid_ = rm.GetDiffusionGrid("oxygen");
-  immunostimulatory_factor_dgrid_ = rm.GetDiffusionGrid("immunostimulatory_factor");
+  immunostimulatory_factor_dgrid_ =
+      rm.GetDiffusionGrid("immunostimulatory_factor");
   ComputeConstantsConsumptionSecretion();
 }
 
@@ -87,8 +89,8 @@ real_t CartCell::GetTargetTotalVolume() const {
 // convergence
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void CartCell::ChangeVolumeExponentialRelaxationEquation(
-  real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
-  real_t relaxation_rate_fluid) {
+    real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
+    real_t relaxation_rate_fluid) {
   // Exponential relaxation towards the target volume
   const real_t current_total_volume = GetVolume();
   const real_t fluid_fraction = GetFluidFraction();
@@ -110,7 +112,8 @@ void CartCell::ChangeVolumeExponentialRelaxationEquation(
     new_fluid = 0.0;
   }
 
-  const real_t nuclear_fluid = new_fluid * (nuclear_volume / current_total_volume);
+  const real_t nuclear_fluid =
+      new_fluid * (nuclear_volume / current_total_volume);
   // real_t cytoplasm_fluid = new_fluid - nuclear_fluid;
 
   real_t nuclear_solid = current_nuclear_solid +
@@ -122,11 +125,11 @@ void CartCell::ChangeVolumeExponentialRelaxationEquation(
   }
 
   const real_t target_cytoplasm_solid =
-    GetTargetRelationCytoplasmNucleus() * GetTargetNucleusSolid();
+      GetTargetRelationCytoplasmNucleus() * GetTargetNucleusSolid();
   real_t cytoplasm_solid =
-    current_cytoplasm_solid +
-    kDtCycle * relaxation_rate_cytoplasm *
-      (target_cytoplasm_solid - current_cytoplasm_solid);
+      current_cytoplasm_solid +
+      kDtCycle * relaxation_rate_cytoplasm *
+          (target_cytoplasm_solid - current_cytoplasm_solid);
   // Clamp to zero to prevent negative volumes
   if (cytoplasm_solid < 0.0) {
     cytoplasm_solid = 0.0;
@@ -264,9 +267,10 @@ void StateControlCart::Run(Agent* agent) {
 
         if (sim->GetRandom()->Uniform(1.0) <
             kDtCycle /
-                std::max(cell->GetCurrentLiveTime(),
-                         kEpsilon)) {  // Probability of death= 1/CurrentLiveTime,
-                                    // avoiding division by 0
+                std::max(
+                    cell->GetCurrentLiveTime(),
+                    kEpsilon)) {  // Probability of death= 1/CurrentLiveTime,
+                                  // avoiding division by 0
           // the cell Dies
           cell->SetState(CartCellState::kApoptotic);
           cell->SetTimerState(0);  // Reset timer_state, it should be 0 anyway
@@ -295,7 +299,8 @@ void StateControlCart::Run(Agent* agent) {
         break;
       }
       case CartCellState::kApoptotic: {
-        cell->SetTimerState(static_cast<int>(static_cast<real_t>(cell->GetTimerState()) + kDtCycle));
+        cell->SetTimerState(static_cast<int>(
+            static_cast<real_t>(cell->GetTimerState()) + kDtCycle));
 
         cell->ChangeVolumeExponentialRelaxationEquation(
             kVolumeRelaxarionRateCytoplasmApoptotic,

@@ -19,11 +19,13 @@
  * for the compiler-research.org organization.
  */
 
-#include "forces_tumor_cart.h"
 #include <algorithm>
 #include <cmath>
+
 #include "core/container/math_array.h"
 #include "core/real_t.h"
+
+#include "forces_tumor_cart.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
 #include "utils_aux.h"
@@ -53,8 +55,8 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
       (kBoundedSpaceLength)*round(displacement[2] / (kBoundedSpaceLength));
 
   const real_t dist_sq = displacement[0] * displacement[0] +
-                   displacement[1] * displacement[1] +
-                   displacement[2] * displacement[2];
+                         displacement[1] * displacement[1] +
+                         displacement[2] * displacement[2];
   const real_t distance = std::max(std::sqrt(dist_sq), kEpsilonDistance);
 
   constexpr real_t kHalf = 2.0;
@@ -62,8 +64,8 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
   const real_t radius_b = b->GetDiameter() / kHalf;
   const real_t combined_radius = radius_a + radius_b;
   // combined_radius=16.8254;//Debug
-  // std::cout << "Debug: combined_radius = " << combined_radius << ", distance = " << distance <<
-  // std::endl;// Debug output
+  // std::cout << "Debug: combined_radius = " << combined_radius << ", distance
+  // = " << distance << std::endl;// Debug output
   real_t temp_r = 0.0;
 
   const auto* a_tumor = dynamic_cast<const TumorCell*>(a);
@@ -78,10 +80,11 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
     real_t repulsion = NAN;
     // std::cout << "temp_r = " << temp_r<< std::endl;// Debug output
 
-    if ((a_tumor != nullptr) && (b_tumor != nullptr)) {            // two tumor cells
+    if ((a_tumor != nullptr) && (b_tumor != nullptr)) {  // two tumor cells
       repulsion = kRepulsionTumorTumor;  // std::sqrt(kRepulsionTumorTumor *
                                          // kRepulsionTumorTumor);
-    } else if ((a_tumor == nullptr) && (b_tumor == nullptr)) {   // two CAR-T cells
+    } else if ((a_tumor == nullptr) &&
+               (b_tumor == nullptr)) {  // two CAR-T cells
       repulsion =
           kRepulsionCartCart;  // std::sqrt(kRepulsionCartCart*kRepulsionCartCart);
     } else {                   // one tumor cell and one CAR-T
@@ -95,7 +98,8 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
   // output
 
   // Adhesion
-  const real_t max_interaction_distance = kMaxRelativeAdhesionDistance * combined_radius;
+  const real_t max_interaction_distance =
+      kMaxRelativeAdhesionDistance * combined_radius;
   // max_interaction_distance=21.0318;//Debug
   // std::cout << "max_interaction_distance = " << max_interaction_distance <<
   // std::endl;// Debug output

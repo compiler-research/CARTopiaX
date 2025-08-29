@@ -22,9 +22,8 @@
 #ifndef FORCES_TUMOR_CART_H_
 #define FORCES_TUMOR_CART_H_
 
-#include "biodynamo.h"
-#include "core/interaction_force.h"
 #include "core/container/math_array.h"
+#include "core/interaction_force.h"
 
 namespace bdm {
 
