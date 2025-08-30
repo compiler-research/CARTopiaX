@@ -209,6 +209,11 @@ constexpr real_t kDold = -0.5 * kDtMechanics;
 /// Large time to avoid division by 0
 constexpr real_t kTimeTooLarge = 1e100;
 
+/// Minutes in an hour
+constexpr real_t kMinutesInAnHour = 60.0;
+/// Hours in a day
+constexpr real_t kHoursInADay = 24.0;
+
 /// Do not change this line
 const size_t gKLengthBoxMechanics =
     22;  // Length of the box for mechanics in micrometers

@@ -169,7 +169,7 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
 }
 
 InteractionForce* InteractionVelocity::NewCopy() const {
-  return new InteractionVelocity();
+  return std::make_unique<InteractionVelocity>().release();
 }
 
 }  // namespace bdm

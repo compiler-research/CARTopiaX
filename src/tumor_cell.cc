@@ -176,12 +176,11 @@ void TumorCell::SetOncoproteineLevel(real_t level) {
 void TumorCell::SetTransformationRandomRate() {
   // avoid division by zero
   transformation_random_rate_ =
-      1 /
-      (std::max(
-          SamplePositiveGaussian(kAverageTimeTransformationRandomRate,
-                                 kStandardDeviationTransformationRandomRate) *
-              60.,  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-          kEpsilon));
+      1 / (std::max(SamplePositiveGaussian(
+                        kAverageTimeTransformationRandomRate,
+                        kStandardDeviationTransformationRandomRate) *
+                        kMinutesInAnHour,
+                    kEpsilon));
 }
 
 real_t TumorCell::GetTargetTotalVolume() const {

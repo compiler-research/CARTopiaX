@@ -64,8 +64,10 @@ int Simulate(int argc, const char** argv) {
   auto* scheduler = simulation.GetScheduler();
 
   auto* op = scheduler->GetOps("mechanical forces")[0];
+  std::unique_ptr<InteractionVelocity> interaction_velocity =
+      std::make_unique<InteractionVelocity>();
   op->GetImplementation<MechanicalForcesOp>()->SetInteractionForce(
-      new InteractionVelocity());
+      interaction_velocity.release());
 
   auto* env = dynamic_cast<UniformGridEnvironment*>(
       Simulation::GetActive()->GetEnvironment());
@@ -78,24 +80,26 @@ int Simulate(int argc, const char** argv) {
   // Oxygen
   // substance_id, name, diffusion_coefficient, decay_constant, resolution,
   // time_step
-  auto* oxygen_grid = new DiffusionThomasAlgorithm(
-      kOxygen, "oxygen",
-      kDiffusionCoefficientOxygen,  // 100000 micrometers^2/minute
-      kDecayConstantOxygen,         // 0.1 minutes^-1
-      kResolutionGridSubstances, kDtSubstances,
-      true);  // true indicates Dirichlet border conditions
-  rm->AddContinuum(oxygen_grid);
+  std::unique_ptr<DiffusionThomasAlgorithm> oxygen_grid =
+      std::make_unique<DiffusionThomasAlgorithm>(
+          kOxygen, "oxygen",
+          kDiffusionCoefficientOxygen,  // 100000 micrometers^2/minute
+          kDecayConstantOxygen,         // 0.1 minutes^-1
+          kResolutionGridSubstances, kDtSubstances,
+          true);  // true indicates Dirichlet border conditions
+  rm->AddContinuum(oxygen_grid.release());
 
   // Immunostimulatory Factor
   // substance_id, name, diffusion_coefficient, decay_constant, resolution
-  auto* immunostimulatory_factor_grid = new DiffusionThomasAlgorithm(
-      kImmunostimulatoryFactor, "immunostimulatory_factor",
-      kDiffusionCoefficientImmunostimulatoryFactor,  // 1000
-                                                     // micrometers^2/minute
-      kDecayConstantImmunostimulatoryFactor,         // 0.016 minutes^-1
-      kResolutionGridSubstances, kDtSubstances,
-      false);  // false indicates Neumann border conditions
-  rm->AddContinuum(immunostimulatory_factor_grid);
+  std::unique_ptr<DiffusionThomasAlgorithm> immunostimulatory_factor_grid =
+      std::make_unique<DiffusionThomasAlgorithm>(
+          kImmunostimulatoryFactor, "immunostimulatory_factor",
+          kDiffusionCoefficientImmunostimulatoryFactor,  // 1000
+                                                         // micrometers^2/minute
+          kDecayConstantImmunostimulatoryFactor,         // 0.016 minutes^-1
+          kResolutionGridSubstances, kDtSubstances,
+          false);  // false indicates Neumann border conditions
+  rm->AddContinuum(immunostimulatory_factor_grid.release());
 
   // Boundary Conditions Dirichlet: simulating absorption or total loss at the
   // boundaries of the space.
@@ -124,15 +128,20 @@ int Simulate(int argc, const char** argv) {
   const std::vector<Real3> positions =
       CreateSphereOfTumorCells(kInitialRadiusTumor);
   for (const auto& pos : positions) {
-    auto* tumor_cell = new TumorCell(pos);
-    tumor_cell->AddBehavior(new StateControlGrowProliferate());
-    ctxt->AddAgent(tumor_cell);
+    std::unique_ptr<TumorCell> tumor_cell = std::make_unique<TumorCell>(pos);
+    std::unique_ptr<StateControlGrowProliferate> state_control =
+        std::make_unique<StateControlGrowProliferate>();
+    tumor_cell->AddBehavior(state_control.release());
+    ctxt->AddAgent(tumor_cell.release());
   }
 
   // OutputSummary operation
-  auto* summary_op = new bdm::Operation("OutputSummary", kOutputCsvInterval);
-  summary_op->AddOperationImpl(bdm::kCpu, new bdm::OutputSummary());
-  scheduler->ScheduleOp(summary_op);
+  std::unique_ptr<bdm::Operation> summary_op =
+      std::make_unique<bdm::Operation>("OutputSummary", kOutputCsvInterval);
+  std::unique_ptr<bdm::OutputSummary> output_summary =
+      std::make_unique<bdm::OutputSummary>();
+  summary_op->AddOperationImpl(bdm::kCpu, output_summary.release());
+  scheduler->ScheduleOp(summary_op.release());
 
   // Run simulation
   // simulate kTotalMinutesToSimulate minutes including the last minute

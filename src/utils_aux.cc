@@ -178,12 +178,8 @@ void OutputSummary::operator()() {
       // Calculate time in days, hours, minutes
       const double total_minutes =
           Simulation::GetActive()->GetScheduler()->GetSimulatedTime();
-      const double total_hours =
-          total_minutes /
-          60.0;  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-      const double total_days =
-          total_hours /
-          24.0;  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      const double total_hours = total_minutes / kMinutesInAnHour;
+      const double total_days = total_hours / kHoursInADay;
 
       // Count total cells, tumor cells of each type and tumor radius
       size_t total_num_tumor_cells = 0;
