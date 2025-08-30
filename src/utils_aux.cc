@@ -21,7 +21,6 @@
 
 #include <cmath>
 #include <cstddef>
-#include <cstdint>
 #include <fstream>
 #include <ios>
 #include <tuple>
@@ -71,9 +70,9 @@ std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius) {
           3.0);  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
   // Use integer counters instead of floating-point loop variables
-  int z_steps = static_cast<int>((2 * sphere_radius) / spacing_z) + 1;
-  int x_steps = static_cast<int>((2 * sphere_radius) / spacing_x) + 1;
-  int y_steps = static_cast<int>((2 * sphere_radius) / spacing_y) + 1;
+  const int z_steps = static_cast<int>((2 * sphere_radius) / spacing_z) + 1;
+  const int x_steps = static_cast<int>((2 * sphere_radius) / spacing_x) + 1;
+  const int y_steps = static_cast<int>((2 * sphere_radius) / spacing_y) + 1;
 
   for (int zi = 0; zi < z_steps; ++zi) {
     const real_t z = -sphere_radius + zi * spacing_z;

@@ -83,7 +83,7 @@ struct OutputSummary : public StandaloneOperationImpl {
 
  public:
   void SetFrequency(uint64_t frequency) { frequency_ = frequency; }
-  uint64_t GetFrequency() const { return frequency_; }
+  [[nodiscard]] uint64_t GetFrequency() const { return frequency_; }
 
  private:
   /// Frequency of output (every N simulation steps)

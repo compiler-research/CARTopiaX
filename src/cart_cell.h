@@ -23,14 +23,11 @@
 #define CART_CELL_H_
 
 #include "core/agent/agent.h"
-#include "core/agent/cell.h"
 #include "core/agent/new_agent_event.h"
-#include "core/behavior/behavior.h"
 #include "core/container/math_array.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/interaction_force.h"
 #include "core/real_t.h"
-#include "core/util/root.h"
 
 #include "tumor_cell.h"
 
@@ -62,8 +59,7 @@ class CartCell : public Cell {
   CartCell() = default;
   explicit CartCell(const Real3& position);
 
-  // Copy and move constructors/destructors (assignment operators are deleted by
-  // base class)
+  // Copy and move constructors/destructors/assignment operators
   CartCell(const CartCell&) = default;
   CartCell(CartCell&&) = default;
   ~CartCell() override = default;
@@ -153,7 +149,8 @@ class CartCell : public Cell {
   /// @param relaxation_rate_fluid Relaxation rate for fluid volume changes
   void ChangeVolumeExponentialRelaxationEquation(
       real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
-      real_t relaxation_rate_fluid);
+      real_t
+          relaxation_rate_fluid);  // NOLINT(bugprone-easily-swappable-parameters)
 
   /// Calculate displacement of the cell
   ///
@@ -272,10 +269,11 @@ struct StateControlCart : public Behavior {
 
   StateControlCart() { AlwaysCopyToNew(); }
 
-  // Copy and move constructors/destructors (assignment operators handled by
-  // base class)
+  // Special member functions
   StateControlCart(const StateControlCart&) = default;
   StateControlCart(StateControlCart&&) = default;
+  StateControlCart& operator=(const StateControlCart&) = default;
+  StateControlCart& operator=(StateControlCart&&) = default;
   ~StateControlCart() override = default;
 
   /// Execute the state control behavior

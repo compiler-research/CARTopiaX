@@ -32,7 +32,6 @@
 #include "core/real_t.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/util/root.h"
 
 namespace bdm {
 
@@ -87,35 +86,17 @@ class TumorCell : public Cell {
   BDM_AGENT_HEADER(TumorCell, Cell, 1);
 
  public:
-  TumorCell()
-      : state_(TumorCellState::kAlive),
-        timer_state_(0),
-        oxygen_dgrid_(nullptr),
-        immunostimulatory_factor_dgrid_(nullptr),
-        oncoproteine_level_(0.0),
-        transformation_random_rate_(0.0),
-        attached_to_cart_(false),
-        fluid_fraction_(0.0),
-        nuclear_volume_(0.0),
-        target_cytoplasm_solid_(0.0),
-        target_nucleus_solid_(0.0),
-        target_fraction_fluid_(0.0),
-        target_relation_cytoplasm_nucleus_(0.0),
-        type_(TumorCellType::kType0),
-        oxygen_consumption_rate_(0.0),
-        immunostimulatory_factor_secretion_rate_(0.0),
-        constant1_oxygen_(0.0),
-        constant2_oxygen_(0.0),
-        constant1_immunostimulatory_factor_(0.0),
-        constant2_immunostimulatory_factor_(0.0) {}
+  TumorCell() = default;
 
   explicit TumorCell(const Real3& position);
 
   // Special member functions
   TumorCell(const TumorCell&) = default;
   TumorCell(TumorCell&&) = default;
-
   ~TumorCell() override = default;
+
+  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
+  // Assignment operators are implicitly deleted due to base class (Cell/Agent)
 
   /// Called when a new agent is created (after cell division)
   /// @param event The new agent event containing initialization data
@@ -312,7 +293,7 @@ class TumorCell : public Cell {
 
   /// Velocity of the cell in the previous time step
   // NOLINTNEXTLINE(readability-identifier-naming)
-  Real3 older_velocity_ = {};
+  Real3 older_velocity_;
 
   /// Rate of oxygen consumption by the cell
   // NOLINTNEXTLINE(readability-identifier-naming)

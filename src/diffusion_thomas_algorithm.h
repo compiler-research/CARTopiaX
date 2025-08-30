@@ -49,16 +49,10 @@ class DiffusionThomasAlgorithm : public DiffusionGrid {
         constant1a_(0.0),
         constant2_(0.0),
         constant3_(0.0),
-        constant3a_(0.0),
-        thomas_c_x_(),
-        thomas_denom_x_(),
-        thomas_c_y_(),
-        thomas_denom_y_(),
-        thomas_c_z_(),
-        thomas_denom_z_() {}
+        constant3a_(0.0) {}
 
   DiffusionThomasAlgorithm(int substance_id, std::string substance_name,
-                           real_t dc, real_t mu, int resolution, real_t dt,
+                           real_t dc, real_t mu, real_t resolution, real_t dt,
                            bool dirichlet_border);
 
   /// Concentration setters

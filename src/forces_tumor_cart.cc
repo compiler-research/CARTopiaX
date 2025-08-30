@@ -22,7 +22,10 @@
 #include <algorithm>
 #include <cmath>
 
+#include "core/agent/agent.h"
+#include "core/agent/cell.h"
 #include "core/container/math_array.h"
+#include "core/interaction_force.h"
 #include "core/real_t.h"
 
 #include "forces_tumor_cart.h"
@@ -112,10 +115,11 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
 
     // std::cout << "temp_a = " << temp_a << std::endl;// Debug output
 
-    real_t adhesion;
-    if (a_tumor && b_tumor) {  // two tumor cells
+    real_t adhesion = NAN;                               // Initialize to NAN
+    if ((a_tumor != nullptr) && (b_tumor != nullptr)) {  // two tumor cells
       adhesion = kAdhesionTumorTumor;
-    } else if (!a_tumor && !b_tumor) {  // two CAR-T cells
+    } else if ((a_tumor == nullptr) &&
+               (b_tumor == nullptr)) {  // two CAR-T cells
       adhesion = kAdhesionCartCart;
     } else {  // one tumor cell and one CAR-T
       adhesion = std::sqrt(kAdhesionCartTumor * kAdhesionTumorCart);
@@ -133,7 +137,7 @@ Real4 InteractionVelocity::Calculate(const Agent* lhs, const Agent* rhs) const {
   if (std::abs(temp_r) < kEpsilon) {
     return {0.0, 0.0, 0.0, 0.0};
   }
-  real_t force_magnitude = temp_r / distance;
+  const real_t force_magnitude = temp_r / distance;
 
   // Debug Output volcities
   // std::ofstream file("output/intercation_velocities.csv", std::ios::app);

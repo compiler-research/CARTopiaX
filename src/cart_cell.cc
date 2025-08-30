@@ -20,6 +20,7 @@
  */
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
@@ -35,7 +36,6 @@
 #include "core/real_t.h"
 #include "core/resource_manager.h"
 #include "core/util/log.h"
-#include "core/util/root.h"
 
 #include "cart_cell.h"
 #include "hyperparams.h"
@@ -44,25 +44,7 @@
 
 namespace bdm {
 
-CartCell::CartCell(const Real3& position)
-    : state_(CartCellState::kAlive),
-      timer_state_(0),
-      oxygen_dgrid_(nullptr),
-      immunostimulatory_factor_dgrid_(nullptr),
-      attached_to_tumor_cell_(false),
-      current_live_time_(kAverageMaximumTimeUntillApoptosisCart),
-      fluid_fraction_(kDefaultFractionFluidCartCell),
-      nuclear_volume_(kDefaultVolumeNucleusCartCell),
-      target_cytoplasm_solid_(0.0),
-      target_nucleus_solid_(0.0),
-      target_fraction_fluid_(0.0),
-      target_relation_cytoplasm_nucleus_(0.0),
-      older_velocity_({0, 0, 0}),
-      oxygen_consumption_rate_(kDefaultOxygenConsumption),
-      immunostimulatory_factor_secretion_rate_(0.0),
-      constant1_oxygen_(0.0),
-      constant2_oxygen_(0.0),
-      attached_cell_(nullptr) {
+CartCell::CartCell(const Real3& position) {
   SetPosition(position);
   SetVolume(kDefaultVolumeNewCartCell);
   const ResourceManager& rm = *Simulation::GetActive()->GetResourceManager();
@@ -89,7 +71,7 @@ real_t CartCell::GetTargetTotalVolume() const {
 // convergence
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void CartCell::ChangeVolumeExponentialRelaxationEquation(
-    real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,
+    real_t relaxation_rate_cytoplasm, real_t relaxation_rate_nucleus,  // NOLINT
     real_t relaxation_rate_fluid) {
   // Exponential relaxation towards the target volume
   const real_t current_total_volume = GetVolume();
@@ -144,7 +126,7 @@ void CartCell::ChangeVolumeExponentialRelaxationEquation(
   const real_t new_volume = new_total_solid + new_fluid;
 
   // Avoid division by zero
-  real_t new_fraction_fluid = new_fluid / (kEpsilon + new_volume);
+  const real_t new_fraction_fluid = new_fluid / (kEpsilon + new_volume);
 
   // Update the cell's properties
   // if the volume has changed
@@ -174,7 +156,7 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
   // We check for every neighbor object if they touch us, i.e. push us
   // away and agreagate the velocities
 
-  uint64_t non_zero_neighbor_forces = 0;
+  uint64_t non_zero_neighbor_forces = 0;  // NOLINT
   if (!IsStatic()) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     auto calculate_neighbor_forces =
@@ -212,7 +194,7 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force,
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 real_t CartCell::ConsumeSecreteSubstance(int substance_id,
                                          real_t old_concentration) {
-  real_t res = NAN;
+  real_t res = NAN;  // NOLINT
   if (substance_id == oxygen_dgrid_->GetContinuumId()) {
     // consuming oxygen
     res = (old_concentration + constant1_oxygen_) / constant2_oxygen_;

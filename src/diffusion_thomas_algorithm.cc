@@ -27,7 +27,6 @@
 #include "core/agent/agent.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/real_t.h"
-#include "core/util/root.h"
 
 #include "cart_cell.h"
 #include "diffusion_thomas_algorithm.h"
@@ -36,15 +35,15 @@
 
 namespace bdm {
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id,
+DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id,  // NOLINT
                                                    std::string substance_name,
                                                    real_t dc, real_t mu,
-                                                   int resolution, real_t dt,
+                                                   real_t resolution, real_t dt,
                                                    bool dirichlet_border)
     : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
-                    resolution),
-      resolution_(static_cast<size_t>(GetResolution())),
+                    static_cast<int>(
+                        resolution)),  // Added cast for consistency with parent
+      resolution_(GetResolution()),
       d_space_(static_cast<real_t>(kBoundedSpaceLength) /
                static_cast<real_t>(resolution_)),
       dirichlet_border_(dirichlet_border),
@@ -88,7 +87,8 @@ void DiffusionThomasAlgorithm::InitializeThomasAlgorithmVectors(
 
 // Apply Dirichlet boundary conditions to the grid
 void DiffusionThomasAlgorithm::ApplyDirichletBoundaryConditions() {
-  const real_t origin = GetDimensionsPtr()
+  const auto* dimensions_ptr = GetDimensionsPtr();
+  const real_t origin = dimensions_ptr
       [0];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   const real_t simulated_time = GetSimulatedTime();
 #pragma omp parallel
@@ -165,14 +165,10 @@ void DiffusionThomasAlgorithm::ApplyDirichletBoundaryConditions() {
 
 // Sets the concentration at a specific voxel
 void DiffusionThomasAlgorithm::SetConcentration(size_t idx, real_t amount) {
-  const auto* all_concentrations =
-      GetAllConcentrations();  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  ChangeConcentrationBy(
-      idx,
-      amount -
-          all_concentrations
-              [idx],  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      InteractionMode::kAdditive, false);
+  const auto* all_concentrations = GetAllConcentrations();
+  const real_t current_concentration = all_concentrations[idx];
+  ChangeConcentrationBy(idx, amount - current_concentration,
+                        InteractionMode::kAdditive, false);
 }
 
 // Flattens the 3D coordinates (x, y, z) into a 1D index
@@ -223,16 +219,29 @@ void DiffusionThomasAlgorithm::ApplyBoundaryConditionsIfNeeded() {
 }
 
 void DiffusionThomasAlgorithm::SolveDirectionThomas(unsigned int direction) {
-  const auto& thomas_denom = (direction == 0)   ? thomas_denom_x_
-                             : (direction == 1) ? thomas_denom_y_
-                                                : thomas_denom_z_;
-  const auto& thomas_c = (direction == 0)   ? thomas_c_x_
-                         : (direction == 1) ? thomas_c_y_
-                                            : thomas_c_z_;
-  const unsigned int jump =
-      (direction == 0)   ? static_cast<unsigned int>(jump_i_)
-      : (direction == 1) ? static_cast<unsigned int>(jump_j_)
-                         : static_cast<unsigned int>(jump_k_);
+  const auto& thomas_denom = [this, direction]() -> const std::vector<real_t>& {
+    if (direction == 0)
+      return thomas_denom_x_;
+    if (direction == 1)
+      return thomas_denom_y_;
+    return thomas_denom_z_;
+  }();
+
+  const auto& thomas_c = [this, direction]() -> const std::vector<real_t>& {
+    if (direction == 0)
+      return thomas_c_x_;
+    if (direction == 1)
+      return thomas_c_y_;
+    return thomas_c_z_;
+  }();
+
+  const unsigned int jump = [this, direction]() -> unsigned int {
+    if (direction == 0)
+      return static_cast<unsigned int>(jump_i_);
+    if (direction == 1)
+      return static_cast<unsigned int>(jump_j_);
+    return static_cast<unsigned int>(jump_k_);
+  }();
 
 #pragma omp parallel for collapse(2)
   for (unsigned int outer = 0; outer < resolution_; outer++) {
@@ -246,55 +255,46 @@ void DiffusionThomasAlgorithm::SolveDirectionThomas(unsigned int direction) {
   }
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void DiffusionThomasAlgorithm::ForwardElimination(
     unsigned int direction, unsigned int outer, unsigned int middle,
     const std::vector<real_t>& thomas_denom, unsigned int jump) {
   // Get initial index based on direction
   size_t ind = GetLoopIndex(direction, outer, middle, 0);
-  const auto* all_concentrations =
-      GetAllConcentrations();  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  SetConcentration(
-      ind,
-      all_concentrations[ind] /
-          thomas_denom
-              [0]);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const auto* all_concentrations = GetAllConcentrations();
+  const real_t initial_concentration = all_concentrations[ind];
+  SetConcentration(ind, initial_concentration / thomas_denom[0]);
 
   // Forward elimination loop
   for (unsigned int inner = 1; inner < resolution_; inner++) {
     ind = GetLoopIndex(direction, outer, middle, inner);
-    SetConcentration(
-        ind,
-        (all_concentrations
-             [ind] +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-         constant1_ *
-             all_concentrations
-                 [ind -
-                  jump]) /  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            thomas_denom[inner]);
+    const real_t current_concentration = all_concentrations[ind];
+    const real_t prev_concentration = all_concentrations[ind - jump];
+    SetConcentration(ind,
+                     (current_concentration + constant1_ * prev_concentration) /
+                         thomas_denom[inner]);
   }
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void DiffusionThomasAlgorithm::BackSubstitution(
     unsigned int direction, unsigned int outer, unsigned int middle,
     const std::vector<real_t>& thomas_c, unsigned int jump) {
-  const auto* all_concentrations =
-      GetAllConcentrations();  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  const auto* all_concentrations = GetAllConcentrations();
 
   // Back substitution loop
   for (int inner = static_cast<int>(resolution_) - 2; inner >= 0; inner--) {
-    size_t ind = GetLoopIndex(direction, outer, middle,
-                              static_cast<unsigned int>(inner));
+    const size_t ind = GetLoopIndex(direction, outer, middle,
+                                    static_cast<unsigned int>(inner));
+    const real_t current_concentration = all_concentrations[ind];
+    const real_t next_concentration = all_concentrations[ind + jump];
     SetConcentration(
-        ind,
-        all_concentrations
-                [ind] -  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            thomas_c[static_cast<size_t>(inner)] *
-                all_concentrations
-                    [ind +
-                     jump]);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        ind, current_concentration -
+                 thomas_c[static_cast<size_t>(inner)] * next_concentration);
   }
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 size_t DiffusionThomasAlgorithm::GetLoopIndex(unsigned int direction,
                                               unsigned int outer,
                                               unsigned int middle,
