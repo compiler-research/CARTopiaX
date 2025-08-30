@@ -29,6 +29,7 @@
 #include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/real_t.h"
+#include "core/resource_manager.h"
 #include "core/util/math.h"
 
 #include "hyperparams.h"

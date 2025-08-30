@@ -30,7 +30,6 @@
 #include "core/diffusion/diffusion_grid.h"
 #include "core/interaction_force.h"
 #include "core/real_t.h"
-#include "core/resource_manager.h"
 #include "core/scheduler.h"
 
 namespace bdm {

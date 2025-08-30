@@ -31,6 +31,7 @@
 #include "core/functor.h"
 #include "core/interaction_force.h"
 #include "core/real_t.h"
+#include "core/resource_manager.h"
 #include "core/util/log.h"
 
 #include "hyperparams.h"

@@ -27,6 +27,7 @@
 #include "core/agent/agent.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/real_t.h"
+#include "core/resource_manager.h"
 
 #include "cart_cell.h"
 #include "diffusion_thomas_algorithm.h"
@@ -36,11 +37,12 @@
 namespace bdm {
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id,  // NOLINT
-                                                   std::string substance_name,
-                                                   real_t dc, real_t mu,
-                                                   real_t resolution, real_t dt,
-                                                   bool dirichlet_border)
+DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(
+    int substance_id,              // NOLINT
+    std::string substance_name,    // NOLINT
+    real_t dc, real_t mu,          // NOLINT
+    real_t resolution, real_t dt,  // NOLINT
+    bool dirichlet_border)         // NOLINT
     : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
                     static_cast<int>(
                         resolution)),  // Added cast for consistency with parent
