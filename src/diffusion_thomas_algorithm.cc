@@ -35,6 +35,7 @@
 
 namespace bdm {
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id,  // NOLINT
                                                    std::string substance_name,
                                                    real_t dc, real_t mu,
@@ -220,28 +221,35 @@ void DiffusionThomasAlgorithm::ApplyBoundaryConditionsIfNeeded() {
 
 void DiffusionThomasAlgorithm::SolveDirectionThomas(unsigned int direction) {
   const auto& thomas_denom = [this, direction]() -> const std::vector<real_t>& {
-    if (direction == 0)
+    if (direction == 0) {
       return thomas_denom_x_;
-    if (direction == 1)
+    }
+    if (direction == 1) {
       return thomas_denom_y_;
+    }
+    // direction == 2
     return thomas_denom_z_;
   }();
 
   const auto& thomas_c = [this, direction]() -> const std::vector<real_t>& {
-    if (direction == 0)
+    if (direction == 0) {
       return thomas_c_x_;
-    if (direction == 1)
+    }
+    if (direction == 1) {
       return thomas_c_y_;
+    }
+    // direction == 2
     return thomas_c_z_;
   }();
 
   const unsigned int jump = [this, direction]() -> unsigned int {
-    if (direction == 0)
     if (direction == 0) {
       return static_cast<unsigned int>(jump_i_);
-}
-    if (direction == 1)
+    }
+    if (direction == 1) {
       return static_cast<unsigned int>(jump_j_);
+    }
+    // direction == 2
     return static_cast<unsigned int>(jump_k_);
   }();
 

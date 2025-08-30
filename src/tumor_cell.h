@@ -106,8 +106,8 @@ class TumorCell : public Cell {
   void SetState(TumorCellState state) { state_ = state; }
   TumorCellState GetState() const { return state_; }
 
-  void SetTimerState(int timer_state) { timer_state_ = timer_state; }
-  int GetTimerState() const { return timer_state_; }
+  void SetTimerState(real_t timer_state) { timer_state_ = timer_state; }
+  real_t GetTimerState() const { return timer_state_; }
 
   void SetOncoproteineLevel(real_t level);
   real_t GetOncoproteineLevel() const { return oncoproteine_level_; }
@@ -234,7 +234,7 @@ class TumorCell : public Cell {
 
   /// Timer to track time in the current state (in minutes)
   // NOLINTNEXTLINE(readability-identifier-naming)
-  int timer_state_ = 0;
+  real_t timer_state_ = 0;
 
   /// Pointer to the oxygen diffusion grid
   // NOLINTNEXTLINE(readability-identifier-naming)
@@ -355,13 +355,13 @@ struct StateControlGrowProliferate : public Behavior {
   /// @param oxygen_level Current oxygen concentration at the cell's location
   /// @param cell Pointer to the tumor cell being evaluated
   /// @return True if the cell should enter necrosis, false otherwise
-  bool ShouldEnterNecrosis(real_t oxygen_level, TumorCell* cell) const;
+  static bool ShouldEnterNecrosis(real_t oxygen_level, TumorCell* cell);
 
   /// Manage the behavior of a living tumor cell
   ///
   /// @param cell Pointer to the tumor cell being managed
   /// @param oxygen_level Current oxygen concentration at the cell's location
-  void ManageLivingCell(TumorCell* cell, real_t oxygen_level);
+  static void ManageLivingCell(TumorCell* cell, real_t oxygen_level);
 };
 
 }  // namespace bdm

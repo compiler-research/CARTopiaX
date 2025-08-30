@@ -23,7 +23,9 @@
 #define CART_CELL_H_
 
 #include "core/agent/agent.h"
+#include "core/agent/cell.h"
 #include "core/agent/new_agent_event.h"
+#include "core/behavior/behavior.h"
 #include "core/container/math_array.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/interaction_force.h"

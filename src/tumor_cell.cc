@@ -604,7 +604,7 @@ void StateControlGrowProliferate::ManageLivingCell(TumorCell* cell,
 
 // computes the probability of the cell entering necrosis
 bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,
-                                                      TumorCell* cell) const {
+                                                      TumorCell* cell) {
   // necrosis probability
   real_t multiplier = 0.0;  // Default multiplier for necrosis probability
 
