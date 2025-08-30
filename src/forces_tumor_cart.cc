@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "core/agent/agent.h"
 #include "core/agent/cell.h"
