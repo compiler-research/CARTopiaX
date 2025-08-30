@@ -237,7 +237,9 @@ void DiffusionThomasAlgorithm::SolveDirectionThomas(unsigned int direction) {
 
   const unsigned int jump = [this, direction]() -> unsigned int {
     if (direction == 0)
+    if (direction == 0) {
       return static_cast<unsigned int>(jump_i_);
+}
     if (direction == 1)
       return static_cast<unsigned int>(jump_j_);
     return static_cast<unsigned int>(jump_k_);
