@@ -142,14 +142,14 @@ void CarTCell::ChangeVolumeExponentialRelaxationEquation(
 }
 
 //compute Displacement
-Real3 CartCell::CalculateDisplacement(const InteractionForce* force, real_t squared_radius, real_t dt) {
+Real3 CarTCell::CalculateDisplacement(const InteractionForce* force, real_t squared_radius, real_t dt) {
 
   auto* sim = Simulation::GetActive();
 
   // real_t h = dt;
   Real3 movement_at_next_step{0, 0, 0};
   // this should be chaged in a future version of BioDynaMo in order to have a cleaner code instead of hardcoding it here
-  squared_radius=kSquaredMaxDistanceNeighborsForce;
+  squared_radius=gKSquaredMaxDistanceNeighborsForce;
 
   // the physics force to move the point mass
 
@@ -185,7 +185,7 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force, real_t squa
   //--------------------------------------------
   //CAR-T killing or victim cell escaping
   //--------------------------------------------
-  if (state_ == CartCellState::kAlive) {//If cell is not apoptotic
+  if (state_ == CarTCellState::kAlive) {//If cell is not apoptotic
 
     if (attached_to_tumor_cell_) {//attached to tumor cell
       // try to kill the cancer cell and in case of failure see if it manages to scape
@@ -252,7 +252,7 @@ Real3 CartCell::CalculateDisplacement(const InteractionForce* force, real_t squa
 }
 
 // Try to get attached to a tumor cell
-void CartCell::TryToGetAttachedTo(TumorCell* victim, real_t squared_distance, Random* rng){
+void CarTCell::TryToGetAttachedTo(TumorCell* victim, real_t squared_distance, Random* rng){
   //If the tumor cell is not already attached to a CAR-T cell, is not dead and is not too far away.
   if(!victim->IsAttachedToCart()&& !victim->IsDead() && squared_distance < kSquaredMaxAdhesionDistanceCart) {
 
@@ -293,7 +293,7 @@ void CartCell::TryToGetAttachedTo(TumorCell* victim, real_t squared_distance, Ra
 }
 
 //Try to induce apoptosis
-bool CartCell::TryToInduceApoptosis(bdm::AgentPointer<TumorCell> attached_cell, Random* rng) {
+bool CarTCell::TryToInduceApoptosis(bdm::AgentPointer<TumorCell> attached_cell, Random* rng) {
   // If there is no attached cell (this should not happen)
 
   if (!attached_to_tumor_cell_)

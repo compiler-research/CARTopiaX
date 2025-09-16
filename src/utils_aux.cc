@@ -22,6 +22,7 @@
 #include "utils_aux.h"
 #include "hyperparams.h"
 #include "tumor_cell.h"
+#include "cart_cell.h"
 #include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/real_t.h"
@@ -122,15 +123,15 @@ std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, size_t, real_t, real_
 
       // Count tumor cells by type and accumulate oncoprotein levels if the cell is alive
       switch (tumor_cell->GetType()) {
-        case 1: acumulator_oncoprotein += tumor_cell->GetOncoproteinLevel(); num_tumor_cells_type1++; break;
-        case 2: acumulator_oncoprotein += tumor_cell->GetOncoproteinLevel(); num_tumor_cells_type2++; break;
-        case 3: acumulator_oncoprotein += tumor_cell->GetOncoproteinLevel(); num_tumor_cells_type3++; break;
-        case 4: acumulator_oncoprotein += tumor_cell->GetOncoproteinLevel(); num_tumor_cells_type4++; break;
-        case 5: num_tumor_cells_type5_dead++; break;
+        case TumorCellType::kType1: acumulator_oncoprotein += tumor_cell->GetOncoproteinLevel(); num_tumor_cells_type1++; break;
+        case TumorCellType::kType2: acumulator_oncoprotein += tumor_cell->GetOncoproteinLevel(); num_tumor_cells_type2++; break;
+        case TumorCellType::kType3: acumulator_oncoprotein += tumor_cell->GetOncoproteinLevel(); num_tumor_cells_type3++; break;
+        case TumorCellType::kType4: acumulator_oncoprotein += tumor_cell->GetOncoproteinLevel(); num_tumor_cells_type4++; break;
+        case TumorCellType::kType5: num_tumor_cells_type5_dead++; break;
         default: break;
       }
-    } else if (auto* cart_cell = dynamic_cast<const CartCell*>(agent)) {
-      if (cart_cell->GetState() == CartCellState::kAlive)
+    } else if (auto* cart_cell = dynamic_cast<const CarTCell*>(agent)) {
+      if (cart_cell->GetState() == CarTCellState::kAlive)
         num_alive_cart++;
     }
   });
@@ -152,7 +153,7 @@ void OutputSummary::operator()() {
     std::ofstream file("output/final_data.csv", std::ios::app);
     if (file.is_open()) {
       if (current_step == 0) {
-        file << "total_days,total_hours,total_minutes,tumor_radius,num_cells,num_tumor_cells,tumor_cells_type1,tumor_cells_type2,tumor_cells_type3,tumor_cells_type4,tumor_cells_type5_dead,num_alive_cart, average_oncoprotein, average_oxygen_cancer_cells\n";// Header for CSV file
+        file << "total_days,total_hours,total_minutes,tumor_radius,num_cells,num_tumor_cells,tumor_cells_type1,tumor_cells_type2,tumor_cells_type3,tumor_cells_type4,tumor_cells_type5_dead,num_alive_cart,average_oncoprotein,average_oxygen_cancer_cells\n";// Header for CSV file
       }
 
       // Calculate time in days, hours, minutes
@@ -241,7 +242,7 @@ void SpawnCart::operator()() {
     real_t px,py,pz,radi_sq;
 
     auto* ctxt = simulation->GetExecutionContext();
-    CartCell* cart = nullptr;
+    CarTCell* cart = nullptr;
 
     for( unsigned int i=0 ;i < cells_to_spawn ; i++ ){
       //look for a valid position
@@ -252,7 +253,7 @@ void SpawnCart::operator()() {
           radi_sq = px*px + py*py + pz*pz;
       }while(minimum_squared_radius > radi_sq);
       //spawn CAR-T
-      cart = new CartCell({px,py,pz});
+      cart = new CarTCell({px,py,pz});
       cart->AddBehavior(new StateControlCart());
       ctxt->AddAgent(cart);
     }

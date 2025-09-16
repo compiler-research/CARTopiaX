@@ -11,8 +11,11 @@ additional_data_members = [
 ]
 
 [[visualize_agent]]
-name = "CartCell"
+name = "CarTCell"
 additional_data_members = ["diameter_","volume_"]
 
 [[visualize_diffusion]]
 name = "oxygen"
+
+[[visualize_diffusion]]
+name = "immunostimulatory_factor"

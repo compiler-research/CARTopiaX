@@ -205,7 +205,7 @@ constexpr real_t kDnew = 1.5 * kDtMechanics;
 constexpr real_t kDold = -0.5 * kDtMechanics;
 
 ///Do not change this line
-const real_t kLengthBoxMechanics =22;
+const real_t gKLengthBoxMechanics =22;
 
 /// Max Distance for considering two cells as neighbours for force calculations
 /// in μm Do not change this line
@@ -234,16 +234,16 @@ constexpr real_t kAverageMaximumTimeUntillApoptosisCart= kDtCycle* 10.0 * 24.0 *
 constexpr real_t kDefaultOxygenConsumptionCarT = 1.0; 
 ///Volume parameters
 /// Default total volume of a new CAR-T cell in μm³
-constexpr real_t kDefaultVolumeNewCartCell = 2494.0; 
+constexpr real_t kDefaultVolumeNewCarTCell = 2494.0; 
 /// Default volume of the nucleus of a new CAR-T cell in μm³
-constexpr real_t kDefaultVolumeNucleusCartCell = 540.0; 
+constexpr real_t kDefaultVolumeNucleusCarTCell = 540.0; 
 /// Default fraction of fluid volume in a new CAR-T cell
-constexpr real_t kDefaultFractionFluidCartCell = 0.75; 
+constexpr real_t kDefaultFractionFluidCarTCell = 0.75; 
 
 /// How often a CAR-T cell tries to kill an attached cancer cell
 constexpr real_t kKillRateCart = 0.06667; // 1/min
 /// How often a CAR-T cell tries to attach to a cancer cell
-constexpr real_t kAdhesionRateCart = 0.013;//0.2;//0.0092//0.0085; // 1/min
+constexpr real_t kAdhesionRateCart = 0.013;// 1/min
 /// Maximum adhesion distance between CAR-T and tumor cells
 constexpr real_t kMaxAdhesionDistanceCart = 18.0;//micrometers
 /// Minimum adhesion distance between CAR-T and tumor cells
@@ -291,12 +291,12 @@ constexpr real_t kDifferenceCartAdhesionDistances = kMaxAdhesionDistanceCart - k
 const real_t kRadiusTumorCell = std::cbrt(kDefaultVolumeNewTumorCell * 3. / (4. *  Math::kPi));
 
 ///Do not change this line: radius cart cell
-const real_t kRadiusCartCell = std::cbrt(kDefaultVolumeNewCartCell * 3. / (4. *  Math::kPi));
+const real_t kRadiusCarTCell = std::cbrt(kDefaultVolumeNewCarTCell * 3. / (4. *  Math::kPi));
 
 //Do not change this line: maximum squared distance to avoid CAR-T pushing tumor cells
 //If a CAR-T and a Tumor Cell are closer than this distance, the CAR-T cell will only move to the tumor cell with the adhesion forces
 //(radiusCART + radiusTumorCell + 0.1 to avoid numerical errors)**2
-const real_t kMaxSquaredDistanceCartMovingTowardsTumorCell = std::pow(kRadiusCartCell + kRadiusTumorCell + 1, 2);
+const real_t kMaxSquaredDistanceCartMovingTowardsTumorCell = std::pow(kRadiusCarTCell + kRadiusTumorCell + 1, 2);
 
 
 }  // namespace bdm
