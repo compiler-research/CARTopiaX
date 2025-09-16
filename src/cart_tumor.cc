@@ -51,7 +51,7 @@ int Simulate(int argc, const char** argv) {
     param->min_bound = -kBoundedSpaceLength / kHalf;
     param->max_bound = kBoundedSpaceLength / kHalf;
     param->simulation_time_step = kDt;
-    //for outputing performance statistics
+    // for outputing performance statistics
     param->statistics = kOutputPerformanceStatistics;
   };
 

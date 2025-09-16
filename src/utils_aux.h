@@ -57,23 +57,25 @@ real_t SamplePositiveGaussian(float mean, float sigma);
 std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius);
 
 /// Compute tumor statistics and characteristics
-/// 
+///
 /// Analyzes the current tumor population to compute the number of tumor cells
-/// of each type and the overall radius of the tumor mass. In addition, it computes
-/// the average oncoprotein level and oxygen across all tumor cells.
-/// 
+/// of each type and the overall radius of the tumor mass. In addition, it
+/// computes the average oncoprotein level and oxygen across all tumor cells.
+///
 /// @return Tuple containing:
 ///   - Total number of tumor cells
 ///   - Number of type 1 tumor cells (most aggressive)
 ///   - Number of type 2 tumor cells
-///   - Number of type 3 tumor cells  
+///   - Number of type 3 tumor cells
 ///   - Number of type 4 tumor cells (least aggressive)
 ///   - Number of type 5 tumor cells (dead)
 ///   - Number of living CAR-T cells (not apoptotic)
 ///   - Current tumor radius in micrometers
 ///   - Average oncoprotein level across all tumor cells
 ///   - Average oxygen level across all tumor cells
-std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, size_t, real_t, real_t, real_t> AnalyzeTumor();
+std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, size_t, real_t,
+           real_t, real_t>
+AnalyzeTumor();
 
 /// Generates a random direction unitary vector
 ///
@@ -81,9 +83,10 @@ std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, size_t, real_t, real_
 Real3 GenerateRandomDirection();
 
 /// Spawns a Dosage of CAR-T cells around the tumor
-/// 
+///
 /// Called automatically by the simulation scheduler at the specified frequency.
-/// Spawns a dosage of CAR-T cells around the tumor following the map kTreatment where
+/// Spawns a dosage of CAR-T cells around the tumor following the map kTreatment
+/// where
 ///   - The key represents the day of treatment (starting from day 0).
 ///   - The value represents the number of CAR-T cells administered on that day.
 struct SpawnCart : public StandaloneOperationImpl {
@@ -108,8 +111,9 @@ inline BDM_REGISTER_OP(SpawnCart, "SpawnCart", kCpu);
 /// Operation for outputting simulation summary data to a CSV file
 ///
 /// This operation collects and outputs summary statistics about the simulation
-/// state to output/final_data.csv for post-processing and analysis. It includes information
-/// about cell populations, tumor characteristics, and other relevant metrics.
+/// state to output/final_data.csv for post-processing and analysis. It includes
+/// information about cell populations, tumor characteristics, and other
+/// relevant metrics.
 struct OutputSummary : public StandaloneOperationImpl {
   // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
   BDM_OP_HEADER(OutputSummary);

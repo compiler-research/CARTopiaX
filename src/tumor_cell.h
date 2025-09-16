@@ -227,9 +227,10 @@ class TumorCell : public Cell {
   /// equations.
   void ComputeConstantsConsumptionSecretion();
 
-  ///Start apoptosis
+  /// Start apoptosis
   ///
-  /// This function is called when the tumor cell is induced to apoptosis by a CAR-T cell.
+  ///  This function is called when the tumor cell is induced to apoptosis by a
+  ///  CAR-T cell.
   void StartApoptosis();
 
  private:

@@ -68,12 +68,10 @@ TumorCell::TumorCell(const Real3& position) {
       SamplePositiveGaussian(kOncoproteinMean, kOncoproteinStandardDeviation));
   auto* rm = Simulation::GetActive()->GetResourceManager();
   // Pointer to oxygen diffusion grid
-  oxygen_dgrid_ =
-      rm->GetDiffusionGrid("oxygen");
+  oxygen_dgrid_ = rm->GetDiffusionGrid("oxygen");
   // Pointer to immunostimulatory_factor diffusion grid
   immunostimulatory_factor_dgrid_ =
-      rm->GetDiffusionGrid(
-          "immunostimulatory_factor");
+      rm->GetDiffusionGrid("immunostimulatory_factor");
   // Set state transition random rate
   SetTransformationRandomRate();
 
@@ -352,16 +350,17 @@ void TumorCell::ComputeConstantsConsumptionSecretion() {
               (immunostimulatory_factor_secretion_rate_);
 }
 
-void TumorCell::StartApoptosis(){
-
+void TumorCell::StartApoptosis() {
   // If the cell is already dead, do nothing
-  if (IsDead()) {return;}
+  if (IsDead()) {
+    return;
+  }
 
   // The cell Dies
   SetState(TumorCellState::kApoptotic);
 
   // Reset timer_state
-  SetTimerState(0);  
+  SetTimerState(0);
   // Set type to 5 to indicate dead cell
   SetType(TumorCellType::kType5);
   // Set target volume to 0 (the cell shrinks)
@@ -369,12 +368,13 @@ void TumorCell::StartApoptosis(){
   SetTargetNucleusSolid(0.0);
   SetTargetFractionFluid(0.0);
   SetTargetRelationCytoplasmNucleus(0.0);
-  //Reduce oxygen consumption
-  SetOxygenConsumptionRate(GetOxygenConsumptionRate()*kReductionConsumptionDeadCells);
-  //Stop Immunostimulatory Factor Secretion
+  // Reduce oxygen consumption
+  SetOxygenConsumptionRate(GetOxygenConsumptionRate() *
+                           kReductionConsumptionDeadCells);
+  // Stop Immunostimulatory Factor Secretion
   SetImmunostimulatoryFactorSecretionRate(0.0);
   // Update constants for consumption/secretion differential equation solving
-  ComputeConstantsConsumptionSecretion(); 
+  ComputeConstantsConsumptionSecretion();
 }
 
 /// Main behavior executed at each simulation step
@@ -520,8 +520,7 @@ void StateControlGrowProliferate::ManageLivingCell(TumorCell* cell,
   // Calculate the rate of state change based on oxygen level and oncoprotein
   // (min^-1)
   const real_t final_rate_transition = cell->GetTransformationRandomRate() *
-                                       multiplier *
-                                       cell->GetOncoproteinLevel();
+                                       multiplier * cell->GetOncoproteinLevel();
 
   // Calculate the time to wait (in minutes)
   real_t time_to_wait = kTimeTooLarge;

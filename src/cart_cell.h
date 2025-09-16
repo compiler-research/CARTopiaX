@@ -124,8 +124,12 @@ class CarTCell : public Cell {
   real_t GetCurrentLiveTime() const { return current_live_time_; }
   void SetCurrentLiveTime(real_t time) { current_live_time_ = time; }
 
-  bdm::AgentPointer<TumorCell> GetAttachedCellPointer() const { return attached_cell_ptr_; }
-  void SetAttachedCellPointer(bdm::AgentPointer<TumorCell> cell_ptr) { attached_cell_ptr_ = cell_ptr; }
+  bdm::AgentPointer<TumorCell> GetAttachedCellPointer() const {
+    return attached_cell_ptr_;
+  }
+  void SetAttachedCellPointer(bdm::AgentPointer<TumorCell> cell_ptr) {
+    attached_cell_ptr_ = cell_ptr;
+  }
 
   /// Returns whether the cell moves by its own
   bool DoesCellMove();
@@ -187,19 +191,23 @@ class CarTCell : public Cell {
   /// Try to get attached to a tumor cell
   ///
   /// @param victim The tumor cell to which the CAR-T cell tries to attach
-  /// @param squared_distance The squared distance between the CAR-T cell and the tumor cell
+  /// @param squared_distance The squared distance between the CAR-T cell and
+  /// the tumor cell
   /// @param rng Pointer to the random number generator
   /// Attempts to attach the CAR-T cell to a selected tumor cell.
-  void TryToGetAttachedTo(TumorCell* victim, real_t squared_distance, Random* rng);
+  void TryToGetAttachedTo(TumorCell* victim, real_t squared_distance,
+                          Random* rng);
 
-  ///Try to induce apoptosis
+  /// Try to induce apoptosis
   ///
-  ///Tries stochastically to induce apoptosis in the attached tumor cell and in case of success induces the apoptosis
+  /// Tries stochastically to induce apoptosis in the attached tumor cell and in
+  /// case of success induces the apoptosis
   ///
-  /// @param attached_cell The tumor cell to which the CAR-T cell is attached
-  /// @param rng Pointer to the random number generator
-  /// @return true if apoptosis was induced, false otherwise
-  bool TryToInduceApoptosis(bdm::AgentPointer<TumorCell> attached_cell, Random* rng);
+  ///  @param attached_cell The tumor cell to which the CAR-T cell is attached
+  ///  @param rng Pointer to the random number generator
+  ///  @return true if apoptosis was induced, false otherwise
+  bool TryToInduceApoptosis(bdm::AgentPointer<TumorCell> attached_cell,
+                            Random* rng);
 
  private:
   /// Current state of the CAR-T cell

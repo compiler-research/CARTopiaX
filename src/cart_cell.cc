@@ -49,8 +49,8 @@ CarTCell::CarTCell(const Real3& position) {
       rm.GetDiffusionGrid("immunostimulatory_factor");
 
   SetCurrentLiveTime(kAverageMaximumTimeUntillApoptosisCart);
-  //Add Consumption and Secretion
-  // Set default oxygen consumption rate
+  // Add Consumption and Secretion
+  //  Set default oxygen consumption rate
   SetOxygenConsumptionRate(kDefaultOxygenConsumptionCarT);
   // Compute constants for all ConsumptionSecretion of Oxygen
   ComputeConstantsConsumptionSecretion();
@@ -141,109 +141,127 @@ void CarTCell::ChangeVolumeExponentialRelaxationEquation(
   SetNuclearVolume(total_nuclear);
 }
 
-//compute Displacement
-Real3 CarTCell::CalculateDisplacement(const InteractionForce* force, real_t squared_radius, real_t dt) {
-
+// compute Displacement
+Real3 CarTCell::CalculateDisplacement(const InteractionForce* force,
+                                      real_t squared_radius, real_t dt) {
   auto* sim = Simulation::GetActive();
 
   // real_t h = dt;
   Real3 movement_at_next_step{0, 0, 0};
-  // this should be chaged in a future version of BioDynaMo in order to have a cleaner code instead of hardcoding it here
-  squared_radius=gKSquaredMaxDistanceNeighborsForce;
+  // this should be chaged in a future version of BioDynaMo in order to have a
+  // cleaner code instead of hardcoding it here
+  squared_radius = gKSquaredMaxDistanceNeighborsForce;
 
   // the physics force to move the point mass
 
   Real3 translation_velocity_on_point_mass{0, 0, 0};
 
   //--------------------------------------------
-  //CAR-T self motility (in case of migration)
+  // CAR-T self motility (in case of migration)
   //--------------------------------------------
   Real3 current_position = GetPosition();
   auto* ctxt = sim->GetExecutionContext();
-  auto* rng= sim->GetRandom();
+  auto* rng = sim->GetRandom();
   Real3 motility;
-  if (DoesCellMove()){
-    //compute motility
+  if (DoesCellMove()) {
+    // compute motility
     if (rng->Uniform(0.0, 1.0) < kMotilityProbability) {
-      //random direction as unitary vector
+      // random direction as unitary vector
       Real3 random_direction = GenerateRandomDirection();
       Real3 direction_to_immunostimulatory_factor;
       // returns normalized gradient towards the immunostimulatory factor source
-      immunostimulatory_factor_dgrid_->GetGradient(current_position, &direction_to_immunostimulatory_factor,true);  
-      // motility = bias * direction_to_immunostimulatory_factor + (1-bias)*random_direction
-      motility = kMigrationBiasCart * direction_to_immunostimulatory_factor + kMigrationOneMinusBiasCart * random_direction;
+      immunostimulatory_factor_dgrid_->GetGradient(
+          current_position, &direction_to_immunostimulatory_factor, true);
+      // motility = bias * direction_to_immunostimulatory_factor +
+      // (1-bias)*random_direction
+      motility = kMigrationBiasCart * direction_to_immunostimulatory_factor +
+                 kMigrationOneMinusBiasCart * random_direction;
       // Convert to unit direction
-      if (motility[0]*motility[0] + motility[1]*motility[1] + motility[2]*motility[2] > 0)
+      if (motility[0] * motility[0] + motility[1] * motility[1] +
+              motility[2] * motility[2] >
+          0)
         motility.Normalize();
       // Scale by migration speed and add to the velocity
       translation_velocity_on_point_mass += motility * kMigrationSpeedCart;
     }
-    
-
   }
 
   //--------------------------------------------
-  //CAR-T killing or victim cell escaping
+  // CAR-T killing or victim cell escaping
   //--------------------------------------------
-  if (state_ == CarTCellState::kAlive) {//If cell is not apoptotic
+  if (state_ == CarTCellState::kAlive) {  // If cell is not apoptotic
 
-    if (attached_to_tumor_cell_) {//attached to tumor cell
-      // try to kill the cancer cell and in case of failure see if it manages to scape
-      // the order needs to be this one because it should try to kill before seeing if it scapes 
-      if (TryToInduceApoptosis(attached_cell_ptr_,rng) || rng->Uniform(0.0, 1.0) < kProbabilityEscape) {
-        //the cancer cell is detached
+    if (attached_to_tumor_cell_) {  // attached to tumor cell
+      // try to kill the cancer cell and in case of failure see if it manages to
+      // scape the order needs to be this one because it should try to kill
+      // before seeing if it scapes
+      if (TryToInduceApoptosis(attached_cell_ptr_, rng) ||
+          rng->Uniform(0.0, 1.0) < kProbabilityEscape) {
+        // the cancer cell is detached
         attached_cell_ptr_->SetAttachedToCart(false);
-        //empty ID
+        // empty ID
         attached_cell_ptr_ = nullptr;
         attached_to_tumor_cell_ = false;
       }
     }
 
     //--------------------------------------------
-    //CAR-T adhesion to victim cell
+    // CAR-T adhesion to victim cell
     //--------------------------------------------
-    //Compute forces between the cells and check for a new attachment
+    // Compute forces between the cells and check for a new attachment
     auto calculate_forces_and_elastic_displacement =
-      L2F([&](Agent* neighbor, real_t squared_distance) {
-        //Adhesion repulsion forces between cells
-        // We check for every neighbor object if they touch us, i.e. push us
-        // away and aggregate the velocities
-        auto neighbor_force = force->Calculate(this, neighbor);
-        translation_velocity_on_point_mass[0] += neighbor_force[0];
-        translation_velocity_on_point_mass[1] += neighbor_force[1];
-        translation_velocity_on_point_mass[2] += neighbor_force[2];
+        L2F([&](Agent* neighbor, real_t squared_distance) {
+          // Adhesion repulsion forces between cells
+          //  We check for every neighbor object if they touch us, i.e. push us
+          //  away and aggregate the velocities
+          auto neighbor_force = force->Calculate(this, neighbor);
+          translation_velocity_on_point_mass[0] += neighbor_force[0];
+          translation_velocity_on_point_mass[1] += neighbor_force[1];
+          translation_velocity_on_point_mass[2] += neighbor_force[2];
 
-        //CAR-T adhesion to new victim cell
-        Real3 displac = neighbor->GetPosition()-current_position;
+          // CAR-T adhesion to new victim cell
+          Real3 displac = neighbor->GetPosition() - current_position;
 
-        if (TumorCell* cancer_cell = dynamic_cast<TumorCell*>(neighbor)) {
-          //movement towards the tumor cells
-          real_t sq_norm_displac = displac[0]*displac[0] + displac[1]*displac[1] + displac[2]*displac[2];
-          
-          //The cart moves towards the tumor cell only if they are not touching already
-          //If they are too close the only force affecting is the adhesion force to avoid 
-          //CAR-T non-stop pushing tumor cells. In case of being closer than kMaxSquaredDistanceCartMovingTowardsTumorCell
-          //there is a probability kProbabilityPushing for the CAR-T to keep pushing the tumor cell
-          if (sq_norm_displac > kMaxSquaredDistanceCartMovingTowardsTumorCell) {
-            translation_velocity_on_point_mass[0] += displac[0] * kElasticConstantCart;
-            translation_velocity_on_point_mass[1] += displac[1] * kElasticConstantCart;
-            translation_velocity_on_point_mass[2] += displac[2] * kElasticConstantCart;
+          if (TumorCell* cancer_cell = dynamic_cast<TumorCell*>(neighbor)) {
+            // movement towards the tumor cells
+            real_t sq_norm_displac = displac[0] * displac[0] +
+                                     displac[1] * displac[1] +
+                                     displac[2] * displac[2];
+
+            // The cart moves towards the tumor cell only if they are not
+            // touching already If they are too close the only force affecting
+            // is the adhesion force to avoid CAR-T non-stop pushing tumor
+            // cells. In case of being closer than
+            // kMaxSquaredDistanceCartMovingTowardsTumorCell there is a
+            // probability kProbabilityPushing for the CAR-T to keep pushing the
+            // tumor cell
+            if (sq_norm_displac >
+                kMaxSquaredDistanceCartMovingTowardsTumorCell) {
+              translation_velocity_on_point_mass[0] +=
+                  displac[0] * kElasticConstantCart;
+              translation_velocity_on_point_mass[1] +=
+                  displac[1] * kElasticConstantCart;
+              translation_velocity_on_point_mass[2] +=
+                  displac[2] * kElasticConstantCart;
+            }
+
+            // If the CAR-T has not succeeded in attaching to a tumor cell yet,
+            // it tries again
+            if (!attached_to_tumor_cell_)
+              TryToGetAttachedTo(cancer_cell, sq_norm_displac, rng);
           }
-
-          //If the CAR-T has not succeeded in attaching to a tumor cell yet, it tries again
-          if (!attached_to_tumor_cell_)
-            TryToGetAttachedTo(cancer_cell, sq_norm_displac, rng);
-        }
-      });
-    ctxt->ForEachNeighbor(calculate_forces_and_elastic_displacement, *this, squared_radius);
+        });
+    ctxt->ForEachNeighbor(calculate_forces_and_elastic_displacement, *this,
+                          squared_radius);
   }
 
   //--------------------------------------------
   // Two step Adams-Bashforth approximation of the time derivative for position
-  // position(t + dt) ≈ position(t) + dt * [ 1.5 * velocity(t) - 0.5 * velocity(t - dt) ]
+  // position(t + dt) ≈ position(t) + dt * [ 1.5 * velocity(t) - 0.5 *
+  // velocity(t - dt) ]
   //--------------------------------------------
-  movement_at_next_step += translation_velocity_on_point_mass * kDnew + older_velocity_ * kDold;
-
+  movement_at_next_step +=
+      translation_velocity_on_point_mass * kDnew + older_velocity_ * kDold;
 
   older_velocity_ = translation_velocity_on_point_mass;
 
@@ -252,35 +270,49 @@ Real3 CarTCell::CalculateDisplacement(const InteractionForce* force, real_t squa
 }
 
 // Try to get attached to a tumor cell
-void CarTCell::TryToGetAttachedTo(TumorCell* victim, real_t squared_distance, Random* rng){
-  //If the tumor cell is not already attached to a CAR-T cell, is not dead and is not too far away.
-  if(!victim->IsAttachedToCart()&& !victim->IsDead() && squared_distance < kSquaredMaxAdhesionDistanceCart) {
-
-    //factor of how high is the oncoprotein level of the cancer cell
-    real_t oncoprotein_scale_factor = (victim->GetOncoproteinLevel()-kOncoproteinLimit)/kOncoproteinDifference;
+void CarTCell::TryToGetAttachedTo(TumorCell* victim, real_t squared_distance,
+                                  Random* rng) {
+  // If the tumor cell is not already attached to a CAR-T cell, is not dead and
+  // is not too far away.
+  if (!victim->IsAttachedToCart() && !victim->IsDead() &&
+      squared_distance < kSquaredMaxAdhesionDistanceCart) {
+    // factor of how high is the oncoprotein level of the cancer cell
+    real_t oncoprotein_scale_factor =
+        (victim->GetOncoproteinLevel() - kOncoproteinLimit) /
+        kOncoproteinDifference;
     // Clamp scale_factor to be in [0,1]
-    if( oncoprotein_scale_factor > 1.0 )
+    if (oncoprotein_scale_factor > 1.0)
       oncoprotein_scale_factor = 1.0;
-    // If oncoprotein level is lower than the limit the cancer cell does not get detected
-    if( oncoprotein_scale_factor <= 0.0 ){
+    // If oncoprotein level is lower than the limit the cancer cell does not get
+    // detected
+    if (oncoprotein_scale_factor <= 0.0) {
       oncoprotein_scale_factor = 0.0;
-      // the probability is going to be 0 so return the function is the most efficient
+      // the probability is going to be 0 so return the function is the most
+      // efficient
       return;
     }
 
-    //factor of how far the cancer cell is
-    real_t distance_scale_factor= (kMaxAdhesionDistanceCart-std::sqrt(squared_distance))/kDifferenceCartAdhesionDistances;
-    //Clamp scale_factor to be in [0,1]. We already checked that it is > 0 because squared_distance < kSquaredMaxAdhesionDistanceCart 
-    if( distance_scale_factor > 1.0 )
+    // factor of how far the cancer cell is
+    real_t distance_scale_factor =
+        (kMaxAdhesionDistanceCart - std::sqrt(squared_distance)) /
+        kDifferenceCartAdhesionDistances;
+    // Clamp scale_factor to be in [0,1]. We already checked that it is > 0
+    // because squared_distance < kSquaredMaxAdhesionDistanceCart
+    if (distance_scale_factor > 1.0)
       distance_scale_factor = 1.0;
 
-    // It tries to attach the CAR-T cell to the tumor cell with probability kAdhesionRateCart * oncoprotein_scale_factor * distance_scale_factor * kDtMechanics
-    if (rng->Uniform(0.0, 1.0) < kAdhesionRateCart * oncoprotein_scale_factor * distance_scale_factor * kDtMechanics) {
-      //avoid race condition. Only one cell can be attached to the tumor cell.
-      #pragma omp critical
+    // It tries to attach the CAR-T cell to the tumor cell with probability
+    // kAdhesionRateCart * oncoprotein_scale_factor * distance_scale_factor *
+    // kDtMechanics
+    if (rng->Uniform(0.0, 1.0) < kAdhesionRateCart * oncoprotein_scale_factor *
+                                     distance_scale_factor * kDtMechanics) {
+// avoid race condition. Only one cell can be attached to the tumor cell.
+#pragma omp critical
       {
-        //We need to check again if the victim is not attached to a CAR-T cell yet. This could be made more efficiently with a semaphore for each cancer cell
-        if (!victim->IsAttachedToCart()){
+        // We need to check again if the victim is not attached to a CAR-T cell
+        // yet. This could be made more efficiently with a semaphore for each
+        // cancer cell
+        if (!victim->IsAttachedToCart()) {
           attached_to_tumor_cell_ = true;
           attached_cell_ptr_ = victim->GetAgentPtr<TumorCell>();
           victim->SetAttachedToCart(true);
@@ -288,33 +320,40 @@ void CarTCell::TryToGetAttachedTo(TumorCell* victim, real_t squared_distance, Ra
       }
     }
   }
-    
+
   return;
 }
 
-//Try to induce apoptosis
-bool CarTCell::TryToInduceApoptosis(bdm::AgentPointer<TumorCell> attached_cell, Random* rng) {
+// Try to induce apoptosis
+bool CarTCell::TryToInduceApoptosis(bdm::AgentPointer<TumorCell> attached_cell,
+                                    Random* rng) {
   // If there is no attached cell (this should not happen)
 
   if (!attached_to_tumor_cell_)
     return false;
 
-  //factor of how high is the oncoprotein levelof the cancer cell
-	real_t scale_factor = (attached_cell->GetOncoproteinLevel()-kOncoproteinLimit)/kOncoproteinDifference;
-	// Clamp scale_factor to be in [0,1]
-  if( scale_factor > 1.0 )
-	  scale_factor = 1.0;
-  // If oncoprotein level is lower than the limit the cancer cell does not become apoptotic
-  if( scale_factor < 0.0 ){
-	  scale_factor = 0.0;
-    // the probability is going to be 0 so return the function is the most efficient
+  // factor of how high is the oncoprotein levelof the cancer cell
+  real_t scale_factor =
+      (attached_cell->GetOncoproteinLevel() - kOncoproteinLimit) /
+      kOncoproteinDifference;
+  // Clamp scale_factor to be in [0,1]
+  if (scale_factor > 1.0)
+    scale_factor = 1.0;
+  // If oncoprotein level is lower than the limit the cancer cell does not
+  // become apoptotic
+  if (scale_factor < 0.0) {
+    scale_factor = 0.0;
+    // the probability is going to be 0 so return the function is the most
+    // efficient
     return false;
   }
-  //CAR-T success of killing probability: aggressive cancer cells (high oncoprotein level) are more likely to be killed
-  bool succeeded =  rng->Uniform(0.0, 1.0) < kKillRateCart * scale_factor * kDtMechanics;
-  
-  //The CAR-T has succeeded to induce apoptosis on the Cancer Cell
-	if(succeeded)
+  // CAR-T success of killing probability: aggressive cancer cells (high
+  // oncoprotein level) are more likely to be killed
+  bool succeeded =
+      rng->Uniform(0.0, 1.0) < kKillRateCart * scale_factor * kDtMechanics;
+
+  // The CAR-T has succeeded to induce apoptosis on the Cancer Cell
+  if (succeeded)
     attached_cell->StartApoptosis();
 
   return succeeded;
@@ -330,7 +369,7 @@ real_t CarTCell::ConsumeSecreteSubstance(int substance_id,
     res = (old_concentration + constant1_oxygen_) / constant2_oxygen_;
   } else if (substance_id ==
              immunostimulatory_factor_dgrid_->GetContinuumId()) {
-    //CAR-T do not change immunostimulatory factor levels
+    // CAR-T do not change immunostimulatory factor levels
     res = old_concentration;
   } else {
     throw std::invalid_argument("Unknown substance id: " +
