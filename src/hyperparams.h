@@ -26,6 +26,7 @@
 #include "core/util/math.h"
 #include <cmath>
 #include <cstddef>
+#include <map>
 
 namespace bdm {
 
@@ -276,7 +277,12 @@ constexpr real_t kElasticConstantCart = 0.01;
 ///   - The value represents the number of CAR-T cells administered on that day.
 /// Example: On day 0 and day 8, 3957 CAR-T cells are introduced (matching the
 /// initial tumor cell count).
-inline std::map<size_t, size_t> kTreatment = {{0, 3957}, {8, 3957}};
+// FIXME: add this parameters in an external no recompiled file which will also
+// avoid cppcoreguidelines-avoid-magic-numbers warning
+inline const std::map<size_t, size_t> gKTreatment = {
+    {0, 3957},
+    {8,
+     3957}};  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
 /// Do not modify this line:  1-kMigrationBiasCart
 constexpr real_t kMigrationOneMinusBiasCart = 1.0 - kMigrationBiasCart;
@@ -296,19 +302,19 @@ constexpr real_t kDifferenceCartAdhesionDistances =
     kMaxAdhesionDistanceCart - kMinAdhesionDistanceCart;
 
 /// Do not change this line: radius tumor cell
-const real_t kRadiusTumorCell =
+const real_t gKRadiusTumorCell =
     std::cbrt(kDefaultVolumeNewTumorCell * 3. / (4. * Math::kPi));
 
 /// Do not change this line: radius cart cell
-const real_t kRadiusCarTCell =
+const real_t gKRadiusCarTCell =
     std::cbrt(kDefaultVolumeNewCarTCell * 3. / (4. * Math::kPi));
 
 // Do not change this line: maximum squared distance to avoid CAR-T pushing
 // tumor cells If a CAR-T and a Tumor Cell are closer than this distance, the
 // CAR-T cell will only move to the tumor cell with the adhesion forces
 //(radiusCART + radiusTumorCell + 0.1 to avoid numerical errors)**2
-const real_t kMaxSquaredDistanceCartMovingTowardsTumorCell =
-    std::pow(kRadiusCarTCell + kRadiusTumorCell + 1, 2);
+const real_t gKMaxSquaredDistanceCartMovingTowardsTumorCell =
+    std::pow(gKRadiusCarTCell + gKRadiusTumorCell + 1, 2);
 
 }  // namespace bdm
 
