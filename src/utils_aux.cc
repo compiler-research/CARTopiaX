@@ -39,6 +39,7 @@
 #include <cstring>
 #include <fstream>
 #include <ios>
+#include <memory>
 #include <tuple>
 #include <vector>
 
@@ -200,7 +201,7 @@ void OutputSummary::operator()() {
       }
 
       // Calculate time in days, hours, minutes
-      const double total_minutes = current_step * kDt;
+      const double total_minutes = static_cast<double>(current_step) * kDt;
       const double total_hours = total_minutes / kMinutesInAnHour;
       const double total_days = total_hours / kHoursInADay;
 
@@ -231,7 +232,7 @@ void OutputSummary::operator()() {
           gKTreatment.find(current_day_int) != gKTreatment.end()) {
         const size_t just_spawned_cells = gKTreatment.at(current_day_int);
         total_num_cells += just_spawned_cells;
-        num_alive_cart += just_spawned_cells;
+        num_alive_cart += static_cast<int>(just_spawned_cells);
       }
 
       // Write data to CSV file
@@ -257,7 +258,8 @@ void SpawnCart::operator()() {
   }
   // See if there is any dosage to apply in this day
   const size_t current_day =
-      current_step * kDt / (kMinutesInAnHour * kHoursInADay);
+      static_cast<size_t>(static_cast<double>(current_step) * kDt /
+                          (kMinutesInAnHour * kHoursInADay));
   size_t cells_to_spawn = 0;
 
   if (gKTreatment.find(current_day) != gKTreatment.end()) {
