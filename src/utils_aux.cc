@@ -257,7 +257,7 @@ void SpawnCart::operator()() {
     return;
   }
   // See if there is any dosage to apply in this day
-  const size_t current_day =
+  const auto current_day =
       static_cast<size_t>(static_cast<double>(current_step) * kDt /
                           (kMinutesInAnHour * kHoursInADay));
   size_t cells_to_spawn = 0;
