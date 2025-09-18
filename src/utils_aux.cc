@@ -189,7 +189,7 @@ AnalyzeTumor() {
 void OutputSummary::operator()() {
   Simulation* simulation = Simulation::GetActive();
   Scheduler* scheduler = simulation->GetScheduler();
-  uint64_t current_step = scheduler->GetSimulatedSteps();
+  const uint64_t current_step = scheduler->GetSimulatedSteps();
 
   if (current_step % frequency_ == 0) {
     std::ofstream file("output/final_data.csv", std::ios::app);
@@ -256,7 +256,7 @@ void OutputSummary::operator()() {
 void SpawnCart::operator()() {
   Simulation* simulation = Simulation::GetActive();
   Scheduler* scheduler = simulation->GetScheduler();
-  uint64_t current_step = scheduler->GetSimulatedSteps();
+  const uint64_t current_step = scheduler->GetSimulatedSteps();
   // This function only executes each day
   if (current_step % frequency_ != 0) {
     return;
@@ -278,7 +278,7 @@ void SpawnCart::operator()() {
     real_t max_dist_sq = 0.0;
 
     rm->ForEachAgent([&](const Agent* agent) {
-      if (auto* cancer_cell = dynamic_cast<const TumorCell*>(agent)) {
+      if (const auto* cancer_cell = dynamic_cast<const TumorCell*>(agent)) {
         const Real3& pos = cancer_cell->GetPosition();
         const real_t dist_sq =
             pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
