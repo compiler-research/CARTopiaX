@@ -161,8 +161,8 @@ Real3 CarTCell::CalculateDisplacement(const InteractionForce* force,
   // CAR-T self motility (in case of migration)
   //--------------------------------------------
   Real3 current_position = GetPosition();
-  auto* ctxt = sim->GetExecutionContext();
-  auto* rng = sim->GetRandom();
+  ExecutionContext* ctxt = sim->GetExecutionContext();
+  Random* rng = sim->GetRandom();
   Real3 motility;
   if (DoesCellMove()) {
     // compute motility
@@ -464,7 +464,7 @@ void StateControlCart::Run(Agent* agent) {
         // duration transition)
         if (kTimeApoptosis < cell->GetTimerState()) {
           // remove the cell from the simulation
-          auto* ctxt = sim->GetExecutionContext();
+          ExecutionContext* ctxt = sim->GetExecutionContext();
           ctxt->RemoveAgent(agent->GetUid());
         }
         break;
