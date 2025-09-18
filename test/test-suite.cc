@@ -20,6 +20,7 @@
  */
 
 #include "biodynamo.h"
+#include "core/resource_manager.h"
 #include <gtest/gtest.h>
 
 // Googletest in combination with the provided CMakeLists.txt allows you to
@@ -52,7 +53,7 @@ TEST(AgentTest, AddAgentsToSimulation) {
   Simulation simulation(TEST_NAME);
 
   // Add some cells to the simulation
-  auto* rm = simulation.GetResourceManager();
+  ResourceManager* rm = simulation.GetResourceManager();
   uint8_t expected_no_cells{20};
   for (int i = 0; i < expected_no_cells; i++) {
     auto* cell = new Cell(30);

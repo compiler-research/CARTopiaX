@@ -32,7 +32,9 @@
 #include "core/interaction_force.h"
 #include "core/real_t.h"
 #include "core/resource_manager.h"
+#include "core/simulation.h"
 #include "core/util/log.h"
+#include "core/util/random.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -145,7 +147,7 @@ void CarTCell::ChangeVolumeExponentialRelaxationEquation(
 // compute Displacement
 Real3 CarTCell::CalculateDisplacement(const InteractionForce* force,
                                       real_t squared_radius, real_t /*dt*/) {
-  auto* sim = Simulation::GetActive();
+  Simulation* sim = Simulation::GetActive();
 
   // real_t h = dt;
   Real3 movement_at_next_step{0, 0, 0};
@@ -177,10 +179,11 @@ Real3 CarTCell::CalculateDisplacement(const InteractionForce* force,
       // (1-bias)*random_direction
       motility = kMigrationBiasCart * direction_to_immunostimulatory_factor +
                  kMigrationOneMinusBiasCart * random_direction;
+      const real_t motility_norm_squared = motility[0] * motility[0] +
+                                           motility[1] * motility[1] +
+                                           motility[2] * motility[2];
       // Convert to unit direction
-      if (motility[0] * motility[0] + motility[1] * motility[1] +
-              motility[2] * motility[2] >
-          0) {
+      if (motility_norm_squared > 0) {
         motility.Normalize();
       }
       // Scale by migration speed and add to the velocity
@@ -217,7 +220,7 @@ Real3 CarTCell::CalculateDisplacement(const InteractionForce* force,
           // Adhesion repulsion forces between cells
           //  We check for every neighbor object if they touch us, i.e. push us
           //  away and aggregate the velocities
-          auto neighbor_force = force->Calculate(this, neighbor);
+          Real4 neighbor_force = force->Calculate(this, neighbor);
           translation_velocity_on_point_mass[0] += neighbor_force[0];
           translation_velocity_on_point_mass[1] += neighbor_force[1];
           translation_velocity_on_point_mass[2] += neighbor_force[2];
@@ -410,7 +413,7 @@ void CarTCell::ComputeConstantsConsumptionSecretion() {
 
 /// Main behavior executed at each simulation step
 void StateControlCart::Run(Agent* agent) {
-  auto* sim = Simulation::GetActive();
+  Simulation* sim = Simulation::GetActive();
   // Run only every kDtCycle minutes, fmod does not work with the type
   // returned by GetSimulatedTime()
   if (sim->GetScheduler()->GetSimulatedSteps() % kStepsPerCycle != 0) {

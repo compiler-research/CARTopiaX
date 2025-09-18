@@ -24,10 +24,12 @@
 #include "hyperparams.h"
 #include "tumor_cell.h"
 #include "core/agent/agent.h"
+#include "core/container/math_array.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/real_t.h"
 #include "core/resource_manager.h"
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -85,7 +87,7 @@ void DiffusionThomasAlgorithm::InitializeThomasAlgorithmVectors(
 // Apply Dirichlet boundary conditions to the grid
 void DiffusionThomasAlgorithm::ApplyDirichletBoundaryConditions() {
   // FIXME: Fix BioDynaMo by returning a view or c++20 std::span.
-  const auto* dimensions_ptr = GetDimensionsPtr();
+  const int32_t* dimensions_ptr = GetDimensionsPtr();
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   const real_t origin = dimensions_ptr[0];
   const real_t simulated_time = GetSimulatedTime();
@@ -158,7 +160,7 @@ void DiffusionThomasAlgorithm::ApplyDirichletBoundaryConditions() {
 // Sets the concentration at a specific voxel
 void DiffusionThomasAlgorithm::SetConcentration(size_t idx, real_t amount) {
   // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const auto* all_concentrations = GetAllConcentrations();
+  const real_t* all_concentrations = GetAllConcentrations();
   const real_t current_concentration = all_concentrations[idx];
   ChangeConcentrationBy(idx, amount - current_concentration,
                         InteractionMode::kAdditive, false);
@@ -264,7 +266,7 @@ void DiffusionThomasAlgorithm::ForwardElimination(
   // Get initial index based on direction
   size_t ind = GetLoopIndex(direction, outer, middle, 0);
   // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const auto* all_concentrations = GetAllConcentrations();
+  const real_t* all_concentrations = GetAllConcentrations();
   const real_t initial_concentration = all_concentrations[ind];
   SetConcentration(ind, initial_concentration / thomas_denom[0]);
 
@@ -284,7 +286,7 @@ void DiffusionThomasAlgorithm::BackSubstitution(
     int direction, int outer, int middle, const std::vector<real_t>& thomas_c,
     int jump) {
   // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const auto* all_concentrations = GetAllConcentrations();
+  const real_t* all_concentrations = GetAllConcentrations();
 
   // Back substitution loop
   for (int inner = resolution_ - 2; inner >= 0; inner--) {
@@ -315,14 +317,14 @@ void DiffusionThomasAlgorithm::ComputeConsumptionsSecretions() {
   // This method is called to compute the consumptions and secretions of
   // substances by the tumor cells. It iterates over all agents and applies the
   // consumption and secretion behaviors defined in the TumorCell class.
-  auto* rm = bdm::Simulation::GetActive()->GetResourceManager();
+  ResourceManager* rm = bdm::Simulation::GetActive()->GetResourceManager();
   // in a future version of BioDynaMo this should be parallelized getting the
   // agents inside each chemical voxel and treating each voxel independently.
   // Fixme:this dynamic casting could be optimized in a future version
   rm->ForEachAgent([this](bdm::Agent* agent) {
     if (auto* cell = dynamic_cast<TumorCell*>(agent)) {
       // Handle TumorCell agents
-      const auto& pos = cell->GetPosition();
+      const Real3& pos = cell->GetPosition();
       const real_t conc = this->GetValue(pos);
       const real_t new_conc =
           cell->ConsumeSecreteSubstance(GetContinuumId(), conc);
@@ -330,7 +332,7 @@ void DiffusionThomasAlgorithm::ComputeConsumptionsSecretions() {
                                   InteractionMode::kAdditive, false);
     } else if (auto* cell = dynamic_cast<CarTCell*>(agent)) {
       // Handle CarTCell agents
-      const auto& pos = cell->GetPosition();
+      const Real3& pos = cell->GetPosition();
       const real_t conc = GetValue(pos);
       const real_t new_conc =
           cell->ConsumeSecreteSubstance(GetContinuumId(), conc);

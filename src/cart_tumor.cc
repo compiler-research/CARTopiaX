@@ -33,6 +33,8 @@
 #include "core/operation/operation.h"
 #include "core/param/param.h"
 #include "core/real_t.h"
+#include "core/resource_manager.h"
+#include "core/scheduler.h"
 #include "core/simulation.h"
 #include <iostream>
 #include <memory>
@@ -56,12 +58,12 @@ int Simulate(int argc, const char** argv) {
   };
 
   Simulation simulation(argc, argv, set_param);
-  auto* ctxt = simulation.GetExecutionContext();
+  ExecutionContext* ctxt = simulation.GetExecutionContext();
 
   // Change Forces
-  auto* scheduler = simulation.GetScheduler();
+  Scheduler* scheduler = simulation.GetScheduler();
 
-  auto* op = scheduler->GetOps("mechanical forces")[0];
+  Operation* op = scheduler->GetOps("mechanical forces")[0];
   std::unique_ptr<InteractionVelocity> interaction_velocity =
       std::make_unique<InteractionVelocity>();
   op->GetImplementation<MechanicalForcesOp>()->SetInteractionForce(
@@ -73,7 +75,7 @@ int Simulate(int argc, const char** argv) {
   env->SetBoxLength(gKLengthBoxMechanics);
 
   // Define Substances
-  auto* rm = Simulation::GetActive()->GetResourceManager();
+  ResourceManager* rm = Simulation::GetActive()->GetResourceManager();
 
   // Oxygen
   // substance_id, name, diffusion_coefficient, decay_constant, resolution,
@@ -82,8 +84,7 @@ int Simulate(int argc, const char** argv) {
       std::make_unique<DiffusionThomasAlgorithm>(
           kOxygen, "oxygen", kDiffusionCoefficientOxygen, kDecayConstantOxygen,
           kResolutionGridSubstances, kDtSubstances,
-          // true indicates Dirichlet border conditions
-          true);
+          /*dirichlet_border=*/true);
   rm->AddContinuum(oxygen_grid.release());
 
   // Immunostimulatory Factor
@@ -94,8 +95,7 @@ int Simulate(int argc, const char** argv) {
           kDiffusionCoefficientImmunostimulatoryFactor,
           kDecayConstantImmunostimulatoryFactor, kResolutionGridSubstances,
           kDtSubstances,
-          // false indicates Neumann border conditions
-          false);
+          /*dirichlet_border=*/false);
   rm->AddContinuum(immunostimulatory_factor_grid.release());
 
   // Boundary Conditions Dirichlet: simulating absorption or total loss at the
