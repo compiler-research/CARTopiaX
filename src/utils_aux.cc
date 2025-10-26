@@ -195,9 +195,11 @@ void OutputSummary::operator()() {
   const uint64_t current_step = scheduler->GetSimulatedSteps();
 
   if (current_step % frequency_ == 0) {
-    std::ofstream file("output/final_data.csv", std::ios::app);
+    // Delete csv content current_step == 0 to, otherwise append mode
+    std::ofstream file("output/final_data.csv", current_step == 0 ? std::ios::trunc : std::ios::app);
     if (file.is_open()) {
       if (current_step == 0) {
+        
         file
             << "total_days,total_hours,total_minutes,tumor_radius,num_cells,"
                "num_tumor_cells,tumor_cells_type1,tumor_cells_type2,tumor_"
