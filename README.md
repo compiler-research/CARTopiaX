@@ -449,6 +449,6 @@ This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE
 ## Author Contact Information
 **Author:** Salvador de la Torre Gonzalez  
 You can check my profile at Princeton University's [Compiler Research Team](https://compiler-research.org/team/SalvadordelaTorreGonzalez). 
-Do not hesitate to reach out in case of having questions, email: *delatorregonzalezsalvador@gmail.com*
+Do not hesitate to reach out in case of having questions, email: *delatorregonzalezsalvador at gmail.com*
 
 **Coauthor:** [Luciana Melina Luque](https://www.lmluque.com/)
