@@ -188,8 +188,13 @@ This performance gain enables faster scenario exploration and larger-scale simul
 
 ![Execution Time Comparison](./assets/images/execution_times.png)
 
+### Scripts Proving Model Replication
 ---
 
+This [repository](https://github.com/salva24/CARTopiaX_scripts_proving_model_replication) contains the scripts used to validate and compare simulation results between CARTopiaX and its foundational model, CART-ABM.
+It can be employed to verify that the reported improvements are objectively supported by the data.
+
+---
 ## Dependencies
 
 - [BioDynaMo](https://biodynamo.org/) (tested with version 1.05.132)
