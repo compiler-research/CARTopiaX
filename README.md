@@ -26,15 +26,16 @@
 1. [Project Overview](#project-overview)
 2. [Project Structure](#project-structure)
 3. [Model Replication](#model-replication)
-4. [Dependencies](#dependencies)
-5. [Installation](#installation)
-6. [Building the Simulation](#building-the-simulation)
-7. [Input Parameters](#input-parameters)
-8. [Running the Simulation](#running-the-simulation)
-9. [Visualizing Results](#visualizing-results)
-10. [Acknowledgments](#acknowledgments)
-11. [License](#license)
-12. [Author Contact Information](#author-contact-information)
+4. [Scripts Proving Model Replication](#scripts-proving-model-replication)
+5. [Dependencies](#dependencies)
+6. [Installation](#installation)
+7. [Building the Simulation](#building-the-simulation)
+8. [Input Parameters](#input-parameters)
+9. [Running the Simulation](#running-the-simulation)
+10. [Visualizing Results](#visualizing-results)
+11. [Acknowledgments](#acknowledgments)
+12. [License](#license)
+13. [Author Contact Information](#author-contact-information)
 
 
 ---
@@ -190,6 +191,12 @@ This performance gain enables faster scenario exploration and larger-scale simul
 
 ---
 
+## Scripts Proving Model Replication
+
+This [repository](https://github.com/salva24/CARTopiaX_scripts_proving_model_replication) contains the scripts used to validate and compare simulation results between CARTopiaX and its foundational model, CART-ABM.
+It can be employed to verify that the reported improvements are objectively supported by the data.
+
+---
 ## Dependencies
 
 - [BioDynaMo](https://biodynamo.org/) (tested with version 1.05.132)
