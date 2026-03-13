@@ -54,7 +54,8 @@ CarTCell::CarTCell(const Real3& position) {
   immunostimulatory_factor_dgrid_ =
       rm.GetDiffusionGrid("immunostimulatory_factor");
 
-  SetCurrentLiveTime(sparams->average_maximum_time_untill_apoptosis_cart);
+  SetCurrentLiveTime((sparams->dt_cycle + 1) *
+                     sparams->average_maximum_time_untill_apoptosis_cart);
   // Add Consumption and Secretion
   //  Set default oxygen consumption rate
   SetOxygenConsumptionRate(sparams->default_oxygen_consumption_cart);
@@ -468,7 +469,8 @@ void StateControlCart::Run(Agent* agent) {
           }
         } else {
           // decrease current life time
-          cell->SetCurrentLiveTime(cell->GetCurrentLiveTime() - sparams->dt_cycle);
+          cell->SetCurrentLiveTime(cell->GetCurrentLiveTime() -
+                                    (sparams->dt_cycle * sparams->dt_cycle));
         }
         break;
       }

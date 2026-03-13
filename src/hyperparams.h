@@ -315,7 +315,7 @@ struct SimParam : public ParamGroup {
 
   /// Average time in minutes until a CAR-T cell dies
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  real_t average_maximum_time_untill_apoptosis_cart = 86400;
+  real_t average_maximum_time_untill_apoptosis_cart = 12342.86;
   /// Default oxygen consumption rate of CAR-T cell
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t default_oxygen_consumption_cart = 1;
