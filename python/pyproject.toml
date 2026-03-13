@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cartopiaX"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["cppyy>=3.0"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cartopiaX*"]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: requires BioDynaMo and CARTopiaX shared libraries installed",
+]

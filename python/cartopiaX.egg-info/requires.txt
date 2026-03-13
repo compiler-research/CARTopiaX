@@ -1,0 +1,4 @@
+cppyy>=3.0
+
+[test]
+pytest>=7
