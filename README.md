@@ -359,7 +359,7 @@ These are all the other hyperparameters that are not adviced to be modified unle
 
 | Parameter | Default Value | Units | Description |
 |-----------|---------------|-------|-------------|
-| `average_maximum_time_untill_apoptosis_cart` | 86400 | minutes | Average CAR-T cell lifespan (60 days) |
+| `average_maximum_time_untill_apoptosis_cart` | 12342.86 | minutes | Average CAR-T cell lifespan |
 | `default_oxygen_consumption_cart` | 1 | 1/min | Baseline oxygen consumption rate of CAR-T cells |
 | `default_volume_new_cart_cell` | 2494 | μm³ | Total volume of newly created CAR-T cell |
 | `kill_rate_cart` | 0.06667 | min⁻¹ | Rate at which CAR-T attempts to kill attached tumor cell |
