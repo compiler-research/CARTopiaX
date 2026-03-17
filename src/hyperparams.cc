@@ -222,8 +222,8 @@ void SimParam::LoadParams(const std::string& filename) {
     average_maximum_time_untill_apoptosis_cart =
         jfile["average_maximum_time_untill_apoptosis_cart"].get<double>();
   } else {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     average_maximum_time_untill_apoptosis_cart =
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
         dt_cycle * 10.0 * 24.0 * 60.0 / (dt_cycle + 1.0);
   }
 
