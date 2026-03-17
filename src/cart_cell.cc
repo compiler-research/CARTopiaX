@@ -470,7 +470,7 @@ void StateControlCart::Run(Agent* agent) {
         } else {
           // decrease current life time
           cell->SetCurrentLiveTime(cell->GetCurrentLiveTime() -
-                                    (sparams->dt_cycle * sparams->dt_cycle));
+                                   (sparams->dt_cycle * sparams->dt_cycle));
         }
         break;
       }
