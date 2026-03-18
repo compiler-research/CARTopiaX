@@ -234,8 +234,6 @@ void OutputSummary::operator()() {
                average_oxygen_cancer_cells) = AnalyzeTumor();
       size_t total_num_cells = simulation->GetResourceManager()->GetNumAgents();
 
-
-
       // If a dosage is administred this exact time the numbers are not seen in
       // the resource manager yet because of how BioDynaMo is built
       // therefore we need to add the just added new cells to the statistics
