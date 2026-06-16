@@ -129,7 +129,3 @@ cout.txt
 
 #sqlite database files
 *.db
-
-#Parameter file
-# Ignore params.json at repository root
-/params.json

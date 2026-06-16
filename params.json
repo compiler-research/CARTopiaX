@@ -1,0 +1,10 @@
+{
+  "seed": 1,
+  "output_performance_statistics": true,
+  "total_minutes_to_simulate": 43200,
+  "initial_tumor_radius": 150.0,
+  "treatment": {
+    "0": 3957,
+    "8": 3957
+  }
+}
