@@ -69,11 +69,22 @@ void SimParam::LoadParams(const std::string& filename) {
     }
   };
 
+  auto load_string = [&](const std::string& key, std::string& var) {
+    if (jfile.contains(key)) {
+      var = jfile[key].get<std::string>();
+    }
+  };
+
   // Load parameters from JSON file
   load_int("seed", seed);
   load_bool("output_performance_statistics", output_performance_statistics);
   load_int("total_minutes_to_simulate", total_minutes_to_simulate);
-  load_double("initial_tumor_radius", initial_tumor_radius);
+  load_string("tumor_shape", tumor_shape);
+  load_double("initial_spherical_tumor_radius", initial_spherical_tumor_radius);
+  load_double("cylindrical_tumor_radius", cylindrical_tumor_radius);
+  load_double("cylindrical_tumor_height", cylindrical_tumor_height);
+  load_int("initial_number_of_cylindrical_tumor_cells",
+           initial_number_of_cylindrical_tumor_cells);
   load_int("bounded_space_length", bounded_space_length);
 
   if (jfile.contains("treatment")) {
@@ -312,8 +323,18 @@ void SimParam::PrintParams() const {
             << (output_performance_statistics ? "true" : "false") << "\n";
   std::cout << "Total simulation time in minutes (30 days): "
             << total_minutes_to_simulate << "\n";
-  std::cout << "Initial radius of the spherical tumor (micrometers): "
-            << initial_tumor_radius << "\n";
+  std::cout << "Tumor shape: " << tumor_shape << "\n";
+  if (tumor_shape == "spherical") {
+    std::cout << "Initial radius of the spherical tumor (micrometers): "
+              << initial_spherical_tumor_radius << "\n";
+  } else if (tumor_shape == "cylindrical") {
+    std::cout << "Initial radius of the cylindrical tumor (micrometers): "
+              << cylindrical_tumor_radius << "\n";
+    std::cout << "Initial height of the cylindrical tumor (micrometers): "
+              << cylindrical_tumor_height << "\n";
+    std::cout << "Initial number of cylindrical tumor cells: "
+              << initial_number_of_cylindrical_tumor_cells << "\n";
+  }
   std::cout << "Length of the bounded space (micrometers): "
             << bounded_space_length << "\n\n";
 

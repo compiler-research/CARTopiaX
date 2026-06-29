@@ -65,7 +65,7 @@ def run_ABM(params, seed):
         "seed": seed,
         "output_performance_statistics": False,
         "total_minutes_to_simulate": 1440,
-        "initial_tumor_radius": 40.0,
+        "initial_spherical_tumor_radius": 40.0,
         "treatment": {"0": 50},
         "initial_oxygen_level": initial_oxygen_level,
         "default_oxygen_consumption_tumor_cell": default_oxygen_consumption_tumor_cell,

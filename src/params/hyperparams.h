@@ -69,20 +69,33 @@ struct SimParam : public ParamGroup {
 
   /// Seed for random number generation
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  int seed = 1;
+  int seed = 42;
   /// Output Performance Statistics
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   bool output_performance_statistics = false;
   /// Total simulation time in minutes (30 days by default)
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   int total_minutes_to_simulate = 43200;
-  /// Initial radius of the spherical tumor (group of cancer cells) in
-  /// micrometers
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  real_t initial_tumor_radius = 150;
   /// Length of the bounded space in micrometers
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   int bounded_space_length = 1000;
+
+  /// Tumor topology
+  /// Tumor shape: "sphere" or "cylinder"
+  std::string tumor_shape = "sphere";
+  /// Initial radius of the spherical tumor (group of cancer cells) in
+  /// micrometers
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t initial_spherical_tumor_radius = 150;
+  /// Initial radius of the cylindrical tumor in micrometers
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t cylindrical_tumor_radius = 3000;
+  /// Initial height of the cylindrical tumor in micrometers
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t cylindrical_tumor_height = 100;
+  /// Initial number of cylindrical tumor cells
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  int initial_number_of_cylindrical_tumor_cells = 2800;
 
   /// Treatment Dosages
   ///

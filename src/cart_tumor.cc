@@ -133,10 +133,25 @@ int Simulate(int argc, const char** argv) {
         return sparam->initial_oxygen_level;
       });
 
-  // One spherical tumor of radius initial_tumor_radius in the center of the
-  // simulation space
-  const std::vector<Real3> positions =
-      CreateSphereOfTumorCells(sparam->initial_tumor_radius);
+  // Tumor cells initialization
+  const std::string tumor_shape = sparam->tumor_shape;
+  std::vector<Real3> positions;
+  if (tumor_shape == "sphere") {
+    // One spherical tumor of radius initial_spherical_tumor_radius in the center of the
+    // simulation space
+    positions = CreateSphereOfTumorCells(sparam->initial_spherical_tumor_radius);
+  } else if (tumor_shape == "cylinder") {
+    // One cylindrical tumor of radius initial_spherical_tumor_radius and height
+    // cylindrical_tumor_height in the center of the simulation space
+    positions = CreateCylinderOfTumorCells(
+        sparam->cylindrical_tumor_radius, sparam->cylindrical_tumor_height,
+        sparam->initial_number_of_cylindrical_tumor_cells);
+  } else {
+    Log::Error("Simulate", "Unknown tumor shape, please use 'sphere' or 'cylinder'.");
+    // Exit with an error code
+    return 1;
+  }
+
   for (const auto& pos : positions) {
     std::unique_ptr<TumorCell> tumor_cell = std::make_unique<TumorCell>(pos);
     std::unique_ptr<StateControlGrowProliferate> state_control =

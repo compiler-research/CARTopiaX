@@ -56,6 +56,18 @@ real_t SamplePositiveGaussian(real_t mean, real_t sigma);
 /// @return Vector of 3D positions where tumor cells should be placed
 std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius);
 
+/// Create a cylindrical arrangement of tumor cells
+///
+/// Generates a vector of 3D positions for tumor cells arranged in a cylindrical
+/// pattern with the specified radius and height. The cells are positioned randomly 
+/// uniformly distributed within the cylinder's volume.
+///
+/// @param cylinder_radius Radius of the cylindrical tumor in micrometers
+/// @param cylinder_height Height of the cylindrical tumor in micrometers
+/// @param number_of_cells Number of tumor cells to place
+/// @return Vector of 3D positions where tumor cells should be placed
+std::vector<Real3> CreateCylinderOfTumorCells(real_t cylinder_radius, real_t cylinder_height, size_t number_of_cells);
+
 /// Compute tumor statistics and characteristics
 ///
 /// Analyzes the current tumor population to compute the number of tumor cells

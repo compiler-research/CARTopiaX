@@ -252,7 +252,7 @@ These are basic parameters that are commonly changed when designing a treatment 
 | `seed` | 1 | - | Seed for random number generation to ensure reproducibility |
 | `output_performance_statistics` | false | - | Enable/disable performance statistics output |
 | `total_minutes_to_simulate` | 43200 | minutes | Total simulation time (default: 30 days) |
-| `initial_tumor_radius` | 150 | μm | Initial radius of the spherical tumor |
+| `initial_spherical_tumor_radius` | 150 | μm | Initial radius of the spherical tumor |
 | `bounded_space_length` | 1000 | μm | Length of the cubic simulation domain |
 | `treatment` | `{0: 3957, 8: 3957}` | day:cells | Map of treatment days to CAR-T cell counts. Key = day, Value = number of cells |
 
@@ -389,7 +389,7 @@ To modify parameters, edit the [`params.json`](params.json) file. Only include p
   "seed": 1,
   "output_performance_statistics": true,
   "total_minutes_to_simulate": 43200,
-  "initial_tumor_radius": 150.0,
+  "initial_spherical_tumor_radius": 150.0,
   "treatment": {
     "0": 3957,
     "8": 3957

@@ -97,6 +97,27 @@ std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius) {
   return positions;
 }
 
+/// Create a cylindrical arrangement of tumor cells randomly distributed within its volume
+std::vector<Real3> CreateCylinderOfTumorCells(real_t cylinder_radius, real_t cylinder_height, size_t number_of_cells) {
+  std::vector<Real3> positions;
+  positions.reserve(number_of_cells);
+
+  Random* random = Simulation::GetActive()->GetRandom();
+
+  for (size_t i = 0; i < number_of_cells; ++i) {
+    // sqrt ensures uniform distribution over the disk area (area element = r dr dθ)
+    real_t angle  = random->Uniform(0.0, kTwicePi);
+    real_t radius = cylinder_radius * std::sqrt(random->Uniform(0.0, 1.0));
+    real_t height = random->Uniform(-cylinder_height / 2.0, cylinder_height / 2.0);
+
+    positions.push_back({radius * std::cos(angle),
+                         radius * std::sin(angle),
+                         height});
+  }
+
+  return positions;
+}
+
 // Function to compute the number of tumor cells of each type, the radius of the
 // tumor, the average oncoprotein level and the average oxygen level of the
 // cancer cells.
