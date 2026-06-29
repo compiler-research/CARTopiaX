@@ -1,3 +1,24 @@
+"""
+Copyright 2026 compiler-research.org, Salvador de la Torre Gonzalez
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+    SPDX-License-Identifier: Apache-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This file contains the Bayesian optimization workflow used to calibrate
+the model parameters, developed under Google Summer of Code (GSoC)
+for the compiler-research.org organization.
+"""
+
 import json
 import logging
 import subprocess
@@ -35,7 +56,9 @@ EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
 def run_ABM(params, seed):
     # Change this: parameter to be optimized in the ABM simulation
     initial_oxygen_level = params["initial_oxygen_level"]
-    default_oxygen_consumption_tumor_cell = params["default_oxygen_consumption_tumor_cell"]
+    default_oxygen_consumption_tumor_cell = params[
+        "default_oxygen_consumption_tumor_cell"
+    ]
 
     # Change this configuration for the ABM run
     config = {
@@ -70,7 +93,9 @@ def compute_error():
         return float("inf")
 
     df_t = pd.read_csv(target, usecols=["total_minutes", "average_oxygen_cancer_cells"])
-    df_s = pd.read_csv(sim_dir, usecols=["total_minutes", "average_oxygen_cancer_cells"])
+    df_s = pd.read_csv(
+        sim_dir, usecols=["total_minutes", "average_oxygen_cancer_cells"]
+    )
 
     # Merge the target and simulation dataframes on the "total_minutes" column to align the data for error computation
     merged = pd.merge(
@@ -82,7 +107,13 @@ def compute_error():
         return float("inf")
 
     # Compute the mean squared error (MSE) between the average oxygen levels in the target and simulation data
-    mse = ((merged["average_oxygen_cancer_cells_s"] - merged["average_oxygen_cancer_cells_t"]) ** 2).mean()
+    mse = (
+        (
+            merged["average_oxygen_cancer_cells_s"]
+            - merged["average_oxygen_cancer_cells_t"]
+        )
+        ** 2
+    ).mean()
     return float(mse)
 
 
@@ -91,7 +122,9 @@ def objective(trial):
     # Change this: Define the parameters to be optimized and their ranges
     params = {
         "initial_oxygen_level": trial.suggest_float("initial_oxygen_level", 30, 40),
-        "default_oxygen_consumption_tumor_cell": trial.suggest_float("default_oxygen_consumption_tumor_cell", 7, 14),
+        "default_oxygen_consumption_tumor_cell": trial.suggest_float(
+            "default_oxygen_consumption_tumor_cell", 7, 14
+        ),
     }
 
     logging.info(f"Trial {trial.number} | params={params}")
