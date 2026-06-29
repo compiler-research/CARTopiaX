@@ -113,10 +113,8 @@ doc/latex
 *.pvti
 
 
-#Debugging files
+#Debugging and result files
 *.csv
-
-# Result files
 *.xyz
 *.dat
 
@@ -128,3 +126,6 @@ draft_code_my_own_analysis/
 
 # Temporary files
 cout.txt
+
+#sqlite database files
+*.db
