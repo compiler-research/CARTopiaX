@@ -11,7 +11,7 @@ import pandas as pd
 EXPERIMENT_ID = 1
 SEED = 42
 # You can set the number of trials to 0 to skip the optimization and just load the best result from the database
-NUMBER_OF_TRIALS = 1
+NUMBER_OF_TRIALS = 8
 # Number of Monte Carlo simulations to run for each trial. Use one for an aproximation of the error with a single montecarlo run
 NUMBER_MONTE_CARLO = 1
 # BioDynaMo directory to execute the comand source thisbdm.sh, you can change it to your own path
@@ -34,8 +34,8 @@ EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
 # Function to run the ABM with the given parameters
 def run_ABM(params, seed):
     # Change this: parameter to be optimized in the ABM simulation
-    kill_rate_cart = params["kill_rate_cart"]
-    adhesion_rate_cart = params["adhesion_rate_cart"]
+    initial_oxygen_level = params["initial_oxygen_level"]
+    default_oxygen_consumption_tumor_cell = params["default_oxygen_consumption_tumor_cell"]
 
     # Change this configuration for the ABM run
     config = {
@@ -44,8 +44,8 @@ def run_ABM(params, seed):
         "total_minutes_to_simulate": 1440,
         "initial_tumor_radius": 40.0,
         "treatment": {"0": 50},
-        "kill_rate_cart": kill_rate_cart,
-        "adhesion_rate_cart": adhesion_rate_cart,
+        "initial_oxygen_level": initial_oxygen_level,
+        "default_oxygen_consumption_tumor_cell": default_oxygen_consumption_tumor_cell,
     }
 
     # Save the config parameters for the run to the params.json file
@@ -69,8 +69,8 @@ def compute_error():
         logging.error("Missing simulation CSV: %s", sim_dir)
         return float("inf")
 
-    df_t = pd.read_csv(target, usecols=["total_minutes", "num_tumor_cells"])
-    df_s = pd.read_csv(sim_dir, usecols=["total_minutes", "num_tumor_cells"])
+    df_t = pd.read_csv(target, usecols=["total_minutes", "average_oxygen_cancer_cells"])
+    df_s = pd.read_csv(sim_dir, usecols=["total_minutes", "average_oxygen_cancer_cells"])
 
     # Merge the target and simulation dataframes on the "total_minutes" column to align the data for error computation
     merged = pd.merge(
@@ -81,8 +81,8 @@ def compute_error():
         logging.error("No common minutes between target and simulation")
         return float("inf")
 
-    # Compute the mean squared error (MSE) between the number of tumor cells in the target and simulation data
-    mse = ((merged["num_tumor_cells_s"] - merged["num_tumor_cells_t"]) ** 2).mean()
+    # Compute the mean squared error (MSE) between the average oxygen levels in the target and simulation data
+    mse = ((merged["average_oxygen_cancer_cells_s"] - merged["average_oxygen_cancer_cells_t"]) ** 2).mean()
     return float(mse)
 
 
@@ -90,8 +90,8 @@ def compute_error():
 def objective(trial):
     # Change this: Define the parameters to be optimized and their ranges
     params = {
-        "kill_rate_cart": trial.suggest_float("kill_rate_cart", 0.0, 0.1),
-        "adhesion_rate_cart": trial.suggest_float("adhesion_rate_cart", 0.0, 0.1),
+        "initial_oxygen_level": trial.suggest_float("initial_oxygen_level", 30, 40),
+        "default_oxygen_consumption_tumor_cell": trial.suggest_float("default_oxygen_consumption_tumor_cell", 7, 14),
     }
 
     logging.info(f"Trial {trial.number} | params={params}")
