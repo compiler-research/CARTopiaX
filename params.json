@@ -3,7 +3,7 @@
   "output_performance_statistics": true,
   "total_minutes_to_simulate": 5,
   "bounded_space_length": 7000.0,
-  "tumor_shape": "sphere",
+  "tumor_shape": "cylinder",
   "cylindrical_tumor_radius": 3000.0,
   "cylindrical_tumor_height": 100.0,
   "initial_number_of_cylindrical_tumor_cells": 2800,

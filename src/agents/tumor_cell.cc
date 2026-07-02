@@ -152,19 +152,19 @@ void TumorCell::SetOncoproteinLevel(real_t level) {
   // cell type
   if (level >= sparams->threshold_cancer_cell_type1) {
     // between 1.5 and 2.0
-    type_ = TumorCellType::kType1;
+    SetType(TumorCellType::kType1);
   } else if (level >= sparams->threshold_cancer_cell_type2 &&
              level < sparams->threshold_cancer_cell_type1) {
-    type_ = TumorCellType::kType2;
+    SetType(TumorCellType::kType2);
   } else if (level >= sparams->threshold_cancer_cell_type3 &&
              level < sparams->threshold_cancer_cell_type2) {
-    type_ = TumorCellType::kType3;
+    SetType(TumorCellType::kType3);
   } else if (level >= sparams->threshold_cancer_cell_type4 &&
              level < sparams->threshold_cancer_cell_type3) {
-    type_ = TumorCellType::kType4;
+    SetType(TumorCellType::kType4);
   } else {
     // undefined type
-    type_ = TumorCellType::kType0;
+    SetType(TumorCellType::kType0);
   }
 }
 

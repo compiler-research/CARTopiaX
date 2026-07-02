@@ -152,8 +152,9 @@ class TumorCell : public Cell, public ISubstanceInteractor {
   void SetAttachedToCart(bool attached) { attached_to_cart_ = attached; }
   bool IsAttachedToCart() const { return attached_to_cart_; }
 
-  void SetType(TumorCellType type) { type_ = type; }
+  void SetType(TumorCellType type) { type_ = type; cell_type_ = static_cast<int>(type_); }
   TumorCellType GetType() const { return type_; }
+  int GetTypeAsInt() const { return cell_type_; }
 
   Real3 GetOlderVelocity() const { return older_velocity_; }
   void SetOlderVelocity(const Real3& velocity) { older_velocity_ = velocity; }
@@ -173,8 +174,6 @@ class TumorCell : public Cell, public ISubstanceInteractor {
   real_t GetTargetTotalVolume() const;
 
   bool IsDead() const { return type_ == TumorCellType::kType5; }
-
-  int GetTypeAsInt() const { return static_cast<int>(type_); }
 
   /// Returns the diffusion grid for oxygen
   DiffusionGrid* GetOxygenDiffusionGrid() const { return oxygen_dgrid_; }
@@ -284,6 +283,9 @@ class TumorCell : public Cell, public ISubstanceInteractor {
   /// Types 1-4: 1 is the most mutated and proliferative type, 4 is the least
   /// aggressive. Type 5 means the cell is dead.
   TumorCellType type_ = TumorCellType::kType0;
+
+  /// Cell type as int for exporting to paraview
+  int cell_type_ = 0;
 
   /// Velocity of the cell in the previous time step
   Real3 older_velocity_ = {0, 0, 0};
