@@ -152,7 +152,7 @@ struct SimParam : public ParamGroup {
   /// (-bounded_space_length / 2) causes the floor boundary (z = -bounded_space_length / 2)
   /// to also act as an oxygen-producing Dirichlet boundary.
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  real_t lateral_oxygen_production_min_height = -500.0;
+  real_t lateral_oxygen_production_min_z = -500.0;
   /// Maximum height (μm) at which lateral Dirichlet oxygen boundary conditions
   /// are applied. Heights are expressed in the simulation coordinate system,
   /// where the domain extends from -bounded_space_length / 2 to +bounded_space_length / 2
@@ -160,7 +160,7 @@ struct SimParam : public ParamGroup {
   /// (+bounded_space_length / 2) causes the roof boundary (z = +bounded_space_length / 2)
   /// to also act as an oxygen-producing Dirichlet boundary.
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  real_t lateral_oxygen_production_max_height = 500.0;
+  real_t lateral_oxygen_production_max_z = 500.0;
   /// Diffusion coefficient of oxygen in μm²/min
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t diffusion_coefficient_oxygen = 100000;
@@ -401,23 +401,6 @@ struct SimParam : public ParamGroup {
   /// Volume of a single voxel in μm³
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t voxel_volume = 8000;
-  /// Minimum voxel index (z) considered for oxygen diffusion from the wall
-  /// boundaries. It is computed as:
-  /// floor((lateral_oxygen_production_min_height + bounded_space_length / 2)
-  ///       * (resolution_grid_substances - 1) / bounded_space_length)
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  int min_z_voxel_diffusion_wall_boundary = 0;
-  /// Maximum voxel index (z) considered for oxygen diffusion from the wall
-  /// ceil((lateral_oxygen_production_max_height + bounded_space_length / 2)
-  ///       * (resolution_grid_substances - 1) / bounded_space_length)
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  int max_z_voxel_diffusion_wall_boundary = 49;
-  /// Diffusion from floor: if lateral_oxygen_production_min_height is less or equal to -bounded_space_length / 2, the floor boundary (z = -bounded_space_length / 2) will also act as an oxygen-producing Dirichlet boundary.
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  bool diffuse_from_floor = true;
-  /// Diffusion from roof: if lateral_oxygen_production_max_height is less or equal to +bounded_space_length / 2, the roof boundary (z = +bounded_space_length / 2) will also act as an oxygen-producing Dirichlet boundary.
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  bool diffuse_from_roof = true;
 
   /// 1-migration_bias_cart
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
