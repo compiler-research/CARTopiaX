@@ -1,7 +1,8 @@
 {
   "seed": 42,
   "output_performance_statistics": true,
-  "total_minutes_to_simulate": 10,
+  "total_minutes_to_simulate": 4320,
+  "output_csv_interval": 600,
   "bounded_space_length": 7000.0,
   "tumor_shape": "cylinder",
   "cylindrical_tumor_radius": 3000.0,
@@ -11,7 +12,9 @@
   "lateral_oxygen_production_min_z": -75.0,
   "lateral_oxygen_production_max_z": 75.0,
   "initial_oxygen_level": 0.0,
-  "oxygen_reference_level": 38.0,
+  "oxygen_reference_level": 117.0,
+  "diffusion_coefficient_oxygen": 180000.0,
+  "decay_constant_oxygen": 0,
   "treatment": {
     "0": 0
   }
