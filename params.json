@@ -1,13 +1,17 @@
 {
   "seed": 42,
   "output_performance_statistics": true,
-  "total_minutes_to_simulate": 5,
+  "total_minutes_to_simulate": 10,
   "bounded_space_length": 7000.0,
   "tumor_shape": "cylinder",
   "cylindrical_tumor_radius": 3000.0,
   "cylindrical_tumor_height": 100.0,
   "initial_number_of_cylindrical_tumor_cells": 2800,
   "oncoprotein_standard_deviation": 0.0,
+  "lateral_oxygen_production_min_z": -75.0,
+  "lateral_oxygen_production_max_z": 75.0,
+  "initial_oxygen_level": 0.0,
+  "oxygen_reference_level": 38.0,
   "treatment": {
     "0": 0
   }

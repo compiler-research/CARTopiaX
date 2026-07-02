@@ -139,7 +139,6 @@ void SimParam::LoadParams(const std::string& filename) {
               decay_constant_immunostimulatory_factor);
   load_double("oxygen_reference_level", oxygen_reference_level);
   load_double("initial_oxygen_level", initial_oxygen_level);
-  load_double("oxygen_saturation", oxygen_saturation);
 
   load_double("cell_repulsion_between_tumor_tumor",
               cell_repulsion_between_tumor_tumor);
@@ -405,8 +404,6 @@ void SimParam::PrintParams() const {
             << oxygen_reference_level << "\n";
   std::cout << "Initial oxygen concentration in each voxel (mmHg): "
             << initial_oxygen_level << "\n";
-  std::cout << "Oxygen saturation in the microenvironment (mmHg): "
-            << oxygen_saturation << "\n\n";
 
   /// Forces
   ///

@@ -179,9 +179,6 @@ struct SimParam : public ParamGroup {
   /// Initial oxygen concentration in each voxel in mmHg
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t initial_oxygen_level = 38;
-  /// Oxygen saturation in the microenvironment in mmHg
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  real_t oxygen_saturation = 30;
 
   /// Forces
   ///  Repulsion coeficient between tumor cells

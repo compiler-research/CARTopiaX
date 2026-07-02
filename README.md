@@ -291,7 +291,6 @@ These are all the other hyperparameters that are not adviced to be modified unle
 | `decay_constant_immunostimulatory_factor` | 0.016 | min⁻¹ | Decay constant (λ) for immunostimulatory factor |
 | `oxygen_reference_level` | 38 | mmHg | Boundary condition value for oxygen concentration |
 | `initial_oxygen_level` | 38 | mmHg | Initial oxygen concentration in all voxels |
-| `oxygen_saturation` | 30 | mmHg | Oxygen saturation level in the microenvironment |
 
 #### Mechanical Forces Parameters
 
