@@ -126,6 +126,11 @@ void SimParam::LoadParams(const std::string& filename) {
               reduction_consumption_dead_cells);
   load_int("resolution_grid_substances", resolution_grid_substances);
 
+  load_double("lateral_oxygen_production_min_height",
+              lateral_oxygen_production_min_height);
+  load_double("lateral_oxygen_production_max_height",
+              lateral_oxygen_production_max_height);
+
   load_double("diffusion_coefficient_oxygen", diffusion_coefficient_oxygen);
   load_double("decay_constant_oxygen", decay_constant_oxygen);
   load_double("diffusion_coefficient_immunostimulatory_factor",
@@ -265,6 +270,19 @@ void SimParam::LoadParams(const std::string& filename) {
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances) *
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances) *
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances);
+  
+  // Calculate the minimum z index for the lateral oxygen production boundary condition
+  min_z_voxel_diffusion_wall_boundary = static_cast<int>(std::floor(
+      (lateral_oxygen_production_min_height + bounded_space_length / 2) *
+      (resolution_grid_substances - 1) / bounded_space_length));
+  // Calculate the maximum z index for the lateral oxygen production boundary condition
+  max_z_voxel_diffusion_wall_boundary = static_cast<int>(std::ceil(
+      (lateral_oxygen_production_max_height + bounded_space_length / 2) *
+      (resolution_grid_substances - 1) / bounded_space_length));
+  // Determine if diffusion from the floor and roof dirichlet boundaries different than zero should be applied
+  diffuse_from_floor = lateral_oxygen_production_min_height <= -bounded_space_length / 2;
+  diffuse_from_roof = lateral_oxygen_production_max_height >= bounded_space_length / 2;
+
   // 1-migration_bias_cart
   migration_one_minus_bias_cart = 1.0 - migration_bias_cart;
   // Probability of a CAR-T cell to migrate in a given
@@ -383,6 +401,10 @@ void SimParam::PrintParams() const {
   std::cout << "///\n\n";
   std::cout << "Number of voxels per axis for the substances grid: "
             << resolution_grid_substances << "\n";
+  std::cout << "Minimum height for lateral oxygen production (micrometers): "
+            << lateral_oxygen_production_min_height << "\n";
+  std::cout << "Maximum height for lateral oxygen production (micrometers): "
+            << lateral_oxygen_production_max_height << "\n";
   std::cout << "Diffusion coefficient of oxygen (μm²/min): "
             << diffusion_coefficient_oxygen << "\n";
   std::cout << "Decay constant of oxygen (min⁻¹): " << decay_constant_oxygen

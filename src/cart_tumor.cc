@@ -21,6 +21,7 @@
 
 #include "cart_tumor.h"
 #include "agents/tumor_cell.h"
+#include "diffusion/cylinder_wall_boundary_condition.h"
 #include "diffusion/diffusion_thomas_algorithm.h"
 #include "forces/forces_tumor_cart.h"
 #include "params/hyperparams.h"
@@ -113,13 +114,28 @@ int Simulate(int argc, const char** argv) {
 
   // Boundary Conditions Dirichlet: simulating absorption or total loss at the
   // boundaries of the space.
-  // Oxygen comming from the borders (capillary vessels)
+  // Oxygen comming from the borders (capillary vessels).
+  // The boundary condition secretes oxygen wherever z falls within
+  // [min_z_voxel_diffusion_wall_boundary, max_z_voxel_diffusion_wall_boundary],
+  // regardless of which face of the domain is being evaluated (x, y, or z
+  // faces). Depending on how these two parameters are set, this results in
+  // either:
+  //  - Oxygen produced only from a horizontal strip of the side walls, if
+  //    min_z_voxel_diffusion_wall_boundary, max_z_voxel_diffusion_wall_boundary
+  //    are set strictly inside the domain (floor and roof fall outside the
+  //    range and produce no oxygen), or
+  //  - Oxygen also produced from the floor and/or roof, if
+  //    min_z_voxel_diffusion_wall_boundary equals the domain's minimum z
+  //    (floor) and/or max_z_voxel_diffusion_wall_boundary equals the
+  //    domain's maximum z (roof).
   ModelInitializer::AddBoundaryConditions(
       kOxygen, BoundaryConditionType::kDirichlet,
       // oxygen_reference_level mmHg is the physiological level of oxygen in
       // tissues, o2 saturation is 100% at this level
-      std::make_unique<ConstantBoundaryCondition>(
-          sparam->oxygen_reference_level));
+      std::make_unique<CylinderWallBoundaryCondition>(
+          sparam->oxygen_reference_level,
+          sparam->min_z_voxel_diffusion_wall_boundary,
+          sparam->max_z_voxel_diffusion_wall_boundary));
 
   // This is useless now but should be added this way in a future version of
   // BioDynaMo

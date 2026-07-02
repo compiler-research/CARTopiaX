@@ -7,6 +7,7 @@
   "cylindrical_tumor_radius": 3000.0,
   "cylindrical_tumor_height": 100.0,
   "initial_number_of_cylindrical_tumor_cells": 2800,
+  "oncoprotein_standard_deviation": 0.0,
   "treatment": {
     "0": 0
   }
