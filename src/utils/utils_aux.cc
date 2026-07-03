@@ -351,6 +351,8 @@ void OutputInformationBasedOnRadiusCSV(const uint64_t current_step, const real_t
       // End of header line
       file << "\n";
     }
+    // Write the time information for the current step
+    file << total_days << "," << total_hours << "," << total_minutes;
 
     for (int i = 0; i < sparams->num_radius_intervals; ++i) {
 
@@ -384,7 +386,6 @@ void OutputInformationBasedOnRadiusCSV(const uint64_t current_step, const real_t
       const int total_num_cells = num_alive_cells + num_dead_cells;
 
       // Write data to CSV file
-      file << total_days << "," << total_hours << "," << total_minutes;
       file << "," << num_alive_cells
             << "," << num_dead_cells 
             << "," << total_num_cells

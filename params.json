@@ -4,7 +4,7 @@
   "total_minutes_to_simulate": 4320,
   "output_csv_interval": 600,
   "bounded_space_length": 7000.0,
-  "tumor_shape": "sphere",
+  "tumor_shape": "cylinder",
   "output_information_dependent_on_radius": true,
   "cylindrical_tumor_radius": 3000.0,
   "max_radius_analysis_csv_dependent_on_radius": 3000.0,
