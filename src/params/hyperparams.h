@@ -127,6 +127,16 @@ struct SimParam : public ParamGroup {
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   int output_csv_interval = 7200;
 
+  /// Outputs an additional CSV with information dependent on the radius of the tumor if the tumor is spherical its from its center point and if it is cylindrical its from the axis of the cylinder
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  bool output_information_dependent_on_radius = false;
+  /// Maximum radius for the analysis of information dependent on radius
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t max_radius_analysis_csv_dependent_on_radius = 3000;
+  /// Number of radius intervals to output the agregated information CSV. The concatenation of the intervals goes from 0 (the center of the tumor) to max_radius_analysis_csv_dependent_on_radius. The number of intervals is used to divide the radius into equal parts and output the agregated information for each interval.
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  int num_radius_intervals = 10;
+
   /// Apoptotic cells volume change
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t volume_relaxation_rate_cytoplasm_apoptotic_cells = 0.0166667;

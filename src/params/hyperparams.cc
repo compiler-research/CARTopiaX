@@ -114,6 +114,14 @@ void SimParam::LoadParams(const std::string& filename) {
     output_csv_interval = static_cast<int>(12 * 60 / dt_step);
   }
 
+  load_bool("output_information_dependent_on_radius",
+            output_information_dependent_on_radius);
+
+  load_double("max_radius_analysis_csv_dependent_on_radius",
+              max_radius_analysis_csv_dependent_on_radius);
+
+  load_int("num_radius_intervals", num_radius_intervals);
+
   load_double("volume_relaxation_rate_cytoplasm_apoptotic_cells",
               volume_relaxation_rate_cytoplasm_apoptotic_cells);
   load_double("volume_relaxation_rate_nucleus_apoptotic_cells",
@@ -366,6 +374,16 @@ void SimParam::PrintParams() const {
   std::cout << "Time step for the cell cycle (minutes): " << dt_cycle << "\n";
   std::cout << "General time step for the simulation: " << dt_step << "\n";
   std::cout << "Output CSV interval: " << output_csv_interval << "\n\n";
+  std::cout << "Output information dependent on radius: "
+            << (output_information_dependent_on_radius ? "true"
+                                                                   : "false")
+            << "\n\n";
+  if (output_information_dependent_on_radius) {
+    std::cout << "Number of radius intervals to output the agregated information CSV: "
+              << num_radius_intervals << "\n\n";
+    std::cout << "Maximum radius for the analysis of information dependent on radius: "
+              << max_radius_analysis_csv_dependent_on_radius << "\n\n";
+  }
 
   /// Apoptotic cells volume change
   std::cout << "/// Apoptotic cells volume change\n";

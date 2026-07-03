@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 compiler-research.org, Salvador de la Torre Gonzalez, Luciana
+ * Copyright 2026 compiler-research.org, Salvador de la Torre Gonzalez, Luciana
  * Melina Luque
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,9 +70,10 @@ std::vector<Real3> CreateCylinderOfTumorCells(real_t cylinder_radius, real_t cyl
 
 /// Compute tumor statistics and characteristics
 ///
-/// Analyzes the current tumor population to compute the number of tumor cells
+/// Analyzes the current tumor population to compute the number of cells
 /// of each type and the overall radius of the tumor mass. In addition, it
-/// computes the average oncoprotein level and oxygen across all tumor cells.
+/// computes the average oncoprotein level and oxygen across all tumor cells and all cells.
+/// Only cells within the specified inner and outer radius are considered for the analysis.
 ///
 /// @return Tuple containing:
 ///   - Total number of tumor cells
@@ -82,12 +83,14 @@ std::vector<Real3> CreateCylinderOfTumorCells(real_t cylinder_radius, real_t cyl
 ///   - Number of type 4 tumor cells (least aggressive)
 ///   - Number of type 5 tumor cells (dead)
 ///   - Number of living CAR-T cells (not apoptotic)
+///   - Number of dead CAR-T cells (apoptotic)
 ///   - Current tumor radius in micrometers
 ///   - Average oncoprotein level across all tumor cells
 ///   - Average oxygen level across all tumor cells
-std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, size_t, real_t,
-           real_t, real_t>
-AnalyzeTumor();
+///   - Average oxygen level across all cells
+std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, real_t,
+           real_t, real_t, real_t>
+AnalyzeTumor(real_t inner_radius_considered, real_t outer_radius_considered);
 
 /// Generates a random direction unitary vector
 ///
@@ -144,6 +147,13 @@ struct OutputSummary : public StandaloneOperationImpl {
 /// Register OutputSummary operation with CPU as compute target
 // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
 inline BDM_REGISTER_OP(OutputSummary, "OutputSummary", kCpu);
+
+/// Function to output information based on radius to CSV, agregate values for each radius from the center of the cylindrical tumor
+/// @param current_step Current simulation step
+/// @param total_minutes Total simulation time in minutes
+/// @param total_hours Total simulation time in hours
+/// @param total_days Total simulation time in days
+void OutputInformationBasedOnRadiusCSV(const uint64_t current_step, const real_t total_minutes, const real_t total_hours, const real_t total_days);
 
 }  // namespace bdm
 
