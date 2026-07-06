@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # ---- settings ----
 CSV_PATH = "./output/data_dependent_on_radius_tumor.csv"
-MINUTE = 300 # change this to the minute you want to plot
+MINUTE = 60 # change this to the minute you want to plot
 ATTRIBUTE = "average_oxygen_all_cells_radius"  # change this to the attribute you want to plot
 DIVIDING_FACTOR = 585  # change this to the factor you want to divide by. Use 525 to pass from mmHg to mol/m3
 # other examples: "average_oncoprotein_radius", "average_oxygen_cancer_cells_radius",
