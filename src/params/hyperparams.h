@@ -171,6 +171,10 @@ struct SimParam : public ParamGroup {
   /// to also act as an oxygen-producing Dirichlet boundary.
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t lateral_oxygen_production_max_z = 500.0;
+  /// Wether the Thomas algortithm should also diffuse the Chemicals in the z-axis or not. 
+  /// If false, the diffusion will only be done in the x and y axis.
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  bool diffuse_on_z_axis = true;
   /// Diffusion coefficient of oxygen in μm²/min
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t diffusion_coefficient_oxygen = 100000;

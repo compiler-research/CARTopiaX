@@ -208,9 +208,11 @@ void DiffusionThomasAlgorithm::DiffuseChemical() {
   SolveDirectionThomas(1);
   ApplyBoundaryConditionsIfNeeded();
 
-  // Solve for Z-direction (direction = 2)
-  SolveDirectionThomas(2);
-  ApplyBoundaryConditionsIfNeeded();
+  // Solve for Z-direction (direction = 2) if diffuse_on_z_axis is true
+  if (Simulation::GetActive()->GetParam()->Get<SimParam>()->diffuse_on_z_axis) {
+    SolveDirectionThomas(2);
+    ApplyBoundaryConditionsIfNeeded();
+  }
 
   // Change of concentration levels because of agents
   ComputeConsumptionsSecretions();

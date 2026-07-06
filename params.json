@@ -3,22 +3,25 @@
   "output_performance_statistics": true,
   "total_minutes_to_simulate": 4320,
   "output_csv_interval": 600,
-  "bounded_space_length": 7000.0,
+  "bounded_space_length": 6500.0,
   "tumor_shape": "cylinder",
   "output_information_dependent_on_radius": true,
   "cylindrical_tumor_radius": 3000.0,
   "max_radius_analysis_csv_dependent_on_radius": 3000.0,
-  "num_radius_intervals": 20,
+  "num_radius_intervals": 10,
   "cylindrical_tumor_height": 100.0,
-  "initial_number_of_cylindrical_tumor_cells": 28000,
+  "initial_number_of_cylindrical_tumor_cells": 2800,
   "oncoprotein_standard_deviation": 0.0,
-  "lateral_oxygen_production_min_z": -75.0,
-  "lateral_oxygen_production_max_z": 75.0,
+  "lateral_oxygen_production_min_z": -300.0,
+  "lateral_oxygen_production_max_z": 300.0,
   "initial_oxygen_level": 0.0,
-  "oxygen_reference_level": 117.0,
+  "oxygen_reference_level": 150.0,
   "diffusion_coefficient_oxygen": 180000.0,
-  "decay_constant_oxygen": 0,
+  "decay_constant_oxygen": 0.1,
   "treatment": {
     "0": 0
-  }
+  },
+  "default_oxygen_consumption_tumor_cell": 0.0,
+  "oxygen_limit_for_necrosis_maximum": 0.0,
+  "oxygen_limit_for_necrosis": 0.0
 }

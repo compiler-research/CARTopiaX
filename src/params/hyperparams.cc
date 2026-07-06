@@ -136,8 +136,8 @@ void SimParam::LoadParams(const std::string& filename) {
 
   load_double("lateral_oxygen_production_min_z",
               lateral_oxygen_production_min_z);
-  load_double("lateral_oxygen_production_max_z",
-              lateral_oxygen_production_max_z);
+
+  load_bool("diffuse_on_z_axis", diffuse_on_z_axis);
 
   load_double("diffusion_coefficient_oxygen", diffusion_coefficient_oxygen);
   load_double("decay_constant_oxygen", decay_constant_oxygen);
@@ -147,6 +147,19 @@ void SimParam::LoadParams(const std::string& filename) {
               decay_constant_immunostimulatory_factor);
   load_double("oxygen_reference_level", oxygen_reference_level);
   load_double("initial_oxygen_level", initial_oxygen_level);
+
+  if (jfile.contains("diffuse_on_z_axis")) {
+    diffuse_on_z_axis = jfile["diffuse_on_z_axis"].get<bool>();
+  } else {
+    // if the tumor shape is cylindrical it should be set to false, otherwise it should be set to true
+    if (tumor_shape == "cylinder") {
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      diffuse_on_z_axis = false;
+    } else {
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      diffuse_on_z_axis = true;
+    }
+  }
 
   load_double("cell_repulsion_between_tumor_tumor",
               cell_repulsion_between_tumor_tumor);
@@ -410,6 +423,8 @@ void SimParam::PrintParams() const {
             << lateral_oxygen_production_min_z << "\n";
   std::cout << "Maximum z-coordinate for lateral oxygen production (micrometers): "
             << lateral_oxygen_production_max_z << "\n";
+  std::cout << "Whether to diffuse Chemicals on the z-axis: "
+            << (diffuse_on_z_axis ? "true" : "false") << "\n";
   std::cout << "Diffusion coefficient of oxygen (μm²/min): "
             << diffusion_coefficient_oxygen << "\n";
   std::cout << "Decay constant of oxygen (min⁻¹): " << decay_constant_oxygen

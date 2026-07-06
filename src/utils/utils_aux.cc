@@ -169,16 +169,17 @@ AnalyzeTumor(real_t inner_radius_considered, real_t outer_radius_considered) {
       return;
     }
 
-    // Accumulate oxygen level for average calculation
-    acumulator_oxygen_all_cells += oxygen_dgrid->GetValue(pos);
-
     // The agent is within the considered radius range, analyze it
     if (const auto* tumor_cell = dynamic_cast<const TumorCell*>(agent)) {
+
+      // Accumulate oxygen level for average calculation
+      acumulator_oxygen_all_cells += oxygen_dgrid->GetValue(pos);
 
       total_num_tumor_cells++;
 
       // Accumulate oxygen level for average calculation
       acumulator_oxygen_cancer_cells += oxygen_dgrid->GetValue(pos);
+
 
       // computing tumor radius
       if (dist_sq > max_dist_sq) {
@@ -212,8 +213,12 @@ AnalyzeTumor(real_t inner_radius_considered, real_t outer_radius_considered) {
       }
     } else if (const auto* cart_cell = dynamic_cast<const CarTCell*>(agent)) {
       if (cart_cell->GetState() == CarTCellState::kAlive) {
+        // Accumulate oxygen level for average calculation
+        acumulator_oxygen_all_cells += oxygen_dgrid->GetValue(pos);
         num_alive_cart++;
       } else if (cart_cell->GetState() == CarTCellState::kApoptotic) {
+        // Accumulate oxygen level for average calculation
+        acumulator_oxygen_all_cells += oxygen_dgrid->GetValue(pos);
         //Dead CART cell
         num_dead_cart++;
       }
