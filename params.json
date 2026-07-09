@@ -1,8 +1,8 @@
 {
-  "seed": 8322,
+  "seed": 863,
   "output_performance_statistics": false,
-  "total_minutes_to_simulate": 30,
-  "output_csv_interval": 300,
+  "total_minutes_to_simulate": 60,
+  "output_csv_interval": 600,
   "bounded_space_length": 6500.0,
   "tumor_shape": "cylinder",
   "output_information_dependent_on_radius": true,
@@ -21,7 +21,7 @@
   "treatment": {
     "0": 0
   },
-  "default_oxygen_consumption_tumor_cell": 14.5,
+  "default_oxygen_consumption_tumor_cell": 20.0,
   "oxygen_limit_for_necrosis_maximum": 0.0,
   "oxygen_limit_for_necrosis": 0.0
 }
