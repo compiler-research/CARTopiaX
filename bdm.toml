@@ -1,5 +1,5 @@
 [visualization]
-export = true
+export = false
 interval = 7200
 
 [[visualize_agent]]
