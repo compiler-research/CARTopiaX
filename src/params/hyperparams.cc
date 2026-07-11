@@ -207,6 +207,8 @@ void SimParam::LoadParams(const std::string& filename) {
   load_double("oxygen_limit_for_necrosis", oxygen_limit_for_necrosis);
   load_double("oxygen_limit_for_necrosis_maximum",
               oxygen_limit_for_necrosis_maximum);
+  load_double("basal_necrosis_probability_cancer_cells",
+              basal_necrosis_probability_cancer_cells);
   load_double("time_lysis", time_lysis);
   load_double("maximum_necrosis_rate", maximum_necrosis_rate);
 
@@ -496,6 +498,8 @@ void SimParam::PrintParams() const {
             << oxygen_limit_for_necrosis << "\n";
   std::cout << "Limit of oxygen to maximum necrosis probability: "
             << oxygen_limit_for_necrosis_maximum << "\n";
+  std::cout << "Basal necrosis probability for tumor cells: "
+            << basal_necrosis_probability_cancer_cells << "\n";
   std::cout << "Time in minutes until a lysed necrotic cell is removed: "
             << time_lysis << "\n";
   std::cout << "Maximum rate per minute of necrosis for tumor cells: "

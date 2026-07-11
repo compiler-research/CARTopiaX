@@ -580,7 +580,8 @@ bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,
   // and multiply by sparams->dt_cycle since each timestep is sparams->dt_cycle
   // minutes
   const real_t probability_necrosis =
-      sparams->dt_cycle * sparams->maximum_necrosis_rate * multiplier;
+      sparams->dt_cycle * ( sparams->maximum_necrosis_rate * multiplier +
+                           sparams->basal_necrosis_probability_cancer_cells );
 
   Random* random = sim->GetRandom();
   const bool enter_necrosis = random->Uniform(0, 1) < probability_necrosis;

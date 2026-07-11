@@ -272,6 +272,9 @@ struct SimParam : public ParamGroup {
   /// Limit of oxygen to maximum necrosis probability
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t oxygen_limit_for_necrosis_maximum = 2.5;
+  /// Basal necrosis probability for cancer cells per minute: death due to natural random causes
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t basal_necrosis_probability_cancer_cells = 0.0;
   /// Time in minutes until a lysed necrotic cell is removed from the simulation
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t time_lysis = 86400;
