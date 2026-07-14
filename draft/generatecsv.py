@@ -7,7 +7,7 @@ import numpy as np
 import optuna
 import pandas as pd
 # Change this: File Parameters for the desired experiment
-EXPERIMENT_ID = 1
+EXPERIMENT_ID = 3
 SEED = 42
 # You can set the number of trials to 0 to skip the optimization and just load the best result from the database
 NUMBER_OF_TRIALS = 1
