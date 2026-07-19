@@ -7,12 +7,8 @@ import numpy as np
 import optuna
 import pandas as pd
 # Change this: File Parameters for the desired experiment
-EXPERIMENT_ID = 3
+EXPERIMENT_ID = 7
 SEED = 42
-# You can set the number of trials to 0 to skip the optimization and just load the best result from the database
-NUMBER_OF_TRIALS = 1
-# Number of Monte Carlo simulations to run for each trial. Use one for an aproximation of the error with a single montecarlo run
-NUMBER_MONTE_CARLO = 1
 # BioDynaMo directory to execute the comand source thisbdm.sh, you can change it to your own path
 BIODYNAMO_DIR = " /home/usuario/Desktop/biodynamo/build/bin/thisbdm.sh"
 EXPERIMENT_DIR = Path("abm_calibration") / f"experiment_{EXPERIMENT_ID}"

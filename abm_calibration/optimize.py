@@ -29,10 +29,10 @@ import optuna
 import pandas as pd
 
 # Change this: File Parameters for the desired experiment
-EXPERIMENT_ID = 4
+EXPERIMENT_ID = 7
 SEED = 42
 # You can set the number of trials to 0 to skip the optimization and just load the best result from the database
-NUMBER_OF_TRIALS = 1
+NUMBER_OF_TRIALS = 5000
 # Number of Monte Carlo simulations to run for each trial. Use one for an aproximation of the error with a single montecarlo run
 NUMBER_MONTE_CARLO = 1
 # BioDynaMo directory to execute the comand source thisbdm.sh, you can change it to your own path
@@ -53,21 +53,18 @@ EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # Function to run the ABM with the given parameters
-def run_ABM(params, seed, num_cells):
+def run_ABM(params, seed):
     # Change this: parameter to be optimized in the ABM simulation
-    oxygen_reference_level = params[
-        "oxygen_reference_level"
-    ]
-    default_oxygen_consumption_tumor_cell = params[
-        "default_oxygen_consumption_tumor_cell"
+    basal_necrosis_probability_cancer_cells = params[
+        "basal_necrosis_probability_cancer_cells"
     ]
 
     # Change this configuration for the ABM run
     config = {
         "seed": seed,
         "output_performance_statistics": False,
-        "total_minutes_to_simulate": 30,
-        "output_csv_interval": 300,
+        "total_minutes_to_simulate": 4320,
+        "output_csv_interval": 600,
         "bounded_space_length": 6500.0,
         "tumor_shape": "cylinder",
         "output_information_dependent_on_radius": True,
@@ -75,22 +72,30 @@ def run_ABM(params, seed, num_cells):
         "max_radius_analysis_csv_dependent_on_radius": 3000.0,
         "num_radius_intervals": 20,
         "cylindrical_tumor_height": 100.0,
-        "initial_number_of_cylindrical_tumor_cells": num_cells,
+        "initial_number_of_cylindrical_tumor_cells": 2800,
+        "oncoprotein_mean": 1.0,
         "oncoprotein_standard_deviation": 0.0,
         "lateral_oxygen_production_min_z": -300.0,
         "lateral_oxygen_production_max_z": 300.0,
+        "diffuse_on_z_axis": False,
         "initial_oxygen_level": 0.0,
-        "oxygen_reference_level": oxygen_reference_level,
+        "oxygen_reference_level": 165.0,
+        "default_oxygen_consumption_tumor_cell": 45.6,
         "diffusion_coefficient_oxygen": 180000.0,
         "decay_constant_oxygen": 0.01,
+        "time_apoptosis": 6000.0,
         "treatment": {
             "0": 0
         },
-        "default_oxygen_consumption_tumor_cell": default_oxygen_consumption_tumor_cell,
+        "average_time_transformation_random_rate": 42.0,
+        "standard_deviation_transformation_random_rate": 8.0,
+        "oxygen_saturation_for_proliferation": 0.0,
+        "oxygen_limit_for_proliferation": 0.0,
         "oxygen_limit_for_necrosis_maximum": 0.0,
-        "oxygen_limit_for_necrosis": 0.0
+        "oxygen_limit_for_necrosis": 0.0,
+        "reduction_consumption_dead_cells": 0.0,
+        "basal_necrosis_probability_cancer_cells": basal_necrosis_probability_cancer_cells
         }
-
     # Save the config parameters for the run to the params.json file
     with open(PARAMS_PATH, "w") as f:
         json.dump(config, f, indent=2)
@@ -100,40 +105,60 @@ def run_ABM(params, seed, num_cells):
 
 
 # Change This: Function to compute the error between the ABM simulation results and the experimental data
-def compute_error(target_inner, target_outer):
-    sim_dir = Path(__file__).resolve().parent.parent / "output" / "data_dependent_on_radius_tumor.csv"
+def compute_error():
+#     sim_dir = Path(__file__).resolve().parent.parent / "output" / "data_dependent_on_radius_tumor.csv"
+
+#     if not sim_dir.exists():
+#         logging.error("Missing simulation CSV: %s", sim_dir)
+#         return float("inf")
+
+#     df_s = pd.read_csv(
+#         sim_dir,
+#         usecols=[
+#             "total_minutes",
+#             "average_oxygen_all_cells_radius_2850_to_3000",
+#             "average_oxygen_all_cells_radius_0_to_150",
+#         ],
+#     )
+
+#     # See the value at the minute 30 for the average oxygen level in the simulation data
+#     row = df_s[df_s["total_minutes"] == 30].iloc[0]
+#     value_border = row["average_oxygen_all_cells_radius_2850_to_3000"]
+#     value_border_in_mol_m3 = value_border / 585  # Convert from mmHg to mol/m3
+#     target_value_border = target_outer
+#     value_center = row["average_oxygen_all_cells_radius_0_to_150"]
+#     value_center_in_mol_m3 = value_center / 585  # Convert from mmHg to mol/m3
+#     target_value_center = target_inner
+
+#    # Debug print de los 4 valores 
+#     print(f"Value border: {value_border_in_mol_m3}")
+#     print(f"Target value border: {target_value_border}")
+#     print(f"Value center: {value_center_in_mol_m3}")
+#     print(f"Target value center: {target_value_center}")
+
+#    # MSE
+#     mse = ((value_border_in_mol_m3 - target_value_border) ** 2 + (value_center_in_mol_m3 - target_value_center) ** 2) / 2 
+    
+#     return float(mse)
+    sim_dir = Path(__file__).resolve().parent.parent / "output" / "final_data.csv"
+
 
     if not sim_dir.exists():
         logging.error("Missing simulation CSV: %s", sim_dir)
         return float("inf")
 
     df_s = pd.read_csv(
-        sim_dir,
-        usecols=[
-            "total_minutes",
-            "average_oxygen_all_cells_radius_2850_to_3000",
-            "average_oxygen_all_cells_radius_0_to_150",
-        ],
+        sim_dir, usecols=["total_minutes", "tumor_cells_type5_dead"]
     )
 
-    # See the value at the minute 30 for the average oxygen level in the simulation data
-    row = df_s[df_s["total_minutes"] == 30].iloc[0]
-    value_border = row["average_oxygen_all_cells_radius_2850_to_3000"]
-    value_border_in_mol_m3 = value_border / 585  # Convert from mmHg to mol/m3
-    target_value_border = target_outer
-    value_center = row["average_oxygen_all_cells_radius_0_to_150"]
-    value_center_in_mol_m3 = value_center / 585  # Convert from mmHg to mol/m3
-    target_value_center = target_inner
+   # take the value at the minute 4320 for the number of dead tumor cells in the simulation data
+    row = df_s[df_s["total_minutes"] == 4320].iloc[0]
+    value_dead_cells = row["tumor_cells_type5_dead"]
+    target_value_dead_cells = 310
 
-   # Debug print de los 4 valores 
-    print(f"Value border: {value_border_in_mol_m3}")
-    print(f"Target value border: {target_value_border}")
-    print(f"Value center: {value_center_in_mol_m3}")
-    print(f"Target value center: {target_value_center}")
+    # Compute the mean squared error (MSE) between the number of dead tumor cells in the target and simulation data
+    mse = (value_dead_cells - target_value_dead_cells) ** 2
 
-   # MSE
-    mse = ((value_border_in_mol_m3 - target_value_border) ** 2 + (value_center_in_mol_m3 - target_value_center) ** 2) / 2 
-    
     return float(mse)
 
 
@@ -187,8 +212,8 @@ def run_ABM2(params, seed, num_cells):
     config = {
         "seed": seed,
         "output_performance_statistics": False,
-        "total_minutes_to_simulate": 30,
-        "output_csv_interval": 300,
+        "total_minutes_to_simulate": 4320,
+        "output_csv_interval": 600,
         "bounded_space_length": 6500.0,
         "tumor_shape": "cylinder",
         "output_information_dependent_on_radius": True,
@@ -258,8 +283,7 @@ def compute_error2(target_inner):
 def objective(trial):
     # Change this: Define the parameters to be optimized and their ranges
     params = {
-        "oxygen_reference_level": trial.suggest_float("oxygen_reference_level", 90.0, 300.0, step=1),
-        "default_oxygen_consumption_tumor_cell": trial.suggest_float("default_oxygen_consumption_tumor_cell", 10.0, 150.0, step=0.1),        
+        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000112, 0.0000195, step=0.0000001),
     }
 
     logging.info(f"Trial {trial.number} | params={params}")
@@ -267,14 +291,19 @@ def objective(trial):
     # Compute the error as the average of the errors from multiple Monte Carlo simulations varying the seed
     total_error = 0
     for seed in np.random.randint(0, 10000, NUMBER_MONTE_CARLO):
-        print(f"Running ABM with seed {seed} no cup") 
-        run_ABM2(params, int(seed), num_cells=28000)
-        error = compute_error2(target_inner=0.09)
-        total_error += error
-        print(f"Error for seed {seed}: {error}")
-        print(f"Running ABM with seed {seed} and num_cells=28000 with cup")
-        run_ABM(params, int(seed), num_cells=28000)
-        error = compute_error(target_inner=0.009, target_outer=0.16)
+        # print(f"Running ABM with seed {seed} no cup") 
+        # run_ABM2(params, int(seed), num_cells=28000)
+        # error = compute_error2(target_inner=0.09)
+        # total_error += error
+        # print(f"Error for seed {seed}: {error}")
+        # print(f"Running ABM with seed {seed} and num_cells=28000 with cup")
+        # run_ABM(params, int(seed), num_cells=28000)
+        # error = compute_error(target_inner=0.009, target_outer=0.16)
+        # total_error += error
+        # print(f"Error for seed {seed}: {error}")
+        print(f"Running ABM with seed {seed} and num_cells=2800 with cup")
+        run_ABM(params, int(seed))
+        error = compute_error()
         total_error += error
         print(f"Error for seed {seed}: {error}")
 
