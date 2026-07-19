@@ -283,7 +283,7 @@ def compute_error2(target_inner):
 def objective(trial):
     # Change this: Define the parameters to be optimized and their ranges
     params = {
-        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000112, 0.0000195, step=0.0000001),
+        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000160, 0.0000195, step=0.0000001),
     }
 
     logging.info(f"Trial {trial.number} | params={params}")
