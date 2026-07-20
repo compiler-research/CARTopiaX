@@ -29,7 +29,7 @@ import optuna
 import pandas as pd
 
 # Change this: File Parameters for the desired experiment
-EXPERIMENT_ID = 7
+EXPERIMENT_ID = 8
 SEED = 42
 # You can set the number of trials to 0 to skip the optimization and just load the best result from the database
 NUMBER_OF_TRIALS = 5000
@@ -154,7 +154,7 @@ def compute_error():
    # take the value at the minute 4320 for the number of dead tumor cells in the simulation data
     row = df_s[df_s["total_minutes"] == 4320].iloc[0]
     value_dead_cells = row["tumor_cells_type5_dead"]
-    target_value_dead_cells = 310
+    target_value_dead_cells = 208
 
     # Compute the mean squared error (MSE) between the number of dead tumor cells in the target and simulation data
     mse = (value_dead_cells - target_value_dead_cells) ** 2
@@ -283,7 +283,7 @@ def compute_error2(target_inner):
 def objective(trial):
     # Change this: Define the parameters to be optimized and their ranges
     params = {
-        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000160, 0.0000195, step=0.0000001),
+        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000130, 0.0000190, step=0.0000001),
     }
 
     logging.info(f"Trial {trial.number} | params={params}")
