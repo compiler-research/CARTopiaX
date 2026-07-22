@@ -275,6 +275,9 @@ struct SimParam : public ParamGroup {
   /// Basal necrosis probability for cancer cells per minute: death due to natural random causes
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t basal_necrosis_probability_cancer_cells = 0.0;
+  /// Aging factor (>= 1.0) that multiplies the basal necrosis probability for cancer cells per minute: death due to natural random causes
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t aging_factor_cancer_cells = 1.0;
   /// Time in minutes until a lysed necrotic cell is removed from the simulation
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t time_lysis = 86400;
@@ -411,6 +414,10 @@ struct SimParam : public ParamGroup {
   /// Steps in one day
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   size_t steps_in_one_day = 14400;
+
+  /// Scaled aging factor for cencer cells considering the time step
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t scaled_aging_factor_cancer_cells = 1.0;
   
   /// Volume of a single voxel in μm³
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

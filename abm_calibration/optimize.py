@@ -29,10 +29,10 @@ import optuna
 import pandas as pd
 
 # Change this: File Parameters for the desired experiment
-EXPERIMENT_ID = 8
+EXPERIMENT_ID = 10
 SEED = 42
 # You can set the number of trials to 0 to skip the optimization and just load the best result from the database
-NUMBER_OF_TRIALS = 5000
+NUMBER_OF_TRIALS = 500000000
 # Number of Monte Carlo simulations to run for each trial. Use one for an aproximation of the error with a single montecarlo run
 NUMBER_MONTE_CARLO = 1
 # BioDynaMo directory to execute the comand source thisbdm.sh, you can change it to your own path
@@ -55,6 +55,13 @@ EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
 # Function to run the ABM with the given parameters
 def run_ABM(params, seed):
     # Change this: parameter to be optimized in the ABM simulation
+    # basal_necrosis_probability_cancer_cells = params[
+    #     "basal_necrosis_probability_cancer_cells"
+    # ]
+
+    aging_factor_cancer_cells = params[
+        "aging_factor_cancer_cells"
+    ]
     basal_necrosis_probability_cancer_cells = params[
         "basal_necrosis_probability_cancer_cells"
     ]
@@ -72,12 +79,12 @@ def run_ABM(params, seed):
         "max_radius_analysis_csv_dependent_on_radius": 3000.0,
         "num_radius_intervals": 20,
         "cylindrical_tumor_height": 100.0,
-        "initial_number_of_cylindrical_tumor_cells": 2800,
+        "initial_number_of_cylindrical_tumor_cells": 5600,
         "oncoprotein_mean": 1.0,
         "oncoprotein_standard_deviation": 0.0,
-        "lateral_oxygen_production_min_z": -300.0,
-        "lateral_oxygen_production_max_z": 300.0,
-        "diffuse_on_z_axis": False,
+        "lateral_oxygen_production_min_z": -6600.0,
+        "lateral_oxygen_production_max_z": 6600.0,
+        "diffuse_on_z_axis": True,
         "initial_oxygen_level": 0.0,
         "oxygen_reference_level": 165.0,
         "default_oxygen_consumption_tumor_cell": 45.6,
@@ -87,14 +94,15 @@ def run_ABM(params, seed):
         "treatment": {
             "0": 0
         },
-        "average_time_transformation_random_rate": 42.0,
-        "standard_deviation_transformation_random_rate": 8.0,
+        "average_time_transformation_random_rate": 72.0,
+        "standard_deviation_transformation_random_rate": 15.0,
         "oxygen_saturation_for_proliferation": 0.0,
         "oxygen_limit_for_proliferation": 0.0,
         "oxygen_limit_for_necrosis_maximum": 0.0,
         "oxygen_limit_for_necrosis": 0.0,
         "reduction_consumption_dead_cells": 0.0,
-        "basal_necrosis_probability_cancer_cells": basal_necrosis_probability_cancer_cells
+        "basal_necrosis_probability_cancer_cells": basal_necrosis_probability_cancer_cells,
+        "aging_factor_cancer_cells": aging_factor_cancer_cells
         }
     # Save the config parameters for the run to the params.json file
     with open(PARAMS_PATH, "w") as f:
@@ -148,18 +156,29 @@ def compute_error():
         return float("inf")
 
     df_s = pd.read_csv(
-        sim_dir, usecols=["total_minutes", "tumor_cells_type5_dead"]
+        sim_dir, usecols=["total_minutes", "num_tumor_cells", "tumor_cells_type5_dead"]
     )
+   #take at the minute 1440 
+    row = df_s[df_s["total_minutes"] == 1440].iloc[0]
+    tumor_cells_type5_dead_1440 = row["tumor_cells_type5_dead"]
+    target_tumor_cells_type5_dead_1440 = 30
+
+   # take at the minute 2880
+    row = df_s[df_s["total_minutes"] == 2880].iloc[0]
+    tumor_cells_type5_dead_2880 = row["tumor_cells_type5_dead"]
+    target_tumor_cells_type5_dead_2880 = 70
 
    # take the value at the minute 4320 for the number of dead tumor cells in the simulation data
     row = df_s[df_s["total_minutes"] == 4320].iloc[0]
-    value_dead_cells = row["tumor_cells_type5_dead"]
-    target_value_dead_cells = 208
+    tumor_cells_type5_dead_4320 = row["tumor_cells_type5_dead"]
+    target_tumor_cells_type5_dead_4320 = 413
+    # total_tumor_cells_4320 = row["num_tumor_cells"]
+    # target_total_tumor_cells_4320 = 4130
 
-    # Compute the mean squared error (MSE) between the number of dead tumor cells in the target and simulation data
-    mse = (value_dead_cells - target_value_dead_cells) ** 2
+    # Compute absolute errors
+    error_total_tumor_cells = 10*abs(tumor_cells_type5_dead_4320 - target_tumor_cells_type5_dead_4320) + 8*abs(tumor_cells_type5_dead_1440 - target_tumor_cells_type5_dead_1440) + abs(tumor_cells_type5_dead_2880 - target_tumor_cells_type5_dead_2880)
 
-    return float(mse)
+    return float(error_total_tumor_cells)
 
 
     # dafault 
@@ -198,92 +217,93 @@ def compute_error():
     # ).mean()
     # return float(mse)
 
-# Function to run the ABM with the given parameters
-def run_ABM2(params, seed, num_cells):
-    # Change this: parameter to be optimized in the ABM simulation
-    oxygen_reference_level = params[
-        "oxygen_reference_level"
-    ]
-    default_oxygen_consumption_tumor_cell = params[
-        "default_oxygen_consumption_tumor_cell"
-    ]
+# # Function to run the ABM with the given parameters
+# def run_ABM2(params, seed, num_cells):
+#     # Change this: parameter to be optimized in the ABM simulation
+#     oxygen_reference_level = params[
+#         "oxygen_reference_level"
+#     ]
+#     default_oxygen_consumption_tumor_cell = params[
+#         "default_oxygen_consumption_tumor_cell"
+#     ]
 
-    # Change this configuration for the ABM run
-    config = {
-        "seed": seed,
-        "output_performance_statistics": False,
-        "total_minutes_to_simulate": 4320,
-        "output_csv_interval": 600,
-        "bounded_space_length": 6500.0,
-        "tumor_shape": "cylinder",
-        "output_information_dependent_on_radius": True,
-        "cylindrical_tumor_radius": 3000.0,
-        "max_radius_analysis_csv_dependent_on_radius": 3000.0,
-        "num_radius_intervals": 20,
-        "cylindrical_tumor_height": 100.0,
-        "initial_number_of_cylindrical_tumor_cells": num_cells,
-        "oncoprotein_standard_deviation": 0.0,
-        "lateral_oxygen_production_min_z": -6600.0,
-        "lateral_oxygen_production_max_z": 6600.0,
-        "diffuse_on_z_axis": True,
-        "initial_oxygen_level": 0.0,
-        "oxygen_reference_level": oxygen_reference_level,
-        "diffusion_coefficient_oxygen": 180000.0,
-        "decay_constant_oxygen": 0.01,
-        "treatment": {
-            "0": 0
-        },
-        "default_oxygen_consumption_tumor_cell": default_oxygen_consumption_tumor_cell,
-        "oxygen_limit_for_necrosis_maximum": 0.0,
-        "oxygen_limit_for_necrosis": 0.0
-        }
+#     # Change this configuration for the ABM run
+#     config = {
+#         "seed": seed,
+#         "output_performance_statistics": False,
+#         "total_minutes_to_simulate": 4320,
+#         "output_csv_interval": 600,
+#         "bounded_space_length": 6500.0,
+#         "tumor_shape": "cylinder",
+#         "output_information_dependent_on_radius": True,
+#         "cylindrical_tumor_radius": 3000.0,
+#         "max_radius_analysis_csv_dependent_on_radius": 3000.0,
+#         "num_radius_intervals": 20,
+#         "cylindrical_tumor_height": 100.0,
+#         "initial_number_of_cylindrical_tumor_cells": num_cells,
+#         "oncoprotein_standard_deviation": 0.0,
+#         "lateral_oxygen_production_min_z": -6600.0,
+#         "lateral_oxygen_production_max_z": 6600.0,
+#         "diffuse_on_z_axis": True,
+#         "initial_oxygen_level": 0.0,
+#         "oxygen_reference_level": oxygen_reference_level,
+#         "diffusion_coefficient_oxygen": 180000.0,
+#         "decay_constant_oxygen": 0.01,
+#         "treatment": {
+#             "0": 0
+#         },
+#         "default_oxygen_consumption_tumor_cell": default_oxygen_consumption_tumor_cell,
+#         "oxygen_limit_for_necrosis_maximum": 0.0,
+#         "oxygen_limit_for_necrosis": 0.0
+#         }
 
-    # Save the config parameters for the run to the params.json file
-    with open(PARAMS_PATH, "w") as f:
-        json.dump(config, f, indent=2)
+#     # Save the config parameters for the run to the params.json file
+#     with open(PARAMS_PATH, "w") as f:
+#         json.dump(config, f, indent=2)
 
-    # Load the ByoDynaMo environment and run the ABM simulation using the BioDynaMo executable
-    subprocess.run(["bash", "-c", f"source {BIODYNAMO_DIR} && bdm run"], check=True)
+#     # Load the ByoDynaMo environment and run the ABM simulation using the BioDynaMo executable
+#     subprocess.run(["bash", "-c", f"source {BIODYNAMO_DIR} && bdm run"], check=True)
 
-def compute_error2(target_inner):
-    sim_dir = Path(__file__).resolve().parent.parent / "output" / "data_dependent_on_radius_tumor.csv"
+# def compute_error2(target_inner):
+#     sim_dir = Path(__file__).resolve().parent.parent / "output" / "data_dependent_on_radius_tumor.csv"
 
-    if not sim_dir.exists():
-        logging.error("Missing simulation CSV: %s", sim_dir)
-        return float("inf")
+#     if not sim_dir.exists():
+#         logging.error("Missing simulation CSV: %s", sim_dir)
+#         return float("inf")
 
-    df_s = pd.read_csv(
-        sim_dir,
-        usecols=[
-            "total_minutes",
-            "average_oxygen_all_cells_radius_2850_to_3000",
-            "average_oxygen_all_cells_radius_0_to_150",
-        ],
-    )
+#     df_s = pd.read_csv(
+#         sim_dir,
+#         usecols=[
+#             "total_minutes",
+#             "average_oxygen_all_cells_radius_2850_to_3000",
+#             "average_oxygen_all_cells_radius_0_to_150",
+#         ],
+#     )
 
-    # See the value at the minute 30 for the average oxygen level in the simulation data
-    row = df_s[df_s["total_minutes"] == 30].iloc[0]
-    value_center = row["average_oxygen_all_cells_radius_0_to_150"]
-    value_center_in_mol_m3 = value_center / 585  # Convert from mmHg to mol/m3
-    target_value_center = target_inner
+#     # See the value at the minute 30 for the average oxygen level in the simulation data
+#     row = df_s[df_s["total_minutes"] == 30].iloc[0]
+#     value_center = row["average_oxygen_all_cells_radius_0_to_150"]
+#     value_center_in_mol_m3 = value_center / 585  # Convert from mmHg to mol/m3
+#     target_value_center = target_inner
 
-   # Debug print de los 4 valores 
-    print(f"Value center: {value_center_in_mol_m3}")
-    print(f"Target value center: {target_value_center}")
+#    # Debug print de los 4 valores 
+#     print(f"Value center: {value_center_in_mol_m3}")
+#     print(f"Target value center: {target_value_center}")
 
-    mse=0.
-   # MSE
-    if value_center_in_mol_m3 < target_value_center:
-        mse = (value_center_in_mol_m3 - target_value_center) ** 2
+#     mse=0.
+#    # MSE
+#     if value_center_in_mol_m3 < target_value_center:
+#         mse = (value_center_in_mol_m3 - target_value_center) ** 2
     
     
-    return float(mse)
+#     return float(mse)
 
 # Objective function for the Optuna optimization process
 def objective(trial):
     # Change this: Define the parameters to be optimized and their ranges
     params = {
-        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000130, 0.0000190, step=0.0000001),
+        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000001, 0.0000100, step=0.0000001),
+        "aging_factor_cancer_cells": trial.suggest_float("aging_factor_cancer_cells", 1.0000001, 1.0007, step=0.0000001),
     }
 
     logging.info(f"Trial {trial.number} | params={params}")

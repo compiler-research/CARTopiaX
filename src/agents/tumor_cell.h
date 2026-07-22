@@ -149,6 +149,11 @@ class TumorCell : public Cell, public ISubstanceInteractor {
     return transformation_random_rate_;
   }
 
+  void SetBasalDeathProbability(real_t basal_death_probability) {
+    basal_death_probability_ = basal_death_probability;
+  }
+  real_t GetBasalDeathProbability() const { return basal_death_probability_; }
+
   void SetAttachedToCart(bool attached) { attached_to_cart_ = attached; }
   bool IsAttachedToCart() const { return attached_to_cart_; }
 
@@ -254,6 +259,9 @@ class TumorCell : public Cell, public ISubstanceInteractor {
   /// Affects the probability of transitioning and depends on the individual
   /// cell. This rate is kept constant during the cell's lifetime.
   real_t transformation_random_rate_ = 0.0;
+
+  /// Current probability of death due to natural causes
+  real_t basal_death_probability_ = 0.0;
 
   /// Flag indicating if the cell is attached to a CAR-T cell
   bool attached_to_cart_ = false;

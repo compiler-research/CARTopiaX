@@ -79,6 +79,8 @@ TumorCell::TumorCell(const Real3& position) {
       rm->GetDiffusionGrid("immunostimulatory_factor");
   // Set state transition random rate
   SetTransformationRandomRate();
+  // Set basal death probability
+  SetBasalDeathProbability(sparams->basal_necrosis_probability_cancer_cells);
 
   // Add Consumption and Secretion
   // Set default oxygen consumption rate
@@ -140,6 +142,8 @@ void TumorCell::Initialize(const NewAgentEvent& event) {
 
       // Set state transition random rate
       this->SetTransformationRandomRate();
+      // Set basal death probability
+      this->SetBasalDeathProbability(mother->GetBasalDeathProbability());
       // Initially not attached to a cart
       this->attached_to_cart_ = false;
     }
@@ -579,9 +583,14 @@ bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,
   // Calculate the probability of necrosis based on oxygen level
   // and multiply by sparams->dt_cycle since each timestep is sparams->dt_cycle
   // minutes
+  const real_t current_basal_death_probability = cell->GetBasalDeathProbability();
+  const real_t maximum_necrosis_rate_multiplier = sparams->maximum_necrosis_rate * multiplier;
   const real_t probability_necrosis =
-      sparams->dt_cycle * ( sparams->maximum_necrosis_rate * multiplier +
-                           sparams->basal_necrosis_probability_cancer_cells );
+      sparams->dt_cycle * ( maximum_necrosis_rate_multiplier + current_basal_death_probability
+                          - maximum_necrosis_rate_multiplier * current_basal_death_probability);
+
+  //increase basal death with aging
+  cell->SetBasalDeathProbability(current_basal_death_probability + sparams->scaled_aging_factor_cancer_cells);
 
   Random* random = sim->GetRandom();
   const bool enter_necrosis = random->Uniform(0, 1) < probability_necrosis;

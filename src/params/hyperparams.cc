@@ -209,6 +209,7 @@ void SimParam::LoadParams(const std::string& filename) {
               oxygen_limit_for_necrosis_maximum);
   load_double("basal_necrosis_probability_cancer_cells",
               basal_necrosis_probability_cancer_cells);
+  load_double("aging_factor_cancer_cells", aging_factor_cancer_cells);
   load_double("time_lysis", time_lysis);
   load_double("maximum_necrosis_rate", maximum_necrosis_rate);
 
@@ -287,6 +288,8 @@ void SimParam::LoadParams(const std::string& filename) {
   // Calculate steps per day. This is always calculated here
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   steps_in_one_day = static_cast<size_t>(24 * 60 / dt_step);
+  // Calculate the scaled aging factor for cancer cells considering the cycle time step
+  scaled_aging_factor_cancer_cells = std::pow(aging_factor_cancer_cells, dt_cycle);
   // Calculate the volume of a single mechanical voxel in μm³
   voxel_volume =
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances) *
@@ -500,6 +503,8 @@ void SimParam::PrintParams() const {
             << oxygen_limit_for_necrosis_maximum << "\n";
   std::cout << "Basal necrosis probability for tumor cells: "
             << basal_necrosis_probability_cancer_cells << "\n";
+  std::cout << "Aging factor for cancer cells: "
+            << aging_factor_cancer_cells << "\n";
   std::cout << "Time in minutes until a lysed necrotic cell is removed: "
             << time_lysis << "\n";
   std::cout << "Maximum rate per minute of necrosis for tumor cells: "
