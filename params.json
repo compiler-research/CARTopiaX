@@ -1,5 +1,5 @@
 {
-  "seed": 42,
+  "seed": 422,
   "output_performance_statistics": false,
   "total_minutes_to_simulate": 4320,
   "output_csv_interval": 600,
@@ -10,7 +10,7 @@
   "max_radius_analysis_csv_dependent_on_radius": 3000.0,
   "num_radius_intervals": 20,
   "cylindrical_tumor_height": 100.0,
-  "initial_number_of_cylindrical_tumor_cells": 2800,
+  "initial_number_of_cylindrical_tumor_cells": 28000,
   "oncoprotein_mean": 1.0,
   "oncoprotein_standard_deviation": 0.0,
   "lateral_oxygen_production_min_z": -6600.0,
@@ -32,6 +32,6 @@
   "oxygen_limit_for_necrosis_maximum": 0.0,
   "oxygen_limit_for_necrosis": 0.0,
   "reduction_consumption_dead_cells": 0.0,
-  "basal_necrosis_probability_cancer_cells": 0.0000137,
-  "aging_factor_cancer_cells": 1.0
+  "basal_necrosis_probability_cancer_cells": 0.0000031,
+  "aging_factor_cancer_cells": 1.000602
 }

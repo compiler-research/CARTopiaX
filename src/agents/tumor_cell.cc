@@ -590,7 +590,7 @@ bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,
                           - maximum_necrosis_rate_multiplier * current_basal_death_probability);
 
   //increase basal death with aging
-  cell->SetBasalDeathProbability(current_basal_death_probability + sparams->scaled_aging_factor_cancer_cells);
+  cell->SetBasalDeathProbability(current_basal_death_probability * sparams->scaled_aging_factor_cancer_cells);
 
   Random* random = sim->GetRandom();
   const bool enter_necrosis = random->Uniform(0, 1) < probability_necrosis;

@@ -29,10 +29,10 @@ import optuna
 import pandas as pd
 
 # Change this: File Parameters for the desired experiment
-EXPERIMENT_ID = 10
+EXPERIMENT_ID = 12
 SEED = 42
 # You can set the number of trials to 0 to skip the optimization and just load the best result from the database
-NUMBER_OF_TRIALS = 500000000
+NUMBER_OF_TRIALS = 0
 # Number of Monte Carlo simulations to run for each trial. Use one for an aproximation of the error with a single montecarlo run
 NUMBER_MONTE_CARLO = 1
 # BioDynaMo directory to execute the comand source thisbdm.sh, you can change it to your own path
@@ -79,7 +79,7 @@ def run_ABM(params, seed):
         "max_radius_analysis_csv_dependent_on_radius": 3000.0,
         "num_radius_intervals": 20,
         "cylindrical_tumor_height": 100.0,
-        "initial_number_of_cylindrical_tumor_cells": 5600,
+        "initial_number_of_cylindrical_tumor_cells": 28000,
         "oncoprotein_mean": 1.0,
         "oncoprotein_standard_deviation": 0.0,
         "lateral_oxygen_production_min_z": -6600.0,
@@ -102,7 +102,8 @@ def run_ABM(params, seed):
         "oxygen_limit_for_necrosis": 0.0,
         "reduction_consumption_dead_cells": 0.0,
         "basal_necrosis_probability_cancer_cells": basal_necrosis_probability_cancer_cells,
-        "aging_factor_cancer_cells": aging_factor_cancer_cells
+        "aging_factor_cancer_cells": aging_factor_cancer_cells,
+        "dt_substances" : 4320
         }
     # Save the config parameters for the run to the params.json file
     with open(PARAMS_PATH, "w") as f:
@@ -161,22 +162,22 @@ def compute_error():
    #take at the minute 1440 
     row = df_s[df_s["total_minutes"] == 1440].iloc[0]
     tumor_cells_type5_dead_1440 = row["tumor_cells_type5_dead"]
-    target_tumor_cells_type5_dead_1440 = 30
+    target_tumor_cells_type5_dead_1440 = 200
 
    # take at the minute 2880
-    row = df_s[df_s["total_minutes"] == 2880].iloc[0]
-    tumor_cells_type5_dead_2880 = row["tumor_cells_type5_dead"]
-    target_tumor_cells_type5_dead_2880 = 70
+    # row = df_s[df_s["total_minutes"] == 2880].iloc[0]
+    # tumor_cells_type5_dead_2880 = row["tumor_cells_type5_dead"]
+    # target_tumor_cells_type5_dead_2880 = 350
 
    # take the value at the minute 4320 for the number of dead tumor cells in the simulation data
     row = df_s[df_s["total_minutes"] == 4320].iloc[0]
     tumor_cells_type5_dead_4320 = row["tumor_cells_type5_dead"]
-    target_tumor_cells_type5_dead_4320 = 413
+    target_tumor_cells_type5_dead_4320 = 2066
     # total_tumor_cells_4320 = row["num_tumor_cells"]
     # target_total_tumor_cells_4320 = 4130
 
     # Compute absolute errors
-    error_total_tumor_cells = 10*abs(tumor_cells_type5_dead_4320 - target_tumor_cells_type5_dead_4320) + 8*abs(tumor_cells_type5_dead_1440 - target_tumor_cells_type5_dead_1440) + abs(tumor_cells_type5_dead_2880 - target_tumor_cells_type5_dead_2880)
+    error_total_tumor_cells = abs(tumor_cells_type5_dead_4320 - target_tumor_cells_type5_dead_4320) + abs(tumor_cells_type5_dead_1440 - target_tumor_cells_type5_dead_1440)
 
     return float(error_total_tumor_cells)
 
@@ -302,8 +303,8 @@ def compute_error():
 def objective(trial):
     # Change this: Define the parameters to be optimized and their ranges
     params = {
-        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000001, 0.0000100, step=0.0000001),
-        "aging_factor_cancer_cells": trial.suggest_float("aging_factor_cancer_cells", 1.0000001, 1.0007, step=0.0000001),
+        "basal_necrosis_probability_cancer_cells": trial.suggest_float("basal_necrosis_probability_cancer_cells", 0.0000026, 0.0000038, step=0.0000001),
+        "aging_factor_cancer_cells": trial.suggest_float("aging_factor_cancer_cells", 1.000501, 1.000609, step=0.000001),
     }
 
     logging.info(f"Trial {trial.number} | params={params}")
@@ -321,7 +322,7 @@ def objective(trial):
         # error = compute_error(target_inner=0.009, target_outer=0.16)
         # total_error += error
         # print(f"Error for seed {seed}: {error}")
-        print(f"Running ABM with seed {seed} and num_cells=2800 with cup")
+        print(f"Running ABM with seed {seed} and num_cells=28000 with cup")
         run_ABM(params, int(seed))
         error = compute_error()
         total_error += error

@@ -7,7 +7,7 @@ import numpy as np
 import optuna
 import pandas as pd
 # Change this: File Parameters for the desired experiment
-EXPERIMENT_ID = 9
+EXPERIMENT_ID = 12
 SEED = 42
 # BioDynaMo directory to execute the comand source thisbdm.sh, you can change it to your own path
 BIODYNAMO_DIR = " /home/usuario/Desktop/biodynamo/build/bin/thisbdm.sh"
