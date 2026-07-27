@@ -1,3 +1,25 @@
+"""
+Copyright 2026 compiler-research.org, Salvador de la Torre Gonzalez
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+    SPDX-License-Identifier: Apache-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This file contains the Bayesian optimization workflow used to calibrate
+the model parameters, developed under Google Summer of Code (GSoC)
+for the compiler-research.org organization.
+"""
+
+
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,10 +30,10 @@ import matplotlib.pyplot as plt
 
 # ---- settings ----
 CSV_PATH = "./output/data_dependent_on_radius_tumor.csv"
-MINUTE = 1440 # change this to the minute you want to plot
+MINUTE = 4320 # change this to the minute you want to plot
 # MINUTE = 4320 # change this to the minute you want to plot
-# ATTRIBUTE = "average_oxygen_all_cells_radius"  # change this to the attribute you want to plot
-ATTRIBUTE = "tumor_cells_type5_dead_radius"  # change this to the attribute you want to plot
+ATTRIBUTE = "average_oxygen_all_cells_radius"  # change this to the attribute you want to plot
+# ATTRIBUTE = "tumor_cells_type5_dead_radius"  # change this to the attribute you want to plot
 # DIVIDING_FACTOR = 585  # change this to the factor you want to divide by. Use 525 to pass from mmHg to mol/m3
 DIVIDING_FACTOR = 1  # change this to the factor you want to divide by. Use 525 to pass from mmHg to mol/m3
 # other examples: "average_oncoprotein_radius", "average_oxygen_cancer_cells_radius",
@@ -19,7 +41,7 @@ DIVIDING_FACTOR = 1  # change this to the factor you want to divide by. Use 525 
 APPLY_RADIAL_NORMALIZATION = False  # change this to True if you want to apply radial normalization to the attribute
 # APPLY_RADIAL_NORMALIZATION = True  # change this to True if you want to apply radial normalization to the attribute
 Y_MIN = 0
-Y_MAX = 200
+Y_MAX = None
 
 # ---- load data ----
 df = pd.read_csv(CSV_PATH)
