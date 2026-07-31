@@ -65,15 +65,15 @@ def run_ABM(seed):
         "decay_constant_oxygen": 0.01,
         "time_apoptosis": 6000.0,
         "treatment": {"0": 0},
-        "average_time_transformation_random_rate": 72,
+        "average_time_transformation_random_rate": 72.0,
         "standard_deviation_transformation_random_rate": 15.0,
-        "oxygen_saturation_for_proliferation": 0.0,
-        "oxygen_limit_for_proliferation": 0.0,
+        "oxygen_saturation_for_proliferation": 0,
+        "oxygen_limit_for_proliferation": 0,
         "oxygen_limit_for_necrosis_maximum": 0.0,
         "oxygen_limit_for_necrosis": 0.0,
         "reduction_consumption_dead_cells": 0.0,
-        "basal_necrosis_probability_cancer_cells": 0.0000031,
-        "nutrient_starvation_factor_cancer_cells": 1.000602,
+        "basal_necrosis_probability_cancer_cells": 0.0000166,
+        "nutrient_starvation_factor_cancer_cells": 1.00,
         "dt_substances": 4320
     }
 
@@ -106,7 +106,7 @@ def run_multiple_seeds(N):
     DRAFT_DIR.mkdir(parents=True, exist_ok=True)
 
     # for seed in range(N):
-    for seed in[4,5,6,7,8,9]:
+    for seed in range(N):
         print(f"--- Running ABM with seed={seed} ---")
         run_ABM(seed)
         copy_output_to_draft(seed)

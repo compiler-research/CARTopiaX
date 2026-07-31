@@ -29,12 +29,12 @@ import optuna
 import pandas as pd
 
 # Change this: File Parameters for the desired experiment
-EXPERIMENT_ID = 16
+EXPERIMENT_ID = 25
 SEED = 42
 # You can set the number of trials to 0 to skip the optimization and just load the best result from the database
 NUMBER_OF_TRIALS = 1000000
 # Number of Monte Carlo simulations to run for each trial. Use one for an aproximation of the error with a single montecarlo run
-NUMBER_MONTE_CARLO = 1
+NUMBER_MONTE_CARLO = 2
 # BioDynaMo directory to execute the comand source thisbdm.sh, you can change it to your own path
 BIODYNAMO_DIR = " /home/usuario/Desktop/biodynamo/build/bin/thisbdm.sh"
 
@@ -65,6 +65,9 @@ def run_ABM(params, seed):
     # oxygen_limit_for_proliferation = params[
     #     "oxygen_limit_for_proliferation"
     # ]
+    maximum_necrosis_rate = params[
+        "maximum_necrosis_rate"
+    ]
     oxygen_saturation_for_proliferation = params[
         "oxygen_saturation_for_proliferation"
     ]
@@ -97,15 +100,16 @@ def run_ABM(params, seed):
         "treatment": {
             "0": 0
         },
-        "average_time_transformation_random_rate": 72.,
+        "average_time_transformation_random_rate": 72.0,
         "standard_deviation_transformation_random_rate": 15.0,
         "oxygen_saturation_for_proliferation": oxygen_saturation_for_proliferation,
         "oxygen_limit_for_proliferation": 5.9,
         "oxygen_limit_for_necrosis_maximum": 0.0,
-        "oxygen_limit_for_necrosis": 0.0,
+        "oxygen_limit_for_necrosis": 45.0,
+        "maximum_necrosis_rate": maximum_necrosis_rate,
         "reduction_consumption_dead_cells": 0.0,
-        "basal_necrosis_probability_cancer_cells": 0.0000031,
-        "nutrient_starvation_factor_cancer_cells": 1.000602
+        "basal_necrosis_probability_cancer_cells": 0.0000166,
+        "nutrient_starvation_factor_cancer_cells": 1.00
         }
     # Save the config parameters for the run to the params.json file
     with open(PARAMS_PATH, "w") as f:
@@ -173,13 +177,13 @@ def compute_error():
 
    # take the value at the minute 4320 for the number of dead tumor cells in the simulation data
     row = df_s[df_s["total_minutes"] == 4320].iloc[0]
-    # tumor_cells_type5_dead_4320 = row["tumor_cells_type5_dead"]
-    target_tumor_cells_type5_dead_4320 = 2066
+    tumor_cells_type5_dead_4320 = row["tumor_cells_type5_dead"]
+    target_tumor_cells_type5_dead_4320 = 2870
     total_tumor_cells_4320 = row["num_tumor_cells"]
     target_total_tumor_cells_4320 = 38266
 
     # Compute absolute errors
-    error_total_tumor_cells = abs(total_tumor_cells_4320 - target_total_tumor_cells_4320)
+    error_total_tumor_cells = abs(tumor_cells_type5_dead_4320 - target_tumor_cells_type5_dead_4320) + abs(total_tumor_cells_4320 - target_total_tumor_cells_4320)
 
     return float(error_total_tumor_cells)
 
@@ -306,7 +310,8 @@ def objective(trial):
     # Change this: Define the parameters to be optimized and their ranges
     params = {
         # "oxygen_limit_for_proliferation": trial.suggest_float("oxygen_limit_for_proliferation", 0.0, 40, step=0.1),
-        "oxygen_saturation_for_proliferation": trial.suggest_float("oxygen_saturation_for_proliferation", 6.5, 44, step=0.1),
+        "maximum_necrosis_rate": trial.suggest_float("maximum_necrosis_rate", 0.00002, 0.000022, step=0.0000004),
+        "oxygen_saturation_for_proliferation": trial.suggest_float("oxygen_saturation_for_proliferation", 13.64, 13.76, step=0.02),
         # "nutrient_starvation_factor_cancer_cells": trial.suggest_float("nutrient_starvation_factor_cancer_cells", 1.000501, 1.000609, step=0.000001),
     }
 
