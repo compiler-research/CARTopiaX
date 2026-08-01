@@ -38,7 +38,7 @@ ATTRIBUTE = "tumor_cells_type5_dead_radius"  # change this to the attribute you 
 DIVIDING_FACTOR = 1  # change this to the factor you want to divide by. Use 525 to pass from mmHg to mol/m3
 # other examples: "average_oncoprotein_radius", "average_oxygen_cancer_cells_radius",
 # "num_alive_cells_radius", "num_alive_tumor_cells_radius", etc.
-APPLY_RADIAL_NORMALIZATION = True  # change this to True if you want to apply radial normalization to the attribute
+APPLY_RADIAL_NORMALIZATION = False  # change this to True if you want to apply radial normalization to the attribute
 # APPLY_RADIAL_NORMALIZATION = True  # change this to True if you want to apply radial normalization to the attribute
 Y_MIN = 0
 Y_MAX = None

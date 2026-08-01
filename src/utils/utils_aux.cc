@@ -438,16 +438,27 @@ void SpawnCart::operator()() {
     // compute tumor radius
     ResourceManager* rm = simulation->GetResourceManager();
     real_t max_dist_sq = 0.0;
+    bool tumor_shape_is_cylindrical = sparams->tumor_shape == "cylinder";
+    bool tumor_shape_is_spherical = sparams->tumor_shape == "sphere";
 
     rm->ForEachAgent([&](const Agent* agent) {
       if (const auto* cancer_cell = dynamic_cast<const TumorCell*>(agent)) {
+        // Compute the distance to the center depending on the tumor shape
+        real_t dist_sq = 0.0;
         const Real3& pos = cancer_cell->GetPosition();
-        const real_t dist_sq =
-            pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
+        if (tumor_shape_is_cylindrical) {
+          // Only consider x and y for cylindrical rumor, distance to the axis of the cylinder
+          dist_sq = pos[0] * pos[0] + pos[1] * pos[1];  
+        } else if (tumor_shape_is_spherical) {
+          // Consider all three dimensions for spherical radius
+          dist_sq = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];  
+        } else{
+          Log::Error("SpawnCart", "Unknown tumor shape, please use 'sphere' or 'cylinder'.");
+        }
         if (dist_sq > max_dist_sq) {
           max_dist_sq = dist_sq;
         }
-      }
+      } 
     });
 
     // the car-t spawns at least
@@ -461,8 +472,11 @@ void SpawnCart::operator()() {
     // for generating car-t positions
     Random* rng = simulation->GetRandom();
     const Param* param = simulation->GetParam();
+    const auto* sparams = param->Get<SimParam>();
     const real_t min_b = param->min_bound;
     const real_t max_b = param->max_bound;
+    const real_t min_bz = sparams->bounded_space_min_allowed_z;
+    const real_t max_bz = sparams->bounded_space_max_allowed_z;
     real_t px = 0.0;
     real_t py = 0.0;
     real_t pz = 0.0;
@@ -475,8 +489,16 @@ void SpawnCart::operator()() {
       while (true) {
         px = rng->Uniform(min_b, max_b);
         py = rng->Uniform(min_b, max_b);
-        pz = rng->Uniform(min_b, max_b);
-        radi_sq = px * px + py * py + pz * pz;
+        pz = rng->Uniform(min_bz, max_bz);
+        if (tumor_shape_is_cylindrical) {
+          // Only consider x and y for cylindrical rumor, distance to the axis of the cylinder
+          radi_sq = px * px + py * py; 
+        } else if (tumor_shape_is_spherical) {
+          // Consider all three dimensions for spherical radius
+          radi_sq = px * px + py * py + pz * pz; 
+        } else{
+          Log::Error("SpawnCart", "Unknown tumor shape, please use 'sphere' or 'cylinder'.");
+        } 
         if (radi_sq >= minimum_squared_radius) {
           break;
         }

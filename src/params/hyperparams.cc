@@ -80,13 +80,25 @@ void SimParam::LoadParams(const std::string& filename) {
   load_bool("output_performance_statistics", output_performance_statistics);
   load_int("total_minutes_to_simulate", total_minutes_to_simulate);
   load_string("tumor_shape", tumor_shape);
-  load_double("initial_spherical_tumor_radius", initial_spherical_tumor_radius);
-  load_double("cylindrical_tumor_radius", cylindrical_tumor_radius);
-  load_double("cylindrical_tumor_height", cylindrical_tumor_height);
   load_int("initial_number_of_cylindrical_tumor_cells",
            initial_number_of_cylindrical_tumor_cells);
   load_int("bounded_space_length", bounded_space_length);
 
+  load_double("initial_spherical_tumor_radius", initial_spherical_tumor_radius);
+  load_double("cylindrical_tumor_radius", cylindrical_tumor_radius);
+  load_double("cylindrical_tumor_height", cylindrical_tumor_height);
+  
+  if (jfile.contains("bounded_space_min_allowed_z")) {
+    bounded_space_min_allowed_z = jfile["bounded_space_min_allowed_z"].get<double>();
+  } else {
+    bounded_space_min_allowed_z = -bounded_space_length/2;
+  }
+  if (jfile.contains("bounded_space_max_allowed_z")) {
+    bounded_space_max_allowed_z = jfile["bounded_space_max_allowed_z"].get<double>();
+  } else {
+    bounded_space_max_allowed_z = bounded_space_length/2;
+  }
+  
   if (jfile.contains("treatment")) {
     treatment.clear();
     // Parse the JSON object to handle string keys
@@ -363,6 +375,10 @@ void SimParam::PrintParams() const {
               << cylindrical_tumor_radius << "\n";
     std::cout << "Initial height of the cylindrical tumor (micrometers): "
               << cylindrical_tumor_height << "\n";
+    std::cout << "Min allowed Z coordinate for cells (micrometers): "
+              << bounded_space_min_allowed_z << "\n";
+    std::cout << "Max allowed Z coordinate for cells (micrometers): "
+              << bounded_space_max_allowed_z << "\n";
     std::cout << "Initial number of cylindrical tumor cells: "
               << initial_number_of_cylindrical_tumor_cells << "\n";
   }

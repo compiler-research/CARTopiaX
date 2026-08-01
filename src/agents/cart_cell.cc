@@ -280,6 +280,18 @@ Real3 CarTCell::CalculateDisplacement(const InteractionForce* force,
 
   older_velocity_ = translation_velocity_on_point_mass;
 
+  // Clamp the movement if it surpasses the z boundaries.
+  const double current_z = current_position[2];
+  double& movement_z = movement_at_next_step[2];
+  const double min_z = sparams->bounded_space_min_allowed_z;
+  const double max_z = sparams->bounded_space_max_allowed_z;
+  const double next_z = current_z + movement_z;
+  if (next_z < min_z) {
+      movement_z = min_z - current_z;
+  } else if (next_z > max_z) {
+      movement_z = max_z - current_z;
+  }
+
   // Displacement
   return movement_at_next_step;
 }

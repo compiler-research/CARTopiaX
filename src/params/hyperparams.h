@@ -93,6 +93,12 @@ struct SimParam : public ParamGroup {
   /// Initial height of the cylindrical tumor in micrometers
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t cylindrical_tumor_height = 100;
+  /// Min allowed Z coordinate for cells. Used for cylindrical tumors with phisical barriers. By default it is automatically set to -bounded_space_length/2 to avoid any restrictions.
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t bounded_space_min_allowed_z = -500;
+  /// Max allowed Z coordinate for cells. Used for cylindrical tumors with phisical barriers. By default it is automatically set to bounded_space_length/2 to avoid any restrictions.
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  real_t bounded_space_max_allowed_z = 500;
   /// Initial number of cylindrical tumor cells
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   int initial_number_of_cylindrical_tumor_cells = 2800;
