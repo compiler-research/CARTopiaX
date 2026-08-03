@@ -1,6 +1,6 @@
 [visualization]
-export = false
-interval = 7200
+export = true
+interval = 300
 
 [[visualize_agent]]
 name = "TumorCell"

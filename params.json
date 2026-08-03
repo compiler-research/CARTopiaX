@@ -11,6 +11,8 @@
   "num_radius_intervals": 20,
   "cylindrical_tumor_height": 100.0,
   "initial_number_of_cylindrical_tumor_cells": 28000,
+  "default_volume_new_tumor_cell": 1468.0,
+  "default_volume_new_cart_cell": 269.0,
   "oncoprotein_mean": 1.0,
   "oncoprotein_standard_deviation": 0.0,
   "lateral_oxygen_production_min_z": -300.0,
