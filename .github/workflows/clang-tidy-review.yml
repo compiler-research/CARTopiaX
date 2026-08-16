@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   review:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v4
@@ -22,19 +22,17 @@ jobs:
         run: |
           git config --global --add safe.directory /github/workspace
 
-      - name: Restore BDM Cache
-        uses: actions/cache/restore@v4
-        id: cache
+      # Same artifact ci.yml consumes. This used to restore a BioDynaMo build
+      # tree from a cache that ci.yml populated as a side effect of building it
+      # inline; ci.yml now pulls a published artifact instead, so nothing writes
+      # that cache and the restore failed on every run.
+      - name: Set up BioDynaMo
+        uses: compiler-research/ci-workflows/actions/setup-biodynamo@main
         with:
-          path: |
-            biodynamo
-          key: ubuntu-22.04-bdm
-
-      - name: Complain when cache not found
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          echo "Cache was not found!"
-          exit 1
+          version:       v1.05-cr-20260812-01
+          os:            ubuntu-24.04
+          arch:          x86_64
+          build-on-miss: false
 
       - name: Run clang-tidy
         uses: ZedThree/clang-tidy-review@v0.20.1
@@ -47,22 +45,19 @@ jobs:
             libncursesw5-dev, libnuma-dev, libomp-dev, libomp5, libopenmpi-dev,
             libpthread-stubs0-dev, libreadline-dev, libsqlite3-dev, libssl-dev,
             libxml2-dev, libxmlsec1-dev, make, python3-dev, python3-openssl,
-            tk-dev, wget, xz-utils, zlib1g-dev
+            tk-dev, wget, xz-utils, zlib1g-dev,
+            libgit2-dev, g++-11
           exclude: "test/*,unittests/*"
           split_workflow: true
           config_file: .clang-tidy
+          # No pyenv: the recipe builds with -DNOPYENV=YES. thisbdm.sh derives
+          # BDMSYS from its own location, so sourcing it inside this action's
+          # container yields container-correct paths -- $GITHUB_ENV from the
+          # step above would carry the runner's paths, which do not exist here.
           cmake_command: >
             bash -x -c '
-            curl https://pyenv.run | bash &&
-            export PATH="$HOME/.pyenv/bin:$PATH" &&
-            eval "$(pyenv init --path)" &&
-            eval "$(pyenv init -)" &&
-            pyenv install 3.9 &&
-            pyenv shell 3.9 &&
-            export &&
-            source $GITHUB_WORKSPACE/biodynamo/build/bin/thisbdm.sh &&
+            source $GITHUB_WORKSPACE/biodynamo/bin/thisbdm.sh &&
             cmake . -B build
-            -DBioDynaMo_DIR="$GITHUB_WORKSPACE/biodynamo/build/share/cmake/"
             -DCMAKE_BUILD_TYPE="Release"
             -DCMAKE_EXPORT_COMPILE_COMMANDS=On || true'
 
