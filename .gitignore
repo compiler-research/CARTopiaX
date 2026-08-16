@@ -114,7 +114,7 @@ doc/latex
 
 
 #Debugging and result files
-*.csv
+#*.csv
 *.xyz
 *.dat
 

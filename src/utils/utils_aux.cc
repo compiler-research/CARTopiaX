@@ -97,15 +97,41 @@ std::vector<Real3> CreateSphereOfTumorCells(real_t sphere_radius) {
   return positions;
 }
 
+/// Create a cylindrical arrangement of tumor cells randomly distributed within its volume
+std::vector<Real3> CreateCylinderOfTumorCells(real_t cylinder_radius, real_t cylinder_height, size_t number_of_cells) {
+  
+  std::vector<Real3> positions;
+  positions.reserve(number_of_cells);
+
+  Random* random = Simulation::GetActive()->GetRandom();
+
+  for (size_t i = 0; i < number_of_cells; ++i) {
+    // sqrt ensures uniform distribution over the disk area (area element = r dr dθ)
+    real_t angle  = random->Uniform(0.0, kTwicePi);
+    real_t radius = cylinder_radius * std::sqrt(random->Uniform(0.0, 1.0));
+    real_t height = random->Uniform(-cylinder_height / 2.0, cylinder_height / 2.0);
+
+    positions.push_back({radius * std::cos(angle),
+                         radius * std::sin(angle),
+                         height});
+  }
+
+  return positions;
+}
+
 // Function to compute the number of tumor cells of each type, the radius of the
-// tumor, the average oncoprotein level and the average oxygen level of the
-// cancer cells.
-std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, size_t, real_t,
-           real_t, real_t>
-AnalyzeTumor() {
+// tumor, the number of alive and dead cart cells, the average oncoprotein level, the average oxygen level of the
+// cancer cells and the average oxygen level of all cells. Only considering cells within the specified inner and outer radius.
+std::tuple<size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, real_t,
+           real_t, real_t, real_t>
+AnalyzeTumor(real_t inner_radius_considered, real_t outer_radius_considered) {
+  real_t inner_radius_squared = inner_radius_considered * inner_radius_considered;
+  real_t outer_radius_squared = outer_radius_considered * outer_radius_considered;
+  
   Simulation* sim = Simulation::GetActive();
   ResourceManager* rm = sim->GetResourceManager();
   DiffusionGrid* oxygen_dgrid = rm->GetDiffusionGrid("oxygen");
+  const auto* sparams = sim->GetParam()->Get<SimParam>(); 
 
   int total_num_tumor_cells = 0;
   int num_tumor_cells_type1 = 0;
@@ -114,22 +140,48 @@ AnalyzeTumor() {
   int num_tumor_cells_type4 = 0;
   int num_tumor_cells_type5_dead = 0;
   int num_alive_cart = 0;
+  int num_dead_cart = 0;
 
   real_t max_dist_sq = 0.0;
   real_t acumulator_oncoprotein = 0.0;
   real_t acumulator_oxygen_cancer_cells = 0.0;
+  real_t acumulator_oxygen_all_cells = 0.0;
+
+  bool tumor_shape_is_cylindrical = sparams->tumor_shape == "cylinder";
+  bool tumor_shape_is_spherical = sparams->tumor_shape == "sphere";
 
   rm->ForEachAgent([&](const Agent* agent) {
+    // Compute the distance to the center depending on the tumor shape
+    const Real3& pos = agent->GetPosition();
+    real_t dist_sq = 0.0;
+    if (tumor_shape_is_cylindrical) {
+      // Only consider x and y for cylindrical rumor, distance to the axis of the cylinder
+      dist_sq = pos[0] * pos[0] + pos[1] * pos[1];  
+    } else if (tumor_shape_is_spherical) {
+      // Consider all three dimensions for spherical radius
+      dist_sq = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];  
+    } else{
+      Log::Error("AnalyzeTumor", "Unknown tumor shape, please use 'sphere' or 'cylinder'.");
+    } 
+
+    //If the cell is outside the considered radius range, skip it
+    if (dist_sq < inner_radius_squared || dist_sq >= outer_radius_squared) {
+      return;
+    }
+
+    // The agent is within the considered radius range, analyze it
     if (const auto* tumor_cell = dynamic_cast<const TumorCell*>(agent)) {
+
+      // Accumulate oxygen level for average calculation
+      acumulator_oxygen_all_cells += oxygen_dgrid->GetValue(pos);
+
       total_num_tumor_cells++;
-      const Real3& pos = agent->GetPosition();
 
       // Accumulate oxygen level for average calculation
       acumulator_oxygen_cancer_cells += oxygen_dgrid->GetValue(pos);
 
+
       // computing tumor radius
-      const real_t dist_sq =
-          pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
       if (dist_sq > max_dist_sq) {
         max_dist_sq = dist_sq;
       }
@@ -161,7 +213,14 @@ AnalyzeTumor() {
       }
     } else if (const auto* cart_cell = dynamic_cast<const CarTCell*>(agent)) {
       if (cart_cell->GetState() == CarTCellState::kAlive) {
+        // Accumulate oxygen level for average calculation
+        acumulator_oxygen_all_cells += oxygen_dgrid->GetValue(pos);
         num_alive_cart++;
+      } else if (cart_cell->GetState() == CarTCellState::kApoptotic) {
+        // Accumulate oxygen level for average calculation
+        acumulator_oxygen_all_cells += oxygen_dgrid->GetValue(pos);
+        //Dead CART cell
+        num_dead_cart++;
       }
     }
   });
@@ -174,11 +233,15 @@ AnalyzeTumor() {
       (total_num_tumor_cells > 0)
           ? (acumulator_oxygen_cancer_cells / total_num_tumor_cells)
           : 0.0;
+  const real_t average_oxygen_all_cells =
+      (total_num_tumor_cells + num_alive_cart + num_dead_cart > 0)
+          ? (acumulator_oxygen_all_cells / (total_num_tumor_cells + num_alive_cart + num_dead_cart))
+          : 0.0;
   return {total_num_tumor_cells, num_tumor_cells_type1,
           num_tumor_cells_type2, num_tumor_cells_type3,
           num_tumor_cells_type4, num_tumor_cells_type5_dead,
-          num_alive_cart,        std::sqrt(max_dist_sq),
-          average_oncoprotein,   average_oxygen_cancer_cells};
+          num_alive_cart, num_dead_cart, std::sqrt(max_dist_sq),
+          average_oncoprotein,   average_oxygen_cancer_cells, average_oxygen_all_cells};
 }
 
 // Function to output summary CSV
@@ -189,6 +252,11 @@ void OutputSummary::operator()() {
   const uint64_t current_step = scheduler->GetSimulatedSteps();
 
   if (current_step % frequency_ == 0) {
+    // Calculate time in days, hours, minutes
+    const double total_minutes = static_cast<double>(current_step) * sparams->dt_step;
+    const double total_hours = total_minutes / kMinutesInAnHour;
+    const double total_days = total_hours / kHoursInADay;
+
     // Delete csv content current_step == 0 to, otherwise append mode
     std::ofstream file("output/final_data.csv",
                        current_step == 0 ? std::ios::trunc : std::ios::app);
@@ -198,17 +266,11 @@ void OutputSummary::operator()() {
             << "total_days,total_hours,total_minutes,tumor_radius,num_cells,"
                "num_tumor_cells,tumor_cells_type1,tumor_cells_type2,tumor_"
                "cells_type3,tumor_cells_type4,tumor_cells_type5_dead,num_alive_"
-               "cart,average_oncoprotein,average_oxygen_cancer_cells\n";  // Header
+               "cart,num_dead_cart,average_oncoprotein,average_oxygen_cancer_cells,average_oxygen_all_cells\n";  // Header
                                                                           // for
                                                                           // CSV
                                                                           // file
       }
-
-      // Calculate time in days, hours, minutes
-      const double total_minutes =
-          static_cast<double>(current_step) * sparams->dt_step;
-      const double total_hours = total_minutes / kMinutesInAnHour;
-      const double total_days = total_hours / kHoursInADay;
 
       // Count total cells, tumor cells of each type and tumor radius
       int total_num_tumor_cells = 0;
@@ -218,14 +280,17 @@ void OutputSummary::operator()() {
       int num_tumor_cells_type4 = 0;
       int num_tumor_cells_type5_dead = 0;
       int num_alive_cart = 0;
+      int num_dead_cart = 0;
       real_t tumor_radius = 0.0;
       real_t average_oncoprotein = 0.0;
       real_t average_oxygen_cancer_cells = 0.0;
+      real_t average_oxygen_all_cells = 0.0;
+      // Analyze tumor with no limits on inner and outer radius
       std::tie(total_num_tumor_cells, num_tumor_cells_type1,
                num_tumor_cells_type2, num_tumor_cells_type3,
                num_tumor_cells_type4, num_tumor_cells_type5_dead,
-               num_alive_cart, tumor_radius, average_oncoprotein,
-               average_oxygen_cancer_cells) = AnalyzeTumor();
+               num_alive_cart, num_dead_cart, tumor_radius, average_oncoprotein,
+               average_oxygen_cancer_cells, average_oxygen_all_cells) = AnalyzeTumor(0, sparams->bounded_space_length);
       size_t total_num_cells = simulation->GetResourceManager()->GetNumAgents();
 
       // If a dosage is administred this exact time the numbers are not seen in
@@ -248,11 +313,104 @@ void OutputSummary::operator()() {
            << total_num_tumor_cells << "," << num_tumor_cells_type1 << ","
            << num_tumor_cells_type2 << "," << num_tumor_cells_type3 << ","
            << num_tumor_cells_type4 << "," << num_tumor_cells_type5_dead << ","
-           << num_alive_cart << "," << average_oncoprotein << ","
-           << average_oxygen_cancer_cells << "\n";
+           << num_alive_cart << ","<< num_dead_cart << "," << average_oncoprotein << ","
+           << average_oxygen_cancer_cells << "," << average_oxygen_all_cells << "\n";
+    }
+
+    if (sparams->output_information_dependent_on_radius) {
+      OutputInformationBasedOnRadiusCSV(current_step, total_minutes, total_hours, total_days);
     }
   }
 }
+
+// Function to output information based on radius to CSV
+void OutputInformationBasedOnRadiusCSV(const uint64_t current_step, const real_t total_minutes, const real_t total_hours, const real_t total_days) {
+  const Simulation* simulation = Simulation::GetActive();
+  const auto* sparams = simulation->GetParam()->Get<SimParam>();
+  const real_t interval_size = sparams->max_radius_analysis_csv_dependent_on_radius / sparams->num_radius_intervals;
+
+  // Delete csv content current_step == 0 to, otherwise append mode
+  std::ofstream file("output/data_dependent_on_radius_tumor.csv",
+                      current_step == 0 ? std::ios::trunc : std::ios::app);
+  if (file.is_open()) {
+    if (current_step == 0) {
+      // Header for CSV file
+      file << "total_days,total_hours,total_minutes";
+      for (int i = 0; i < sparams->num_radius_intervals; ++i) {
+        file << ",num_alive_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",num_dead_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",total_num_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",num_alive_tumor_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",total_num_tumor_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",num_alive_cart_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",num_dead_cart_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",tumor_cells_type1_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",tumor_cells_type2_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",tumor_cells_type3_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",tumor_cells_type4_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",tumor_cells_type5_dead_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",average_oncoprotein_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",average_oxygen_cancer_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;
+        file << ",average_oxygen_all_cells_radius_" << i * interval_size << "_to_" << (i + 1) * interval_size;  
+      }
+      // End of header line
+      file << "\n";
+    }
+    // Write the time information for the current step
+    file << total_days << "," << total_hours << "," << total_minutes;
+
+    for (int i = 0; i < sparams->num_radius_intervals; ++i) {
+
+
+      real_t inner_radius_considered = i * interval_size;
+      real_t outer_radius_considered = (i + 1) * interval_size;
+
+      // Count total cells, tumor cells of each type and tumor radius
+      int total_num_tumor_cells = 0;
+      int num_tumor_cells_type1 = 0;
+      int num_tumor_cells_type2 = 0;
+      int num_tumor_cells_type3 = 0;
+      int num_tumor_cells_type4 = 0;
+      int num_tumor_cells_type5_dead = 0;
+      int num_alive_cart = 0;
+      int num_dead_cart = 0;
+      real_t tumor_radius = 0.0;
+      real_t average_oncoprotein = 0.0;
+      real_t average_oxygen_cancer_cells = 0.0;
+      real_t average_oxygen_all_cells = 0.0;
+      // Analyze tumor with no limits on inner and outer radius
+      std::tie(total_num_tumor_cells, num_tumor_cells_type1,
+              num_tumor_cells_type2, num_tumor_cells_type3,
+              num_tumor_cells_type4, num_tumor_cells_type5_dead,
+              num_alive_cart, num_dead_cart, tumor_radius, average_oncoprotein,
+              average_oxygen_cancer_cells, average_oxygen_all_cells) = AnalyzeTumor(inner_radius_considered, outer_radius_considered);
+
+      const int num_alive_tumor_cells = num_tumor_cells_type1 + num_tumor_cells_type2 + num_tumor_cells_type3 + num_tumor_cells_type4;
+      const int num_alive_cells = num_alive_cart + num_alive_tumor_cells;
+      const int num_dead_cells = num_dead_cart + num_tumor_cells_type5_dead;
+      const int total_num_cells = num_alive_cells + num_dead_cells;
+
+      // Write data to CSV file
+      file << "," << num_alive_cells
+            << "," << num_dead_cells 
+            << "," << total_num_cells
+            << "," << num_alive_tumor_cells
+            << "," << total_num_tumor_cells
+            << "," << num_alive_cart
+            << "," << num_dead_cart
+            << "," << num_tumor_cells_type1
+            << "," << num_tumor_cells_type2
+            << "," << num_tumor_cells_type3
+            << "," << num_tumor_cells_type4
+            << "," << num_tumor_cells_type5_dead
+            << "," << average_oncoprotein
+            << "," << average_oxygen_cancer_cells
+            << "," << average_oxygen_all_cells;
+    }  
+    // End of line for the current step
+    file << "\n";
+  }
+}; 
 
 // Function to spawn CAR-T cell dosages
 void SpawnCart::operator()() {
@@ -280,16 +438,27 @@ void SpawnCart::operator()() {
     // compute tumor radius
     ResourceManager* rm = simulation->GetResourceManager();
     real_t max_dist_sq = 0.0;
+    bool tumor_shape_is_cylindrical = sparams->tumor_shape == "cylinder";
+    bool tumor_shape_is_spherical = sparams->tumor_shape == "sphere";
 
     rm->ForEachAgent([&](const Agent* agent) {
       if (const auto* cancer_cell = dynamic_cast<const TumorCell*>(agent)) {
+        // Compute the distance to the center depending on the tumor shape
+        real_t dist_sq = 0.0;
         const Real3& pos = cancer_cell->GetPosition();
-        const real_t dist_sq =
-            pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
+        if (tumor_shape_is_cylindrical) {
+          // Only consider x and y for cylindrical rumor, distance to the axis of the cylinder
+          dist_sq = pos[0] * pos[0] + pos[1] * pos[1];  
+        } else if (tumor_shape_is_spherical) {
+          // Consider all three dimensions for spherical radius
+          dist_sq = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];  
+        } else{
+          Log::Error("SpawnCart", "Unknown tumor shape, please use 'sphere' or 'cylinder'.");
+        }
         if (dist_sq > max_dist_sq) {
           max_dist_sq = dist_sq;
         }
-      }
+      } 
     });
 
     // the car-t spawns at least
@@ -303,8 +472,11 @@ void SpawnCart::operator()() {
     // for generating car-t positions
     Random* rng = simulation->GetRandom();
     const Param* param = simulation->GetParam();
+    const auto* sparams = param->Get<SimParam>();
     const real_t min_b = param->min_bound;
     const real_t max_b = param->max_bound;
+    const real_t min_bz = sparams->bounded_space_min_allowed_z;
+    const real_t max_bz = sparams->bounded_space_max_allowed_z;
     real_t px = 0.0;
     real_t py = 0.0;
     real_t pz = 0.0;
@@ -317,8 +489,16 @@ void SpawnCart::operator()() {
       while (true) {
         px = rng->Uniform(min_b, max_b);
         py = rng->Uniform(min_b, max_b);
-        pz = rng->Uniform(min_b, max_b);
-        radi_sq = px * px + py * py + pz * pz;
+        pz = rng->Uniform(min_bz, max_bz);
+        if (tumor_shape_is_cylindrical) {
+          // Only consider x and y for cylindrical rumor, distance to the axis of the cylinder
+          radi_sq = px * px + py * py; 
+        } else if (tumor_shape_is_spherical) {
+          // Consider all three dimensions for spherical radius
+          radi_sq = px * px + py * py + pz * pz; 
+        } else{
+          Log::Error("SpawnCart", "Unknown tumor shape, please use 'sphere' or 'cylinder'.");
+        } 
         if (radi_sq >= minimum_squared_radius) {
           break;
         }

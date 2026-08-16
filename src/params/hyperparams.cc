@@ -69,13 +69,36 @@ void SimParam::LoadParams(const std::string& filename) {
     }
   };
 
+  auto load_string = [&](const std::string& key, std::string& var) {
+    if (jfile.contains(key)) {
+      var = jfile[key].get<std::string>();
+    }
+  };
+
   // Load parameters from JSON file
   load_int("seed", seed);
   load_bool("output_performance_statistics", output_performance_statistics);
   load_int("total_minutes_to_simulate", total_minutes_to_simulate);
-  load_double("initial_tumor_radius", initial_tumor_radius);
+  load_string("tumor_shape", tumor_shape);
+  load_int("initial_number_of_cylindrical_tumor_cells",
+           initial_number_of_cylindrical_tumor_cells);
   load_int("bounded_space_length", bounded_space_length);
 
+  load_double("initial_spherical_tumor_radius", initial_spherical_tumor_radius);
+  load_double("cylindrical_tumor_radius", cylindrical_tumor_radius);
+  load_double("cylindrical_tumor_height", cylindrical_tumor_height);
+  
+  if (jfile.contains("bounded_space_min_allowed_z")) {
+    bounded_space_min_allowed_z = jfile["bounded_space_min_allowed_z"].get<double>();
+  } else {
+    bounded_space_min_allowed_z = -bounded_space_length/2;
+  }
+  if (jfile.contains("bounded_space_max_allowed_z")) {
+    bounded_space_max_allowed_z = jfile["bounded_space_max_allowed_z"].get<double>();
+  } else {
+    bounded_space_max_allowed_z = bounded_space_length/2;
+  }
+  
   if (jfile.contains("treatment")) {
     treatment.clear();
     // Parse the JSON object to handle string keys
@@ -103,6 +126,14 @@ void SimParam::LoadParams(const std::string& filename) {
     output_csv_interval = static_cast<int>(12 * 60 / dt_step);
   }
 
+  load_bool("output_information_dependent_on_radius",
+            output_information_dependent_on_radius);
+
+  load_double("max_radius_analysis_csv_dependent_on_radius",
+              max_radius_analysis_csv_dependent_on_radius);
+
+  load_int("num_radius_intervals", num_radius_intervals);
+
   load_double("volume_relaxation_rate_cytoplasm_apoptotic_cells",
               volume_relaxation_rate_cytoplasm_apoptotic_cells);
   load_double("volume_relaxation_rate_nucleus_apoptotic_cells",
@@ -115,6 +146,11 @@ void SimParam::LoadParams(const std::string& filename) {
               reduction_consumption_dead_cells);
   load_int("resolution_grid_substances", resolution_grid_substances);
 
+  load_double("lateral_oxygen_production_min_z",
+              lateral_oxygen_production_min_z);
+
+  load_bool("diffuse_on_z_axis", diffuse_on_z_axis);
+
   load_double("diffusion_coefficient_oxygen", diffusion_coefficient_oxygen);
   load_double("decay_constant_oxygen", decay_constant_oxygen);
   load_double("diffusion_coefficient_immunostimulatory_factor",
@@ -123,7 +159,19 @@ void SimParam::LoadParams(const std::string& filename) {
               decay_constant_immunostimulatory_factor);
   load_double("oxygen_reference_level", oxygen_reference_level);
   load_double("initial_oxygen_level", initial_oxygen_level);
-  load_double("oxygen_saturation", oxygen_saturation);
+
+  if (jfile.contains("diffuse_on_z_axis")) {
+    diffuse_on_z_axis = jfile["diffuse_on_z_axis"].get<bool>();
+  } else {
+    // if the tumor shape is cylindrical it should be set to false, otherwise it should be set to true
+    if (tumor_shape == "cylinder") {
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      diffuse_on_z_axis = false;
+    } else {
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      diffuse_on_z_axis = true;
+    }
+  }
 
   load_double("cell_repulsion_between_tumor_tumor",
               cell_repulsion_between_tumor_tumor);
@@ -171,6 +219,9 @@ void SimParam::LoadParams(const std::string& filename) {
   load_double("oxygen_limit_for_necrosis", oxygen_limit_for_necrosis);
   load_double("oxygen_limit_for_necrosis_maximum",
               oxygen_limit_for_necrosis_maximum);
+  load_double("basal_necrosis_probability_cancer_cells",
+              basal_necrosis_probability_cancer_cells);
+  load_double("nutrient_starvation_factor_cancer_cells", nutrient_starvation_factor_cancer_cells);
   load_double("time_lysis", time_lysis);
   load_double("maximum_necrosis_rate", maximum_necrosis_rate);
 
@@ -249,11 +300,14 @@ void SimParam::LoadParams(const std::string& filename) {
   // Calculate steps per day. This is always calculated here
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   steps_in_one_day = static_cast<size_t>(24 * 60 / dt_step);
+  // Calculate the scaled nutrient starvation factor for cancer cells considering the cycle time step
+  scaled_nutrient_starvation_factor_cancer_cells = std::pow(nutrient_starvation_factor_cancer_cells, dt_cycle);
   // Calculate the volume of a single mechanical voxel in μm³
   voxel_volume =
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances) *
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances) *
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances);
+
   // 1-migration_bias_cart
   migration_one_minus_bias_cart = 1.0 - migration_bias_cart;
   // Probability of a CAR-T cell to migrate in a given
@@ -312,8 +366,22 @@ void SimParam::PrintParams() const {
             << (output_performance_statistics ? "true" : "false") << "\n";
   std::cout << "Total simulation time in minutes (30 days): "
             << total_minutes_to_simulate << "\n";
-  std::cout << "Initial radius of the spherical tumor (micrometers): "
-            << initial_tumor_radius << "\n";
+  std::cout << "Tumor shape: " << tumor_shape << "\n";
+  if (tumor_shape == "spherical") {
+    std::cout << "Initial radius of the spherical tumor (micrometers): "
+              << initial_spherical_tumor_radius << "\n";
+  } else if (tumor_shape == "cylindrical") {
+    std::cout << "Initial radius of the cylindrical tumor (micrometers): "
+              << cylindrical_tumor_radius << "\n";
+    std::cout << "Initial height of the cylindrical tumor (micrometers): "
+              << cylindrical_tumor_height << "\n";
+    std::cout << "Min allowed Z coordinate for cells (micrometers): "
+              << bounded_space_min_allowed_z << "\n";
+    std::cout << "Max allowed Z coordinate for cells (micrometers): "
+              << bounded_space_max_allowed_z << "\n";
+    std::cout << "Initial number of cylindrical tumor cells: "
+              << initial_number_of_cylindrical_tumor_cells << "\n";
+  }
   std::cout << "Length of the bounded space (micrometers): "
             << bounded_space_length << "\n\n";
 
@@ -340,6 +408,16 @@ void SimParam::PrintParams() const {
   std::cout << "Time step for the cell cycle (minutes): " << dt_cycle << "\n";
   std::cout << "General time step for the simulation: " << dt_step << "\n";
   std::cout << "Output CSV interval: " << output_csv_interval << "\n\n";
+  std::cout << "Output information dependent on radius: "
+            << (output_information_dependent_on_radius ? "true"
+                                                                   : "false")
+            << "\n\n";
+  if (output_information_dependent_on_radius) {
+    std::cout << "Number of radius intervals to output the agregated information CSV: "
+              << num_radius_intervals << "\n\n";
+    std::cout << "Maximum radius for the analysis of information dependent on radius: "
+              << max_radius_analysis_csv_dependent_on_radius << "\n\n";
+  }
 
   /// Apoptotic cells volume change
   std::cout << "/// Apoptotic cells volume change\n";
@@ -362,6 +440,12 @@ void SimParam::PrintParams() const {
   std::cout << "///\n\n";
   std::cout << "Number of voxels per axis for the substances grid: "
             << resolution_grid_substances << "\n";
+  std::cout << "Minimum z-coordinate for lateral oxygen production (micrometers): "
+            << lateral_oxygen_production_min_z << "\n";
+  std::cout << "Maximum z-coordinate for lateral oxygen production (micrometers): "
+            << lateral_oxygen_production_max_z << "\n";
+  std::cout << "Whether to diffuse Chemicals on the z-axis: "
+            << (diffuse_on_z_axis ? "true" : "false") << "\n";
   std::cout << "Diffusion coefficient of oxygen (μm²/min): "
             << diffusion_coefficient_oxygen << "\n";
   std::cout << "Decay constant of oxygen (min⁻¹): " << decay_constant_oxygen
@@ -374,8 +458,6 @@ void SimParam::PrintParams() const {
             << oxygen_reference_level << "\n";
   std::cout << "Initial oxygen concentration in each voxel (mmHg): "
             << initial_oxygen_level << "\n";
-  std::cout << "Oxygen saturation in the microenvironment (mmHg): "
-            << oxygen_saturation << "\n\n";
 
   /// Forces
   ///
@@ -435,6 +517,10 @@ void SimParam::PrintParams() const {
             << oxygen_limit_for_necrosis << "\n";
   std::cout << "Limit of oxygen to maximum necrosis probability: "
             << oxygen_limit_for_necrosis_maximum << "\n";
+  std::cout << "Basal necrosis probability for tumor cells: "
+            << basal_necrosis_probability_cancer_cells << "\n";
+  std::cout << "Nutrient starvation factor for cancer cells: "
+            << nutrient_starvation_factor_cancer_cells << "\n";
   std::cout << "Time in minutes until a lysed necrotic cell is removed: "
             << time_lysis << "\n";
   std::cout << "Maximum rate per minute of necrosis for tumor cells: "

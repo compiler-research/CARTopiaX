@@ -79,6 +79,8 @@ TumorCell::TumorCell(const Real3& position) {
       rm->GetDiffusionGrid("immunostimulatory_factor");
   // Set state transition random rate
   SetTransformationRandomRate();
+  // Set basal death probability
+  SetBasalDeathProbability(sparams->basal_necrosis_probability_cancer_cells);
 
   // Add Consumption and Secretion
   // Set default oxygen consumption rate
@@ -140,6 +142,8 @@ void TumorCell::Initialize(const NewAgentEvent& event) {
 
       // Set state transition random rate
       this->SetTransformationRandomRate();
+      // Set basal death probability
+      this->SetBasalDeathProbability(mother->GetBasalDeathProbability());
       // Initially not attached to a cart
       this->attached_to_cart_ = false;
     }
@@ -152,19 +156,19 @@ void TumorCell::SetOncoproteinLevel(real_t level) {
   // cell type
   if (level >= sparams->threshold_cancer_cell_type1) {
     // between 1.5 and 2.0
-    type_ = TumorCellType::kType1;
+    SetType(TumorCellType::kType1);
   } else if (level >= sparams->threshold_cancer_cell_type2 &&
              level < sparams->threshold_cancer_cell_type1) {
-    type_ = TumorCellType::kType2;
+    SetType(TumorCellType::kType2);
   } else if (level >= sparams->threshold_cancer_cell_type3 &&
              level < sparams->threshold_cancer_cell_type2) {
-    type_ = TumorCellType::kType3;
+    SetType(TumorCellType::kType3);
   } else if (level >= sparams->threshold_cancer_cell_type4 &&
              level < sparams->threshold_cancer_cell_type3) {
-    type_ = TumorCellType::kType4;
+    SetType(TumorCellType::kType4);
   } else {
     // undefined type
-    type_ = TumorCellType::kType0;
+    SetType(TumorCellType::kType0);
   }
 }
 
@@ -302,6 +306,19 @@ Real3 TumorCell::CalculateDisplacement(const InteractionForce* force,
                            older_velocity_ * sparams->dold;
 
   older_velocity_ = translation_velocity_on_point_mass;
+
+  // Clamp the movement if it surpasses the z boundaries.
+  Real3 current_position = GetPosition();
+  const double current_z = current_position[2];
+  double& movement_z = movement_at_next_step[2];
+  const double min_z = sparams->bounded_space_min_allowed_z;
+  const double max_z = sparams->bounded_space_max_allowed_z;
+  const double next_z = current_z + movement_z;
+  if (next_z < min_z) {
+      movement_z = min_z - current_z;
+  } else if (next_z > max_z) {
+      movement_z = max_z - current_z;
+  }
 
   // Displacement
   return movement_at_next_step;
@@ -579,8 +596,14 @@ bool StateControlGrowProliferate::ShouldEnterNecrosis(real_t oxygen_level,
   // Calculate the probability of necrosis based on oxygen level
   // and multiply by sparams->dt_cycle since each timestep is sparams->dt_cycle
   // minutes
+  const real_t current_basal_death_probability = cell->GetBasalDeathProbability();
+  const real_t maximum_necrosis_rate_multiplier = sparams->maximum_necrosis_rate * multiplier;
   const real_t probability_necrosis =
-      sparams->dt_cycle * sparams->maximum_necrosis_rate * multiplier;
+      sparams->dt_cycle * ( maximum_necrosis_rate_multiplier + current_basal_death_probability
+                          - maximum_necrosis_rate_multiplier * current_basal_death_probability);
+
+  //increase basal death with nutrient_starvation
+  cell->SetBasalDeathProbability(current_basal_death_probability * sparams->scaled_nutrient_starvation_factor_cancer_cells);
 
   Random* random = sim->GetRandom();
   const bool enter_necrosis = random->Uniform(0, 1) < probability_necrosis;

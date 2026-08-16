@@ -21,6 +21,7 @@
 
 #include "cart_tumor.h"
 #include "agents/tumor_cell.h"
+#include "diffusion/cylinder_wall_boundary_condition.h"
 #include "diffusion/diffusion_thomas_algorithm.h"
 #include "forces/forces_tumor_cart.h"
 #include "params/hyperparams.h"
@@ -113,13 +114,28 @@ int Simulate(int argc, const char** argv) {
 
   // Boundary Conditions Dirichlet: simulating absorption or total loss at the
   // boundaries of the space.
-  // Oxygen comming from the borders (capillary vessels)
+  // Oxygen comming from the borders (capillary vessels).
+  // The boundary condition secretes oxygen wherever z falls within
+  // [lateral_oxygen_production_min_z, lateral_oxygen_production_max_z],
+  // regardless of which face of the domain is being evaluated (x, y, or z
+  // faces). Depending on how these two parameters are set, this results in
+  // either:
+  //  - Oxygen produced only from a horizontal strip of the side walls, if
+  //    lateral_oxygen_production_min_z, lateral_oxygen_production_max_z
+  //    are set strictly inside the domain (floor and roof fall outside the
+  //    range and produce no oxygen), or
+  //  - Oxygen also produced from the floor and/or roof, if
+  //    lateral_oxygen_production_min_z equals the domain's minimum z
+  //    (floor) and/or lateral_oxygen_production_max_z equals the
+  //    domain's maximum z (roof).
   ModelInitializer::AddBoundaryConditions(
       kOxygen, BoundaryConditionType::kDirichlet,
       // oxygen_reference_level mmHg is the physiological level of oxygen in
       // tissues, o2 saturation is 100% at this level
-      std::make_unique<ConstantBoundaryCondition>(
-          sparam->oxygen_reference_level));
+      std::make_unique<CylinderWallBoundaryCondition>(
+          sparam->oxygen_reference_level,
+          sparam->lateral_oxygen_production_min_z,
+          sparam->lateral_oxygen_production_max_z));
 
   // This is useless now but should be added this way in a future version of
   // BioDynaMo
@@ -133,10 +149,25 @@ int Simulate(int argc, const char** argv) {
         return sparam->initial_oxygen_level;
       });
 
-  // One spherical tumor of radius initial_tumor_radius in the center of the
-  // simulation space
-  const std::vector<Real3> positions =
-      CreateSphereOfTumorCells(sparam->initial_tumor_radius);
+  // Tumor cells initialization
+  const std::string tumor_shape = sparam->tumor_shape;
+  std::vector<Real3> positions;
+  if (tumor_shape == "sphere") {
+    // One spherical tumor of radius initial_spherical_tumor_radius in the center of the
+    // simulation space
+    positions = CreateSphereOfTumorCells(sparam->initial_spherical_tumor_radius);
+  } else if (tumor_shape == "cylinder") {
+    // One cylindrical tumor of radius initial_spherical_tumor_radius and height
+    // cylindrical_tumor_height in the center of the simulation space
+    positions = CreateCylinderOfTumorCells(
+        sparam->cylindrical_tumor_radius, sparam->cylindrical_tumor_height,
+        sparam->initial_number_of_cylindrical_tumor_cells);
+  } else {
+    Log::Error("Simulate", "Unknown tumor shape, please use 'sphere' or 'cylinder'.");
+    // Exit with an error code
+    return 1;
+  }
+
   for (const auto& pos : positions) {
     std::unique_ptr<TumorCell> tumor_cell = std::make_unique<TumorCell>(pos);
     std::unique_ptr<StateControlGrowProliferate> state_control =

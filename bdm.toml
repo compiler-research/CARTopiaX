@@ -1,13 +1,13 @@
 [visualization]
 export = true
-interval = 7200
+interval = 300
 
 [[visualize_agent]]
 name = "TumorCell"
 additional_data_members = [
-	{name = "diameter_", function = "diameter_"},
-	{name = "volume_", function = "volume_"},
-	{name = "cell_type", function = "GetTypeAsInt"}
+  "diameter_",
+  "volume_",
+  "cell_type_"
 ]
 
 [[visualize_agent]]
