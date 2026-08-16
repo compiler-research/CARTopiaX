@@ -28,13 +28,14 @@
 3. [Model Replication](#model-replication)
 4. [Dependencies](#dependencies)
 5. [Installation](#installation)
-6. [Building the Simulation](#building-the-simulation)
-7. [Input Parameters](#input-parameters)
-8. [Running the Simulation](#running-the-simulation)
-9. [Visualizing Results](#visualizing-results)
-10. [Acknowledgments](#acknowledgments)
-11. [License](#license)
-12. [Author Contact Information](#author-contact-information)
+6. [Development Environment (Container)](#development-environment-container)
+7. [Building the Simulation](#building-the-simulation)
+8. [Input Parameters](#input-parameters)
+9. [Running the Simulation](#running-the-simulation)
+10. [Visualizing Results](#visualizing-results)
+11. [Acknowledgments](#acknowledgments)
+12. [License](#license)
+13. [Author Contact Information](#author-contact-information)
 
 
 ---
@@ -216,6 +217,159 @@ Clone the repository:
 git clone https://github.com/compiler-research/CARTopiaX.git
 cd CARTopiaX
 
+```
+
+---
+
+## Development Environment (Container)
+
+A prebuilt BioDynaMo — with its bundled ROOT — is published as a
+[ci-workflows](https://github.com/compiler-research/ci-workflows) recipe cell,
+so you do not have to build it yourself. `bin/repro --devshell` drops you into a
+persistent container with that BioDynaMo in place, your checkout mounted
+read-write, and [Claude Code](https://claude.com/claude-code) installed.
+
+This is the fastest way for a new contributor to get a working environment.
+
+### Prerequisites
+
+- **Docker**, running.
+- **git** and **Python 3** on the host.
+- **~3 GB free** in the Docker VM (~250 MB download, ~800 MB unpacked, plus build space).
+
+`nektos/act` is *not* needed for this flow, which names the environment by its
+cell coordinate. It is only required to name one by CI matrix row instead — that
+form asks `act` to expand the matrix — or to run a whole CI job locally with
+`bin/repro <row-name>`.
+
+> On Apple Silicon the container is x86_64 and runs translated. That is fine for
+> developing, but do not trust it for timing measurements or for diagnosing
+> toolchain-level failures.
+
+### One-time host setup
+
+```bash
+git clone https://github.com/compiler-research/ci-workflows ~/sources/ci-workflows
+
+# Optional: seed the AI state the container symlinks in. Anything here is what
+# Claude sees, and it survives container rebuilds and machine moves. Claude's
+# per-project memory directory is created for you on first entry.
+HOST_CACHE=~/.cache/ci-workflows/devshell-cache
+mkdir -p "$HOST_CACHE/ai/skills"
+cp -r ~/.claude/skills/.      "$HOST_CACHE/ai/skills/"       2>/dev/null || true
+cp    ~/.claude/settings.json "$HOST_CACHE/ai/settings.json" 2>/dev/null || true
+```
+
+### Each session
+
+```bash
+cd /path/to/CARTopiaX        # this directory becomes /patches inside, read-write
+
+~/sources/ci-workflows/bin/repro --devshell --devshell-host-cache \
+    biodynamo/<version>/ubuntu-24.04/x86_64
+```
+
+Take `<version>` from `recipe-version` in
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) so your environment matches
+what CI uses. Flags must come **before** the cell coordinate — anything after it
+is forwarded to `act` instead.
+
+The first entry downloads and unpacks BioDynaMo; later entries take seconds.
+`claude` is installed on entry; log in once per container.
+
+The first entry also prints
+
+```
+::warning title=devshell::the recipe's cmake configure failed; the devshell is still usable.
+```
+
+That is expected and does not affect anything below. `bin/repro` tries to
+configure *BioDynaMo's own* source tree as a convenience, and the base image
+lacks the packages that needs — see
+[Modifying BioDynaMo itself](#modifying-biodynamo-itself) if you want that tree.
+
+### Inside the container
+
+```bash
+# 1. BioDynaMo's host dependencies (installed once; they persist with the container)
+sudo apt-get update -qq
+sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y \
+  libopenmpi-dev libomp-dev libnuma-dev libblas-dev liblapack-dev libgit2-dev g++-11
+
+# 2. BioDynaMo's environment
+source "$DEVSHELL_INSTALL/bin/thisbdm.sh"
+
+# 3. Build and test CARTopiaX
+cd /patches
+cmake . -B build -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+cmake --build build -j"$(nproc)"
+ctest --test-dir build --output-on-failure
+```
+
+Two of those are workarounds rather than preferences, so do not drop them:
+
+- **Step 1** is needed because the devshell installs only what an LLVM recipe
+  requires. Without it, CMake stops at
+  `We did not find any OpenMPI installation`.
+- **The compiler pin in step 3** is needed because the devshell exports
+  `CC=clang`, while BioDynaMo replaces the compiler with MPI's wrapper (which
+  wraps gcc) *after* CMake has detected clang. The OpenMP flags then disagree and
+  g++ rejects `-fopenmp=libomp`.
+
+### Modifying BioDynaMo itself
+
+The recipe ships BioDynaMo's source next to the install, at `$DEVSHELL_SRC`
+(a shallow checkout at the tag CI pins). Building it needs one thing beyond
+step 1 above: BioDynaMo requires the exact CPython minor that the bundled ROOT
+built its bindings against — 3.9, which no Ubuntu LTS carries.
+
+```bash
+sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+  apt-get install -y --no-install-recommends software-properties-common
+sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+  add-apt-repository -y ppa:deadsnakes/ppa
+sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get update -qq
+sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+  apt-get install -y --no-install-recommends python3.9 python3.9-dev
+```
+
+Re-launch the devshell once afterwards and it configures `$DEVSHELL_BUILD` with
+the recipe's own cmake flags; from then on `make -C $DEVSHELL_BUILD` iterates
+normally.
+
+To build CARTopiaX against your modified BioDynaMo, install it to a prefix of
+your own and source *that* instead of `$DEVSHELL_INSTALL`:
+
+```bash
+cmake --install "$DEVSHELL_BUILD" --prefix ~/bdm-dev
+source ~/bdm-dev/biodynamo-v1.05/bin/thisbdm.sh
+```
+
+The install is self-contained — it carries its own ROOT — and `thisbdm.sh`
+derives `BDMSYS` from its own location, so it works from anywhere. Note the
+extra `biodynamo-v<version>` level: BioDynaMo installs one directory deeper than
+the prefix you give it, whereas `$DEVSHELL_INSTALL` is that inner directory
+already, flattened by the recipe. Leaving `$DEVSHELL_INSTALL` untouched keeps
+the pristine CI environment one `source` away.
+
+### What persists
+
+| layer | holds | survives |
+|---|---|---|
+| container `devshell-<cell>` | apt packages, Claude login, your `$HOME` | exiting the shell |
+| host cache `~/.cache/ci-workflows/devshell-cache` | BioDynaMo install and source, ccache, Claude skills/settings/memory | `--devshell-rm` |
+| `/patches` | **your checkout** | everything — it is your working copy |
+
+Your work is never inside the container: `/patches` *is* your repository, so
+commit and push from the host as usual.
+
+Mounts are fixed when the container is created, so always launch from the same
+project directory. To switch projects, remove the container first:
+
+```bash
+~/sources/ci-workflows/bin/repro --devshell --devshell-rm \
+    biodynamo/<version>/ubuntu-24.04/x86_64
 ```
 
 ---
