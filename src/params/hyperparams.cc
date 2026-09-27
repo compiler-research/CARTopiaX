@@ -90,19 +90,6 @@ void SimParam::LoadParams(const std::string& filename) {
   load_double("dt_mechanics", dt_mechanics);
   load_double("dt_cycle", dt_cycle);
 
-  if (jfile.contains("dt_step")) {
-    dt_step = jfile["dt_step"].get<double>();
-  } else {
-    dt_step = dt_mechanics;
-  }
-
-  if (jfile.contains("output_csv_interval")) {
-    output_csv_interval = jfile["output_csv_interval"].get<int>();
-  } else {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    output_csv_interval = static_cast<int>(12 * 60 / dt_step);
-  }
-
   load_double("volume_relaxation_rate_cytoplasm_apoptotic_cells",
               volume_relaxation_rate_cytoplasm_apoptotic_cells);
   load_double("volume_relaxation_rate_nucleus_apoptotic_cells",
@@ -145,20 +132,6 @@ void SimParam::LoadParams(const std::string& filename) {
               cell_adhesion_between_tumor_cart);
   load_int("length_box_mechanics", length_box_mechanics);
 
-  if (jfile.contains("dnew")) {
-    dnew = jfile["dnew"].get<double>();
-  } else {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    dnew = 1.5 * dt_mechanics;
-  }
-
-  if (jfile.contains("dold")) {
-    dold = jfile["dold"].get<double>();
-  } else {
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    dold = -0.5 * dt_mechanics;
-  }
-
   load_double("rate_secretion_immunostimulatory_factor",
               rate_secretion_immunostimulatory_factor);
   load_double("saturation_density_immunostimulatory_factor",
@@ -189,9 +162,6 @@ void SimParam::LoadParams(const std::string& filename) {
   load_double("oncoprotein_limit", oncoprotein_limit);
   load_double("oncoprotein_saturation", oncoprotein_saturation);
 
-  // Difference between saturation and limit. This is always calculated here
-  oncoprotein_difference = oncoprotein_saturation - oncoprotein_limit;
-
   load_double("volume_relaxation_rate_alive_tumor_cell_cytoplasm",
               volume_relaxation_rate_alive_tumor_cell_cytoplasm);
   load_double("volume_relaxation_rate_alive_tumor_cell_nucleus",
@@ -218,15 +188,6 @@ void SimParam::LoadParams(const std::string& filename) {
   load_double("threshold_cancer_cell_type3", threshold_cancer_cell_type3);
   load_double("threshold_cancer_cell_type4", threshold_cancer_cell_type4);
 
-  if (jfile.contains("average_maximum_time_untill_apoptosis_cart")) {
-    average_maximum_time_untill_apoptosis_cart =
-        jfile["average_maximum_time_untill_apoptosis_cart"].get<double>();
-  } else {
-    average_maximum_time_untill_apoptosis_cart =
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-        dt_cycle * 10.0 * 24.0 * 60.0 / (dt_cycle + 1.0);
-  }
-
   load_double("default_oxygen_consumption_cart",
               default_oxygen_consumption_cart);
   load_double("default_volume_new_cart_cell", default_volume_new_cart_cell);
@@ -241,26 +202,50 @@ void SimParam::LoadParams(const std::string& filename) {
   load_double("migration_speed_cart", migration_speed_cart);
   load_double("elastic_constant_cart", elastic_constant_cart);
 
-  //
-  // Computed constants that should not be directly changed
-  //
-  // Calculate steps per cycle. This is always calculated here
+  dt_step = dt_mechanics;
+  load_double("dt_step", dt_step);
+  // Derive every parameter computed from the ones above.
+  ComputeDerived();
+  // Values that may be overridden explicitly in the JSON file, after
+  // ComputeDerived() has filled in their defaults.
+  load_int("output_csv_interval", output_csv_interval);
+  load_double("dnew", dnew);
+  load_double("dold", dold);
+  load_double("average_maximum_time_untill_apoptosis_cart",
+              average_maximum_time_untill_apoptosis_cart);
+}
+
+// Recomputes every parameter that is derived from others. LoadParams calls
+// this after reading the JSON; call it directly when parameters are set
+// programmatically (e.g. from Python) instead of loaded from a file.
+void SimParam::ComputeDerived() {
+  // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  // Difference between saturation and limit
+  oncoprotein_difference = oncoprotein_saturation - oncoprotein_limit;
+
+  // Output a summary every 12 simulated hours
+  output_csv_interval = static_cast<int>(12 * 60 / dt_step);
+  // Adams-Bashforth coefficients
+  dnew = 1.5 * dt_mechanics;
+  dold = -0.5 * dt_mechanics;
+  // Average CAR-T lifespan in minutes
+  average_maximum_time_untill_apoptosis_cart =
+      dt_cycle * 10.0 * 24.0 * 60.0 / (dt_cycle + 1.0);
+
+  // Number of steps per cell-cycle step. Computed to avoid fmod errors
   steps_per_cell_cycle = static_cast<int>(dt_cycle / dt_step);
-  // Calculate steps per day. This is always calculated here
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  // Steps in one day
   steps_in_one_day = static_cast<size_t>(24 * 60 / dt_step);
-  // Calculate the volume of a single mechanical voxel in μm³
+  // Volume of a single chemical voxel in μm³
   voxel_volume =
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances) *
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances) *
       (static_cast<real_t>(bounded_space_length) / resolution_grid_substances);
-  // 1-migration_bias_cart
+  // 1 - migration_bias_cart
   migration_one_minus_bias_cart = 1.0 - migration_bias_cart;
-  // Probability of a CAR-T cell to migrate in a given
-  // mechanical time step
+  // Probability of a CAR-T cell migrating in one mechanical time step
   motility_probability_cart = dt_mechanics / persistence_time_cart;
-  // Probability of a Tumor cell to escape in a given
-  // mechanical time step
+  // Probability of a tumor cell escaping in one mechanical time step
   probability_escape_from_cart =
       dt_mechanics / (adhesion_time + kEpsilonProbability);
   // Maximum adhesion distance squared
@@ -269,30 +254,22 @@ void SimParam::LoadParams(const std::string& filename) {
   // Difference between min and max adhesion distance
   difference_cart_adhesion_distances =
       max_adhesion_distance_cart - min_adhesion_distance_cart;
-  // Radius tumor cell
+  // Cell radii
   radius_tumor_cell =
-      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       std::cbrt(default_volume_new_tumor_cell * 3. / (4. * Math::kPi));
-  // Radius cart cell
   radius_cart_cell =
-      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       std::cbrt(default_volume_new_cart_cell * 3. / (4. * Math::kPi));
-  // Max Distance for considering two cells as neighbours for force calculations
-  // in μm (twice cell radius times max_relative_adhesion_distance + 0.1 to
-  // avoid mismatch because of numerical errors)**2
+  // Max distance for two cells to count as neighbours in force calculations,
+  // in μm: (twice the cell radius times max_relative_adhesion_distance, plus
+  // 0.1 to avoid mismatches from numerical error) squared
   squared_max_distance_neighbors_force =
-      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       std::pow(0.1 + 2 * radius_tumor_cell * max_relative_adhesion_distance, 2);
-
-  //
-  // Last constant that is derived from others but can be changed directly
-  //
-  // maximum squared distance to avoid CAR-T pushing
-  // tumor cells If a CAR-T and a Tumor Cell are closer than this distance, the
-  // CAR-T cell will only move to the tumor cell with the adhesion forces
-  // (radiusCART + radiusTumorCell + 1 to avoid numerical errors)**2
+  // Maximum squared distance below which a CAR-T cell moves towards a tumor
+  // cell by adhesion alone, rather than pushing it:
+  // (radius_cart + radius_tumor + 1) squared
   max_squared_distance_cart_moving_towards_tumor_cell =
       std::pow(radius_cart_cell + radius_tumor_cell + 1, 2);
+  // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 }
 
 void SimParam::PrintParams() const {

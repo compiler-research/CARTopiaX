@@ -20,14 +20,16 @@
  */
 #ifndef CART_TUMOR_H_
 #define CART_TUMOR_H_
-
+#include "utils/utils_aux.h"
 namespace bdm {
 
 /// List the diffused substances
 enum Substances { kImmunostimulatoryFactor, kOxygen };
 
+struct SimParam;
 /// Function declaration for the main simulation
-int Simulate(int argc, const char** argv);
+int Simulate(int argc, const char** argv, SimParam* injected_params = nullptr,
+             std::vector<SummaryRow>* results = nullptr);
 
 }  // namespace bdm
 

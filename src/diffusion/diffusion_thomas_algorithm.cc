@@ -28,6 +28,7 @@
 #include "core/param/param.h"
 #include "core/real_t.h"
 #include "core/resource_manager.h"
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cstddef>
@@ -37,6 +38,99 @@
 #include <vector>
 
 namespace bdm {
+
+// Forward elimination for W contiguous lines at once (y/z sweeps).
+// Line b's element i lives at c[base + i*jump + b]. Each line runs the
+// same operations in the same order as the scalar version, so results
+// are bit-identical; the W lines only overlap in execution.
+template <int W>
+inline void ForwardBlock(real_t* __restrict c, size_t base, int jump, int n,
+                         const real_t* __restrict d, real_t k, real_t lo,
+                         real_t hi) {
+  real_t prev[W];
+  for (int b = 0; b < W; ++b) {
+    const real_t old = c[base + b];
+    const real_t v = old / d[0];
+    prev[b] = std::clamp(old + (v - old), lo, hi);
+    c[base + b] = prev[b];
+  }
+  size_t ind = base;
+  for (int i = 1; i < n; ++i) {
+    ind += jump;
+    for (int b = 0; b < W; ++b) {
+      const real_t old = c[ind + b];
+      const real_t v = (old + k * prev[b]) / d[i];
+      prev[b] = std::clamp(old + (v - old), lo, hi);
+      c[ind + b] = prev[b];
+    }
+  }
+}
+// Back substitution for W contiguous lines at once (y/z sweeps).
+template <int W>
+inline void BackBlock(real_t* __restrict c, size_t base, int jump, int n,
+                      const real_t* __restrict tc, real_t lo, real_t hi) {
+  real_t next[W];
+  size_t ind = base + static_cast<size_t>(n - 1) * jump;
+  for (int b = 0; b < W; ++b)
+    next[b] = c[ind + b];  // last element
+  for (int i = n - 2; i >= 0; --i) {
+    ind -= jump;
+    for (int b = 0; b < W; ++b) {
+      const real_t old = c[ind + b];
+      const real_t v = old - tc[i] * next[b];
+      next[b] = std::clamp(old + (v - old), lo, hi);
+      c[ind + b] = next[b];
+    }
+  }
+}
+// Forward elimination for W lines spaced 'ls' apart (x sweep).
+// Neighbouring x lines are N voxels apart, so the values cannot be
+// loaded contiguously; the win here is overlapping W independent
+// dependency chains rather than SIMD.
+template <int W>
+inline void ForwardBlockStrided(real_t* __restrict c, size_t base, int jump,
+                                int ls, int n, const real_t* __restrict d,
+                                real_t k, real_t lo, real_t hi) {
+  real_t prev[W];
+  for (int b = 0; b < W; b++) {
+    const size_t p = base + static_cast<size_t>(b) * ls;
+    const real_t old = c[p];
+    const real_t v = old / d[0];
+    prev[b] = std::clamp(old + (v - old), lo, hi);
+    c[p] = prev[b];
+  }
+  size_t ind = base;
+  for (int i = 1; i < n; ++i) {
+    ind += jump;
+    for (int b = 0; b < W; b++) {
+      const size_t p = ind + static_cast<size_t>(b) * ls;
+      const real_t old = c[p];
+      const real_t v = (old + k * prev[b]) / d[i];
+      prev[b] = std::clamp(old + (v - old), lo, hi);
+      c[p] = prev[b];
+    }
+  }
+}
+// Back substitution for W lines spaced 'ls' apart (x sweep).
+template <int W>
+inline void BackBlockStrided(real_t* __restrict c, size_t base, int jump,
+                             int ls, int n, const real_t* __restrict tc,
+                             real_t lo, real_t hi) {
+  real_t next[W];
+  size_t ind = base + static_cast<size_t>(n - 1) * jump;
+  for (int b = 0; b < W; ++b)
+    next[b] = c[ind + static_cast<size_t>(b) * ls];
+  for (int i = n - 2; i >= 0; --i) {
+    ind -= jump;
+    for (int b = 0; b < W; ++b) {
+      const size_t p = ind + static_cast<size_t>(b) * ls;
+      const real_t old = c[p];
+      const real_t v = old - tc[i] * next[b];
+      next[b] = std::clamp(old + (v - old), lo, hi);
+      c[p] = next[b];
+    }
+  }
+}
 
 DiffusionThomasAlgorithm::DiffusionThomasAlgorithm(int substance_id,
                                                    std::string substance_name,
@@ -89,55 +183,59 @@ void DiffusionThomasAlgorithm::InitializeThomasAlgorithmVectors(
 }
 
 // Apply Dirichlet boundary conditions to the grid
+// must be called from inside an omp parallel region; the loops
 void DiffusionThomasAlgorithm::ApplyDirichletBoundaryConditions() {
   // FIXME: Fix BioDynaMo by returning a view or c++20 std::span.
   const int32_t* dimensions_ptr = GetDimensionsPtr();
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   const real_t origin = dimensions_ptr[0];
   const real_t simulated_time = GetSimulatedTime();
-#pragma omp parallel
-  {
+
 // We apply the Dirichlet boundary conditions to the first and last layers in
 // each direction For z=0 and z=resolution_-1
+// THE USE OF nowait !!
+// The three loops write different faces, so they need no barrier
+// between them. The twelve cube edges are written by two loops each,
+// with the same boundary value, so the overlap is benign.
 #pragma omp for collapse(2)
-    for (int y = 0; y < resolution_; y++) {
-      for (int x = 0; x < resolution_; x++) {
-        const real_t real_x = origin + x * d_space_;
-        const real_t real_y = origin + y * d_space_;
-        // For z=0
-        int z = 0;
-        real_t real_z = origin + z * d_space_;
-        SetConcentration(x, y, z,
-                         GetBoundaryCondition()->Evaluate(
-                             real_x, real_y, real_z, simulated_time));
-        // For z=resolution_-1
-        z = resolution_ - 1;
-        real_z = origin + z * d_space_;
-        SetConcentration(x, y, z,
-                         GetBoundaryCondition()->Evaluate(
-                             real_x, real_y, real_z, simulated_time));
-      }
+  for (int y = 0; y < resolution_; y++) {
+    for (int x = 0; x < resolution_; x++) {
+      const real_t real_x = origin + x * d_space_;
+      const real_t real_y = origin + y * d_space_;
+      // For z=0
+      int z = 0;
+      real_t real_z = origin + z * d_space_;
+      SetConcentration(x, y, z,
+                       GetBoundaryCondition()->Evaluate(real_x, real_y, real_z,
+                                                        simulated_time));
+      // For z=resolution_-1
+      z = resolution_ - 1;
+      real_z = origin + z * d_space_;
+      SetConcentration(x, y, z,
+                       GetBoundaryCondition()->Evaluate(real_x, real_y, real_z,
+                                                        simulated_time));
     }
+  }
 // For y=0 and y=resolution_-1
 #pragma omp for collapse(2)
-    for (int z = 0; z < resolution_; z++) {
-      for (int x = 0; x < resolution_; x++) {
-        const real_t real_x = origin + x * d_space_;
-        const real_t real_z = origin + z * d_space_;
-        // For y=0
-        int y = 0;
-        real_t real_y = origin + y * d_space_;
-        SetConcentration(x, y, z,
-                         GetBoundaryCondition()->Evaluate(
-                             real_x, real_y, real_z, simulated_time));
-        // For y=resolution_-1
-        y = resolution_ - 1;
-        real_y = origin + y * d_space_;
-        SetConcentration(x, y, z,
-                         GetBoundaryCondition()->Evaluate(
-                             real_x, real_y, real_z, simulated_time));
-      }
+  for (int z = 0; z < resolution_; z++) {
+    for (int x = 0; x < resolution_; x++) {
+      const real_t real_x = origin + x * d_space_;
+      const real_t real_z = origin + z * d_space_;
+      // For y=0
+      int y = 0;
+      real_t real_y = origin + y * d_space_;
+      SetConcentration(x, y, z,
+                       GetBoundaryCondition()->Evaluate(real_x, real_y, real_z,
+                                                        simulated_time));
+      // For y=resolution_-1
+      y = resolution_ - 1;
+      real_y = origin + y * d_space_;
+      SetConcentration(x, y, z,
+                       GetBoundaryCondition()->Evaluate(real_x, real_y, real_z,
+                                                        simulated_time));
     }
+  }
 // For x=0 and x=resolution_-1
 #pragma omp for collapse(2)
     for (int z = 0; z < resolution_; z++) {
@@ -158,7 +256,6 @@ void DiffusionThomasAlgorithm::ApplyDirichletBoundaryConditions() {
                              real_x, real_y, real_z, simulated_time));
       }
     }
-  }
 }
 
 // Sets the concentration at a specific voxel
@@ -197,22 +294,29 @@ void DiffusionThomasAlgorithm::Step(real_t /*dt*/) {
 
 // This method solves the Diffusion Diferential equation using the Alternating
 // Direction Implicit approach
+// One parallel region spans all three sweeps and the boundary passes,
+// instead of opening a region per sweep. The worksharing loops inside
+// SolveDirectionThomas and ApplyDirichletBoundaryConditions bind to it.
+// ComputeConsumptionsSecretions stays outside: it is serial and uses
+// its own iteration over agents.
 void DiffusionThomasAlgorithm::DiffuseChemical() {
-  ApplyBoundaryConditionsIfNeeded();
+#pragma omp parallel
+  {
+    ApplyBoundaryConditionsIfNeeded();
 
-  // Solve for X-direction (direction = 0)
-  SolveDirectionThomas(0);
-  ApplyBoundaryConditionsIfNeeded();
+    // Solve for X-direction (direction = 0)
+    SolveDirectionThomas(0);
+    ApplyBoundaryConditionsIfNeeded();
 
-  // Solve for Y-direction (direction = 1)
-  SolveDirectionThomas(1);
-  ApplyBoundaryConditionsIfNeeded();
+    // Solve for Y-direction (direction = 1)
+    SolveDirectionThomas(1);
+    ApplyBoundaryConditionsIfNeeded();
 
-  // Solve for Z-direction (direction = 2)
-  SolveDirectionThomas(2);
-  ApplyBoundaryConditionsIfNeeded();
-
-  // Change of concentration levels because of agents
+    // Solve for Z-direction (direction = 2)
+    SolveDirectionThomas(2);
+    ApplyBoundaryConditionsIfNeeded();
+    // Change of concentration levels because of agents
+  }
   ComputeConsumptionsSecretions();
 }
 
@@ -225,65 +329,67 @@ void DiffusionThomasAlgorithm::ApplyBoundaryConditionsIfNeeded() {
 void DiffusionThomasAlgorithm::SolveDirectionThomas(int direction) {
   const std::array<const std::vector<real_t>*, 3> all_denoms = {
       &thomas_denom_x_, &thomas_denom_y_, &thomas_denom_z_};
-
   const std::array<const std::vector<real_t>*, 3> all_c = {
       &thomas_c_x_, &thomas_c_y_, &thomas_c_z_};
-
   const std::array<int, 3> all_jumps = {jump_i_, jump_j_, jump_};
 
   const std::vector<real_t>& thomas_denom = *all_denoms.at(direction);
   const std::vector<real_t>& thomas_c = *all_c.at(direction);
   const int jump = all_jumps.at(direction);
+  const int n = resolution_;
 
-#pragma omp parallel for collapse(2)
-  for (int outer = 0; outer < resolution_; outer++) {
-    for (int middle = 0; middle < resolution_; middle++) {
-      // Forward elimination step
-      ForwardElimination(direction, outer, middle, thomas_denom, jump);
+  constexpr int kW = 8;
+  const int tail_start = (n / kW) * kW;
+  const int nblocks = tail_start / kW;
+  real_t* c = const_cast<real_t*>(GetAllConcentrations());
+  const real_t lo = GetLowerThreshold();
+  const real_t hi = GetUpperThreshold();
+  const real_t* d = thomas_denom.data();
+  const real_t* tc = thomas_c.data();
+  const real_t k = spatial_diffusion_coeff_;
 
-      // Back substitution step
-      BackSubstitution(direction, outer, middle, thomas_c, jump);
+  // must be called from inside an omp parallel region.
+  if (direction == 0) {
+    const int line_stride = jump_j_;  // = N
+
+#pragma omp for collapse(2) nowait
+    for (int outer = 0; outer < n; outer++) {
+      for (int mblock = 0; mblock < nblocks; mblock++) {
+        const int middle = mblock * kW;
+        const size_t base = GetLoopIndex(direction, outer, middle, 0);
+        ForwardBlockStrided<kW>(c, base, jump, line_stride, n, d, k, lo, hi);
+        BackBlockStrided<kW>(c, base, jump, line_stride, n, tc, lo, hi);
+      }
+    }
+
+#pragma omp for collapse(2)
+    for (int outer = 0; outer < n; outer++) {
+      for (int middle = tail_start; middle < n; middle++) {
+        const size_t base = GetLoopIndex(direction, outer, middle, 0);
+        ForwardBlockStrided<1>(c, base, jump, line_stride, n, d, k, lo, hi);
+        BackBlockStrided<1>(c, base, jump, line_stride, n, tc, lo, hi);
+      }
+    }
+  } else {
+#pragma omp for collapse(2) nowait
+    for (int outer = 0; outer < n; outer++) {
+      for (int mblock = 0; mblock < nblocks; mblock++) {
+        const int middle = mblock * kW;
+        const size_t base = GetLoopIndex(direction, outer, middle, 0);
+        ForwardBlock<kW>(c, base, jump, n, d, k, lo, hi);
+        BackBlock<kW>(c, base, jump, n, tc, lo, hi);
+      }
+    }
+
+#pragma omp for collapse(2)
+    for (int outer = 0; outer < n; outer++) {
+      for (int middle = tail_start; middle < n; middle++) {
+        const size_t base = GetLoopIndex(direction, outer, middle, 0);
+        ForwardBlock<1>(c, base, jump, n, d, k, lo, hi);
+        BackBlock<1>(c, base, jump, n, tc, lo, hi);
+      }
     }
   }
-}
-
-void DiffusionThomasAlgorithm::ForwardElimination(
-    int direction, int outer, int middle,
-    const std::vector<real_t>& thomas_denom, int jump) {
-  // Get initial index based on direction
-  size_t ind = GetLoopIndex(direction, outer, middle, 0);
-  // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const real_t* all_concentrations = GetAllConcentrations();
-  const real_t initial_concentration = all_concentrations[ind];
-  SetConcentration(ind, initial_concentration / thomas_denom[0]);
-
-  // Forward elimination loop
-  for (int inner = 1; inner < resolution_; inner++) {
-    ind = GetLoopIndex(direction, outer, middle, inner);
-    const real_t current_concentration = all_concentrations[ind];
-    const real_t prev_concentration = all_concentrations[ind - jump];
-    SetConcentration(ind, (current_concentration +
-                           spatial_diffusion_coeff_ * prev_concentration) /
-                              thomas_denom[inner]);
-  }
-  // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-}
-
-void DiffusionThomasAlgorithm::BackSubstitution(
-    int direction, int outer, int middle, const std::vector<real_t>& thomas_c,
-    int jump) {
-  // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  const real_t* all_concentrations = GetAllConcentrations();
-
-  // Back substitution loop
-  for (int inner = resolution_ - 2; inner >= 0; inner--) {
-    const size_t ind = GetLoopIndex(direction, outer, middle, inner);
-    const real_t current_concentration = all_concentrations[ind];
-    const real_t next_concentration = all_concentrations[ind + jump];
-    SetConcentration(
-        ind, current_concentration - thomas_c[inner] * next_concentration);
-  }
-  // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 }
 
 size_t DiffusionThomasAlgorithm::GetLoopIndex(int direction, int outer,

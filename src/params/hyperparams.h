@@ -413,6 +413,7 @@ struct SimParam : public ParamGroup {
   /// The parameters that are not found in the file will keep their
   /// default value
   void LoadParams(const std::string& filename);
+  void ComputeDerived();
 
   ///
   /// Function to print all the parameters with their values

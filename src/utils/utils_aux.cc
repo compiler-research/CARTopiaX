@@ -181,7 +181,6 @@ AnalyzeTumor() {
           average_oncoprotein,   average_oxygen_cancer_cells};
 }
 
-// Function to output summary CSV
 void OutputSummary::operator()() {
   Simulation* simulation = Simulation::GetActive();
   const auto* sparams = simulation->GetParam()->Get<SimParam>();
@@ -189,67 +188,56 @@ void OutputSummary::operator()() {
   const uint64_t current_step = scheduler->GetSimulatedSteps();
 
   if (current_step % frequency_ == 0) {
-    // Delete csv content current_step == 0 to, otherwise append mode
+    SummaryRow row;
+
+    // Calculate time in days, hours, minutes
+    row.total_minutes = static_cast<double>(current_step) * sparams->dt_step;
+    row.total_hours = row.total_minutes / kMinutesInAnHour;
+    row.total_days = row.total_hours / kHoursInADay;
+
+    // Count total cells, tumor cells of each type and tumor radius
+    std::tie(row.num_tumor_cells, row.tumor_cells_type1, row.tumor_cells_type2,
+             row.tumor_cells_type3, row.tumor_cells_type4,
+             row.tumor_cells_type5_dead, row.num_alive_cart, row.tumor_radius,
+             row.average_oncoprotein, row.average_oxygen_cancer_cells) =
+        AnalyzeTumor();
+    row.num_cells = simulation->GetResourceManager()->GetNumAgents();
+
+    // If a dosage is administered at this exact time, the new cells are not
+    // yet visible in the resource manager because of how BioDynaMo is built,
+    // so add them to the statistics here.
+    const auto current_day_int = static_cast<int>(row.total_days);
+    if (current_step % sparams->steps_in_one_day == 0 &&
+        sparams->treatment.find(current_day_int) != sparams->treatment.end()) {
+      const size_t just_spawned_cells = sparams->treatment.at(current_day_int);
+      row.num_cells += just_spawned_cells;
+      row.num_alive_cart += static_cast<int>(just_spawned_cells);
+    }
+
+    // In-memory results for in-process callers
+    if (sink_ != nullptr) {
+      sink_->push_back(row);
+    }
+
+    // Write to the CSV: truncate at step 0, otherwise append
     std::ofstream file("output/final_data.csv",
                        current_step == 0 ? std::ios::trunc : std::ios::app);
     if (file.is_open()) {
       if (current_step == 0) {
-        file
-            << "total_days,total_hours,total_minutes,tumor_radius,num_cells,"
-               "num_tumor_cells,tumor_cells_type1,tumor_cells_type2,tumor_"
-               "cells_type3,tumor_cells_type4,tumor_cells_type5_dead,num_alive_"
-               "cart,average_oncoprotein,average_oxygen_cancer_cells\n";  // Header
-                                                                          // for
-                                                                          // CSV
-                                                                          // file
+        file << "total_days,total_hours,total_minutes,tumor_radius,num_cells,"
+                "num_tumor_cells,tumor_cells_type1,tumor_cells_type2,"
+                "tumor_cells_type3,tumor_cells_type4,tumor_cells_type5_dead,"
+                "num_alive_cart,average_oncoprotein,"
+                "average_oxygen_cancer_cells\n";
       }
-
-      // Calculate time in days, hours, minutes
-      const double total_minutes =
-          static_cast<double>(current_step) * sparams->dt_step;
-      const double total_hours = total_minutes / kMinutesInAnHour;
-      const double total_days = total_hours / kHoursInADay;
-
-      // Count total cells, tumor cells of each type and tumor radius
-      int total_num_tumor_cells = 0;
-      int num_tumor_cells_type1 = 0;
-      int num_tumor_cells_type2 = 0;
-      int num_tumor_cells_type3 = 0;
-      int num_tumor_cells_type4 = 0;
-      int num_tumor_cells_type5_dead = 0;
-      int num_alive_cart = 0;
-      real_t tumor_radius = 0.0;
-      real_t average_oncoprotein = 0.0;
-      real_t average_oxygen_cancer_cells = 0.0;
-      std::tie(total_num_tumor_cells, num_tumor_cells_type1,
-               num_tumor_cells_type2, num_tumor_cells_type3,
-               num_tumor_cells_type4, num_tumor_cells_type5_dead,
-               num_alive_cart, tumor_radius, average_oncoprotein,
-               average_oxygen_cancer_cells) = AnalyzeTumor();
-      size_t total_num_cells = simulation->GetResourceManager()->GetNumAgents();
-
-      // If a dosage is administred this exact time the numbers are not seen in
-      // the resource manager yet because of how BioDynaMo is built
-      // therefore we need to add the just added new cells to the statistics
-      // here.
-      const auto current_day_int = static_cast<int>(total_days);
-      if (current_step % sparams->steps_in_one_day == 0 &&
-          sparams->treatment.find(current_day_int) !=
-              sparams->treatment.end()) {
-        const size_t just_spawned_cells =
-            sparams->treatment.at(current_day_int);
-        total_num_cells += just_spawned_cells;
-        num_alive_cart += static_cast<int>(just_spawned_cells);
-      }
-
-      // Write data to CSV file
-      file << total_days << "," << total_hours << "," << total_minutes << ","
-           << tumor_radius << "," << total_num_cells << ","
-           << total_num_tumor_cells << "," << num_tumor_cells_type1 << ","
-           << num_tumor_cells_type2 << "," << num_tumor_cells_type3 << ","
-           << num_tumor_cells_type4 << "," << num_tumor_cells_type5_dead << ","
-           << num_alive_cart << "," << average_oncoprotein << ","
-           << average_oxygen_cancer_cells << "\n";
+      file << row.total_days << "," << row.total_hours << ","
+           << row.total_minutes << "," << row.tumor_radius << ","
+           << row.num_cells << "," << row.num_tumor_cells << ","
+           << row.tumor_cells_type1 << "," << row.tumor_cells_type2 << ","
+           << row.tumor_cells_type3 << "," << row.tumor_cells_type4 << ","
+           << row.tumor_cells_type5_dead << "," << row.num_alive_cart << ","
+           << row.average_oncoprotein << "," << row.average_oxygen_cancer_cells
+           << "\n";
     }
   }
 }

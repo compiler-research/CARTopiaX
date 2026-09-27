@@ -36,24 +36,39 @@
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/simulation.h"
+#include <chrono>
+#include <cmath>
 #include <cstdint>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <vector>
-
 namespace bdm {
 
-int Simulate(int argc, const char** argv) {
-  // Load parameters from JSON file or use default values
-  std::unique_ptr<SimParam> custom_parameters = std::make_unique<SimParam>();
-  custom_parameters->LoadParams("params.json");
+int Simulate(int argc, const char** argv, SimParam* injected_params,
+             std::vector<SummaryRow>* results) {
+  if (results != nullptr) {
+    results->clear();
+  }
+  const auto t_startup_begin = std::chrono::steady_clock::now();
+  std::unique_ptr<SimParam> owned_params;  // lives for the whole function
+  SimParam* params_to_register = injected_params;
 
-  // Keep a reference to the parameters before releasing
-  const auto* sparam_ref = custom_parameters.get();
-
+  if (params_to_register == nullptr) {
+    owned_params = std::make_unique<SimParam>();
+    owned_params->LoadParams("params.json");
+    std::cout << "[BIODYNAMO]: Used old method\n";
+    params_to_register = owned_params.release();
+  } else {
+    std::cout << "[BIODYNAMO] Using injected python params\n";
+  }
+  const auto* sparam_ref = params_to_register;
   // Transfer ownership to BioDynaMo parameter system
-  Param::RegisterParamGroup(custom_parameters.release());
-
+  Param::RegisterParamGroup(params_to_register);
   // Set simulation parameters using lambda
   auto set_param = [sparam_ref](Param* param) {
     // Set simulation bounds using the parameters
@@ -158,19 +173,26 @@ int Simulate(int argc, const char** argv) {
       "OutputSummary", sparam->output_csv_interval);
   std::unique_ptr<bdm::OutputSummary> output_summary =
       std::make_unique<bdm::OutputSummary>();
+  output_summary->SetResultsSink(results);
   summary_op->AddOperationImpl(bdm::kCpu, output_summary.release());
   scheduler->ScheduleOp(summary_op.release());
 
   // Run simulation
   std::cout << "Running simulation..." << std::endl;
   // simulate total_minutes_to_simulate minutes including the last minute
+  const auto t_startup_end = std::chrono::steady_clock::now();
+  const double startup_ms =
+      std::chrono::duration<double, std::milli>(t_startup_end - t_startup_begin)
+          .count();
+  std::cout << "[BENCHMARK] Startup (setup before scheduler): " << startup_ms
+            << " ms\n";
+  std::cout << "Running simulation..." << std::endl;
   scheduler->Simulate(1 +
                       static_cast<uint64_t>(sparam->total_minutes_to_simulate /
                                             sparam->dt_step));
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
 }
-
 }  // namespace bdm
 
 int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }

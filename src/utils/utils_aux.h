@@ -114,6 +114,22 @@ inline BDM_REGISTER_OP(SpawnCart, "SpawnCart", kCpu);
 /// state to output/final_data.csv for post-processing and analysis. It includes
 /// information about cell populations, tumor characteristics, and other
 /// relevant metrics.
+struct SummaryRow {
+  double total_days = 0;
+  double total_hours = 0;
+  double total_minutes = 0;
+  real_t tumor_radius = 0;
+  size_t num_cells = 0;
+  int num_tumor_cells = 0;
+  int tumor_cells_type1 = 0;
+  int tumor_cells_type2 = 0;
+  int tumor_cells_type3 = 0;
+  int tumor_cells_type4 = 0;
+  int tumor_cells_type5_dead = 0;
+  int num_alive_cart = 0;
+  real_t average_oncoprotein = 0;
+  real_t average_oxygen_cancer_cells = 0;
+};
 struct OutputSummary : public StandaloneOperationImpl {
   // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
   BDM_OP_HEADER(OutputSummary);
@@ -121,10 +137,12 @@ struct OutputSummary : public StandaloneOperationImpl {
  public:
   void SetFrequency(uint64_t frequency) { frequency_ = frequency; }
   [[nodiscard]] uint64_t GetFrequency() const { return frequency_; }
+  void SetResultsSink(std::vector<SummaryRow>* sink) { sink_ = sink; }
 
  private:
   /// Frequency of output (every N simulation steps)
   uint64_t frequency_ = 1;
+  std::vector<SummaryRow>* sink_ = nullptr;
 
   void operator()() override;
 };
