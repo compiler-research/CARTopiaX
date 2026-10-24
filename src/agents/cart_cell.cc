@@ -282,9 +282,7 @@ Real3 CarTCell::CalculateDisplacement(const InteractionForce* force,
             // The cart moves towards the tumor cell only if they are not
             // touching already If they are too close the only force affecting
             // is the adhesion force to avoid CAR-T non-stop pushing tumor
-            // cells. In case of being closer than
-            // sparams->max_squared_distance_cart_moving_towards_tumor_cell
-            // CAR-T to keep stop pushing the tumor cell
+            // cells or to model Tcells using a high value.
             if (sq_norm_displac >
                 sparams->max_squared_distance_cart_moving_towards_tumor_cell) {
               translation_velocity_on_point_mass[0] +=

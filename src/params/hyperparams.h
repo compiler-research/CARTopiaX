@@ -325,10 +325,10 @@ struct SimParam : public ParamGroup {
   /// -0.5)
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t dold = -0.05;
-  /// maximum squared distance to avoid CAR-T pushing
+  /// maximum squared distance to limit CAR-T direct attraction to tumor cells
   /// tumor cells If a CAR-T and a Tumor Cell are closer than this distance, the
   /// CAR-T cell will only move to the tumor cell with the adhesion forces
-  /// (radiusCART + radiusTumorCell + 0.1 to avoid numerical errors)**2
+  /// by default (radiusCART + radiusTumorCell + 1 to avoid numerical errors)**2
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   real_t max_squared_distance_cart_moving_towards_tumor_cell = 317.746;
 

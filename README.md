@@ -599,6 +599,7 @@ These parameters only have an effect when `add_glucose` is `true`.
 | `std_migration_bias_cart` | 0 | - | Standard deviation of the migration bias among CAR-T cells (sampled values are clipped to ≤ 1) |
 | `migration_speed_cart` | 5 | μm/min | CAR-T cell migration speed |
 | `elastic_constant_cart` | 0.01 | - | Elastic constant for CAR-T cell motility |
+| `max_squared_distance_cart_moving_towards_tumor_cell` | (radius_cart + radius_tumor + 1)² | μm² | Squared distance below which a CAR-T cell stops actively moving towards its attached tumor cell (avoids pushing it). Computed from the cell volumes if not given |
 
 ### Parameter Configuration
 
