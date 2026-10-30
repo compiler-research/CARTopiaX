@@ -28,10 +28,22 @@
 #include "core/real_t.h"
 #include <cstddef>
 #include <cstdint>
+#include <map>
+#include <string>
 #include <tuple>
 #include <vector>
 
 namespace bdm {
+
+/// Output data of a simulation kept in memory, so it can be read without the
+/// output CSV files (e.g. from Python).
+struct SimulationResult {
+  /// Same columns as output/final_data.csv
+  std::map<std::string, std::vector<double>> final_data;
+  /// Same columns as output/data_dependent_on_radius_tumor.csv
+  std::map<std::string, std::vector<double>> radius_data;
+};
+
 /// Forward declaration of TumorCell class
 class TumorCell;
 
@@ -148,9 +160,21 @@ struct OutputSummary : public StandaloneOperationImpl {
   void SetFrequency(uint64_t frequency) { frequency_ = frequency; }
   [[nodiscard]] uint64_t GetFrequency() const { return frequency_; }
 
+  /// Set where the output is stored
+  /// @param result If not null, the output is also stored in memory here
+  /// @param write_csv Write the output CSV files
+  void SetOutputConfig(SimulationResult* result, bool write_csv) {
+    result_ = result;
+    write_csv_ = write_csv;
+  }
+
  private:
   /// Frequency of output (every N simulation steps)
   uint64_t frequency_ = 1;
+  /// In-memory output (not owned), not used if null
+  SimulationResult* result_ = nullptr;
+  /// Write the output CSV files
+  bool write_csv_ = true;
 
   void operator()() override;
 };
@@ -165,9 +189,13 @@ inline BDM_REGISTER_OP(OutputSummary, "OutputSummary", kCpu);
 /// @param total_minutes Total simulation time in minutes
 /// @param total_hours Total simulation time in hours
 /// @param total_days Total simulation time in days
+/// @param result If not null, the values are also stored in memory here
+/// @param write_csv Write the values to the CSV file
 void OutputInformationBasedOnRadiusCSV(uint64_t current_step,
                                        real_t total_minutes, real_t total_hours,
-                                       real_t total_days);
+                                       real_t total_days,
+                                       SimulationResult* result = nullptr,
+                                       bool write_csv = true);
 
 }  // namespace bdm
 

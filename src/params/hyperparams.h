@@ -607,6 +607,8 @@ struct SimParam : public ParamGroup {
   /// default value
   void LoadParams(const std::string& filename);
 
+  /// Function to load the hyperparameters from a JSON string .
+  void LoadParamsFromString(const std::string& json_string);
   ///
   /// Function to print all the parameters with their values
   ///

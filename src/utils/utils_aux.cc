@@ -39,7 +39,10 @@
 #include <cstdint>
 #include <fstream>
 #include <ios>
+#include <map>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -335,7 +338,7 @@ AnalyzeTumor(real_t inner_radius_considered, real_t outer_radius_considered) {
           average_radius_distance_living_cart_cells};
 }
 
-// Function to output summary CSV
+// Function to output summary CSV and store it in memory
 void OutputSummary::operator()() {
   Simulation* simulation = Simulation::GetActive();
   const auto* sparams = simulation->GetParam()->Get<SimParam>();
@@ -349,111 +352,147 @@ void OutputSummary::operator()() {
     const double total_hours = total_minutes / kMinutesInAnHour;
     const double total_days = total_hours / kHoursInADay;
 
-    // Delete csv content current_step == 0 to, otherwise append mode
-    std::ofstream file("output/final_data.csv",
-                       current_step == 0 ? std::ios::trunc : std::ios::app);
-    if (file.is_open()) {
-      if (current_step == 0) {
-        file << "total_days,total_hours,total_minutes,tumor_radius,num_cells,"
-                "num_tumor_cells,tumor_cells_type1,tumor_cells_type2,tumor_"
-                "cells_type3,tumor_cells_type4,tumor_cells_type5_dead,"
-                "dead_tumor_cells_lack_of_oxygen,dead_tumor_cells_lack_of_"
-                "glucose,dead_tumor_cells_random_natural_causes,dead_tumor_"
-                "cells_cartcell_kill,num_alive_cart,num_dead_cart,average_"
-                "oncoprotein,average_oxygen_cancer_"
-                "cells,average_oxygen_all_cells,average_glucose_cancer_cells,"
-                "average_glucose_all_cells,average_radius_distance_living_cart_"
-                "cells\n";  // Header
-                            // for
-                            // CSV
-                            // file
+    // Count total cells, tumor cells of each type and tumor radius
+    int total_num_tumor_cells = 0;
+    int num_tumor_cells_type1 = 0;
+    int num_tumor_cells_type2 = 0;
+    int num_tumor_cells_type3 = 0;
+    int num_tumor_cells_type4 = 0;
+    int num_tumor_cells_type5_dead = 0;
+    int num_dead_lack_of_oxygen = 0;
+    int num_dead_lack_of_glucose = 0;
+    int num_dead_random_natural_causes = 0;
+    int num_dead_cartcell_kill = 0;
+    int num_alive_cart = 0;
+    int num_dead_cart = 0;
+    real_t tumor_radius = 0.0;
+    real_t average_oncoprotein = 0.0;
+    real_t average_oxygen_cancer_cells = 0.0;
+    real_t average_oxygen_all_cells = 0.0;
+    real_t average_glucose_cancer_cells = 0.0;
+    real_t average_glucose_all_cells = 0.0;
+    real_t average_radius_distance_living_cart_cells = 0.0;
+    // Analyze tumor with no limits on inner and outer radius
+    std::tie(total_num_tumor_cells, num_tumor_cells_type1,
+             num_tumor_cells_type2, num_tumor_cells_type3,
+             num_tumor_cells_type4, num_tumor_cells_type5_dead,
+             num_dead_lack_of_oxygen, num_dead_lack_of_glucose,
+             num_dead_random_natural_causes, num_dead_cartcell_kill,
+             num_alive_cart, num_dead_cart, tumor_radius, average_oncoprotein,
+             average_oxygen_cancer_cells, average_oxygen_all_cells,
+             average_glucose_cancer_cells, average_glucose_all_cells,
+             average_radius_distance_living_cart_cells) =
+        AnalyzeTumor(0, sparams->bounded_space_length);
+    size_t total_num_cells = simulation->GetResourceManager()->GetNumAgents();
+
+    // If a dosage is administred this exact time the numbers are not seen in
+    // the resource manager yet because of how BioDynaMo is built
+    // therefore we need to add the just added new cells to the statistics
+    // here.
+    const auto current_day_int = static_cast<int>(total_days);
+    if (current_step % sparams->steps_in_one_day == 0 &&
+        sparams->treatment.find(current_day_int) != sparams->treatment.end()) {
+      const size_t just_spawned_cells = sparams->treatment.at(current_day_int);
+      total_num_cells += just_spawned_cells;
+      num_alive_cart += static_cast<int>(just_spawned_cells);
+    }
+
+    // Store the data in memory if requested (same columns as the CSV file)
+    if (result_ != nullptr) {
+      auto& fd = result_->final_data;
+      fd["total_days"].push_back(total_days);
+      fd["total_hours"].push_back(total_hours);
+      fd["total_minutes"].push_back(total_minutes);
+      fd["tumor_radius"].push_back(tumor_radius);
+      fd["num_cells"].push_back(static_cast<double>(total_num_cells));
+      fd["num_tumor_cells"].push_back(total_num_tumor_cells);
+      fd["tumor_cells_type1"].push_back(num_tumor_cells_type1);
+      fd["tumor_cells_type2"].push_back(num_tumor_cells_type2);
+      fd["tumor_cells_type3"].push_back(num_tumor_cells_type3);
+      fd["tumor_cells_type4"].push_back(num_tumor_cells_type4);
+      fd["tumor_cells_type5_dead"].push_back(num_tumor_cells_type5_dead);
+      fd["dead_tumor_cells_lack_of_oxygen"].push_back(num_dead_lack_of_oxygen);
+      fd["dead_tumor_cells_lack_of_glucose"].push_back(
+          num_dead_lack_of_glucose);
+      fd["dead_tumor_cells_random_natural_causes"].push_back(
+          num_dead_random_natural_causes);
+      fd["dead_tumor_cells_cartcell_kill"].push_back(num_dead_cartcell_kill);
+      fd["num_alive_cart"].push_back(num_alive_cart);
+      fd["num_dead_cart"].push_back(num_dead_cart);
+      fd["average_oncoprotein"].push_back(average_oncoprotein);
+      fd["average_oxygen_cancer_cells"].push_back(average_oxygen_cancer_cells);
+      fd["average_oxygen_all_cells"].push_back(average_oxygen_all_cells);
+      fd["average_glucose_cancer_cells"].push_back(
+          average_glucose_cancer_cells);
+      fd["average_glucose_all_cells"].push_back(average_glucose_all_cells);
+      fd["average_radius_distance_living_cart_cells"].push_back(
+          average_radius_distance_living_cart_cells);
+    }
+
+    // Write the data to the CSV file if requested
+    if (write_csv_) {
+      // Delete csv content current_step == 0 to, otherwise append mode
+      std::ofstream file("output/final_data.csv",
+                         current_step == 0 ? std::ios::trunc : std::ios::app);
+      if (file.is_open()) {
+        if (current_step == 0) {
+          // Header for CSV file
+          file << "total_days,total_hours,total_minutes,tumor_radius,num_cells,"
+                  "num_tumor_cells,tumor_cells_type1,tumor_cells_type2,tumor_"
+                  "cells_type3,tumor_cells_type4,tumor_cells_type5_dead,"
+                  "dead_tumor_cells_lack_of_oxygen,dead_tumor_cells_lack_of_"
+                  "glucose,dead_tumor_cells_random_natural_causes,dead_tumor_"
+                  "cells_cartcell_kill,num_alive_cart,num_dead_cart,average_"
+                  "oncoprotein,average_oxygen_cancer_"
+                  "cells,average_oxygen_all_cells,average_glucose_cancer_cells,"
+                  "average_glucose_all_cells,average_radius_distance_living_"
+                  "cart_cells\n";
+        }
+        // Write data to CSV file
+        file << total_days << "," << total_hours << "," << total_minutes << ","
+             << tumor_radius << "," << total_num_cells << ","
+             << total_num_tumor_cells << "," << num_tumor_cells_type1 << ","
+             << num_tumor_cells_type2 << "," << num_tumor_cells_type3 << ","
+             << num_tumor_cells_type4 << "," << num_tumor_cells_type5_dead
+             << "," << num_dead_lack_of_oxygen << ","
+             << num_dead_lack_of_glucose << ","
+             << num_dead_random_natural_causes << "," << num_dead_cartcell_kill
+             << "," << num_alive_cart << "," << num_dead_cart << ","
+             << average_oncoprotein << "," << average_oxygen_cancer_cells << ","
+             << average_oxygen_all_cells << "," << average_glucose_cancer_cells
+             << "," << average_glucose_all_cells << ","
+             << average_radius_distance_living_cart_cells << "\n";
       }
-
-      // Count total cells, tumor cells of each type and tumor radius
-      int total_num_tumor_cells = 0;
-      int num_tumor_cells_type1 = 0;
-      int num_tumor_cells_type2 = 0;
-      int num_tumor_cells_type3 = 0;
-      int num_tumor_cells_type4 = 0;
-      int num_tumor_cells_type5_dead = 0;
-      int num_dead_lack_of_oxygen = 0;
-      int num_dead_lack_of_glucose = 0;
-      int num_dead_random_natural_causes = 0;
-      int num_dead_cartcell_kill = 0;
-      int num_alive_cart = 0;
-      int num_dead_cart = 0;
-      real_t tumor_radius = 0.0;
-      real_t average_oncoprotein = 0.0;
-      real_t average_oxygen_cancer_cells = 0.0;
-      real_t average_oxygen_all_cells = 0.0;
-      real_t average_glucose_cancer_cells = 0.0;
-      real_t average_glucose_all_cells = 0.0;
-      real_t average_radius_distance_living_cart_cells = 0.0;
-      // Analyze tumor with no limits on inner and outer radius
-      std::tie(total_num_tumor_cells, num_tumor_cells_type1,
-               num_tumor_cells_type2, num_tumor_cells_type3,
-               num_tumor_cells_type4, num_tumor_cells_type5_dead,
-               num_dead_lack_of_oxygen, num_dead_lack_of_glucose,
-               num_dead_random_natural_causes, num_dead_cartcell_kill,
-               num_alive_cart, num_dead_cart, tumor_radius, average_oncoprotein,
-               average_oxygen_cancer_cells, average_oxygen_all_cells,
-               average_glucose_cancer_cells, average_glucose_all_cells,
-               average_radius_distance_living_cart_cells) =
-          AnalyzeTumor(0, sparams->bounded_space_length);
-      size_t total_num_cells = simulation->GetResourceManager()->GetNumAgents();
-
-      // If a dosage is administred this exact time the numbers are not seen in
-      // the resource manager yet because of how BioDynaMo is built
-      // therefore we need to add the just added new cells to the statistics
-      // here.
-      const auto current_day_int = static_cast<int>(total_days);
-      if (current_step % sparams->steps_in_one_day == 0 &&
-          sparams->treatment.find(current_day_int) !=
-              sparams->treatment.end()) {
-        const size_t just_spawned_cells =
-            sparams->treatment.at(current_day_int);
-        total_num_cells += just_spawned_cells;
-        num_alive_cart += static_cast<int>(just_spawned_cells);
-      }
-
-      // Write data to CSV file
-      file << total_days << "," << total_hours << "," << total_minutes << ","
-           << tumor_radius << "," << total_num_cells << ","
-           << total_num_tumor_cells << "," << num_tumor_cells_type1 << ","
-           << num_tumor_cells_type2 << "," << num_tumor_cells_type3 << ","
-           << num_tumor_cells_type4 << "," << num_tumor_cells_type5_dead << ","
-           << num_dead_lack_of_oxygen << "," << num_dead_lack_of_glucose << ","
-           << num_dead_random_natural_causes << "," << num_dead_cartcell_kill
-           << "," << num_alive_cart << "," << num_dead_cart << ","
-           << average_oncoprotein << "," << average_oxygen_cancer_cells << ","
-           << average_oxygen_all_cells << "," << average_glucose_cancer_cells
-           << "," << average_glucose_all_cells << ","
-           << average_radius_distance_living_cart_cells << "\n";
     }
 
     if (sparams->output_information_dependent_on_radius) {
       OutputInformationBasedOnRadiusCSV(current_step, total_minutes,
-                                        total_hours, total_days);
+                                        total_hours, total_days, result_,
+                                        write_csv_);
     }
   }
 }
 
-// Function to output information based on radius to CSV
+// Function to output information based on radius to CSV and/or store it in
+// memory
 void OutputInformationBasedOnRadiusCSV(const uint64_t current_step,
                                        const real_t total_minutes,
                                        const real_t total_hours,
-                                       const real_t total_days) {
+                                       const real_t total_days,
+                                       SimulationResult* result,
+                                       const bool write_csv) {
   const Simulation* simulation = Simulation::GetActive();
   const auto* sparams = simulation->GetParam()->Get<SimParam>();
   const real_t interval_size =
       sparams->max_radius_analysis_csv_dependent_on_radius /
       sparams->num_radius_intervals;
 
-  // Delete csv content current_step == 0 to, otherwise append mode
-  std::ofstream file("output/data_dependent_on_radius_tumor.csv",
-                     current_step == 0 ? std::ios::trunc : std::ios::app);
-  if (file.is_open()) {
-    if (current_step == 0) {
+  std::ofstream file;
+  if (write_csv) {
+    // Delete csv content current_step == 0 to, otherwise append mode
+    file.open("output/data_dependent_on_radius_tumor.csv",
+              current_step == 0 ? std::ios::trunc : std::ios::app);
+    if (file.is_open() && current_step == 0) {
       // Header for CSV file
       file << "total_days,total_hours,total_minutes";
       for (int i = 0; i < sparams->num_radius_intervals; ++i) {
@@ -506,52 +545,105 @@ void OutputInformationBasedOnRadiusCSV(const uint64_t current_step,
       file << "\n";
     }
     // Write the time information for the current step
-    file << total_days << "," << total_hours << "," << total_minutes;
+    if (file.is_open()) {
+      file << total_days << "," << total_hours << "," << total_minutes;
+    }
+  }
 
-    for (int i = 0; i < sparams->num_radius_intervals; ++i) {
-      const real_t inner_radius_considered = i * interval_size;
-      const real_t outer_radius_considered = (i + 1) * interval_size;
+  // Store the time information for the current step in memory if requested
+  if (result != nullptr) {
+    result->radius_data["total_days"].push_back(total_days);
+    result->radius_data["total_hours"].push_back(total_hours);
+    result->radius_data["total_minutes"].push_back(total_minutes);
+  }
 
-      // Count total cells, tumor cells of each type and tumor radius
-      int total_num_tumor_cells = 0;
-      int num_tumor_cells_type1 = 0;
-      int num_tumor_cells_type2 = 0;
-      int num_tumor_cells_type3 = 0;
-      int num_tumor_cells_type4 = 0;
-      int num_tumor_cells_type5_dead = 0;
-      int num_dead_lack_of_oxygen = 0;
-      int num_dead_lack_of_glucose = 0;
-      int num_dead_random_natural_causes = 0;
-      int num_dead_cartcell_kill = 0;
-      int num_alive_cart = 0;
-      int num_dead_cart = 0;
-      real_t tumor_radius = 0.0;
-      real_t average_oncoprotein = 0.0;
-      real_t average_oxygen_cancer_cells = 0.0;
-      real_t average_oxygen_all_cells = 0.0;
-      real_t average_glucose_cancer_cells = 0.0;
-      real_t average_glucose_all_cells = 0.0;
-      real_t average_radius_distance_living_cart_cells = 0.0;
-      // Analyze tumor with no limits on inner and outer radius
-      std::tie(total_num_tumor_cells, num_tumor_cells_type1,
-               num_tumor_cells_type2, num_tumor_cells_type3,
-               num_tumor_cells_type4, num_tumor_cells_type5_dead,
-               num_dead_lack_of_oxygen, num_dead_lack_of_glucose,
-               num_dead_random_natural_causes, num_dead_cartcell_kill,
-               num_alive_cart, num_dead_cart, tumor_radius, average_oncoprotein,
-               average_oxygen_cancer_cells, average_oxygen_all_cells,
-               average_glucose_cancer_cells, average_glucose_all_cells,
-               average_radius_distance_living_cart_cells) =
-          AnalyzeTumor(inner_radius_considered, outer_radius_considered);
+  for (int i = 0; i < sparams->num_radius_intervals; ++i) {
+    const real_t inner_radius_considered = i * interval_size;
+    const real_t outer_radius_considered = (i + 1) * interval_size;
 
-      const int num_alive_tumor_cells =
-          num_tumor_cells_type1 + num_tumor_cells_type2 +
-          num_tumor_cells_type3 + num_tumor_cells_type4;
-      const int num_alive_cells = num_alive_cart + num_alive_tumor_cells;
-      const int num_dead_cells = num_dead_cart + num_tumor_cells_type5_dead;
-      const int total_num_cells = num_alive_cells + num_dead_cells;
+    // Count total cells, tumor cells of each type and tumor radius
+    int total_num_tumor_cells = 0;
+    int num_tumor_cells_type1 = 0;
+    int num_tumor_cells_type2 = 0;
+    int num_tumor_cells_type3 = 0;
+    int num_tumor_cells_type4 = 0;
+    int num_tumor_cells_type5_dead = 0;
+    int num_dead_lack_of_oxygen = 0;
+    int num_dead_lack_of_glucose = 0;
+    int num_dead_random_natural_causes = 0;
+    int num_dead_cartcell_kill = 0;
+    int num_alive_cart = 0;
+    int num_dead_cart = 0;
+    real_t tumor_radius = 0.0;
+    real_t average_oncoprotein = 0.0;
+    real_t average_oxygen_cancer_cells = 0.0;
+    real_t average_oxygen_all_cells = 0.0;
+    real_t average_glucose_cancer_cells = 0.0;
+    real_t average_glucose_all_cells = 0.0;
+    real_t average_radius_distance_living_cart_cells = 0.0;
+    // Analyze tumor between the inner and outer radius
+    std::tie(total_num_tumor_cells, num_tumor_cells_type1,
+             num_tumor_cells_type2, num_tumor_cells_type3,
+             num_tumor_cells_type4, num_tumor_cells_type5_dead,
+             num_dead_lack_of_oxygen, num_dead_lack_of_glucose,
+             num_dead_random_natural_causes, num_dead_cartcell_kill,
+             num_alive_cart, num_dead_cart, tumor_radius, average_oncoprotein,
+             average_oxygen_cancer_cells, average_oxygen_all_cells,
+             average_glucose_cancer_cells, average_glucose_all_cells,
+             average_radius_distance_living_cart_cells) =
+        AnalyzeTumor(inner_radius_considered, outer_radius_considered);
 
-      // Write data to CSV file
+    const int num_alive_tumor_cells =
+        num_tumor_cells_type1 + num_tumor_cells_type2 + num_tumor_cells_type3 +
+        num_tumor_cells_type4;
+    const int num_alive_cells = num_alive_cart + num_alive_tumor_cells;
+    const int num_dead_cells = num_dead_cart + num_tumor_cells_type5_dead;
+    const int total_num_cells = num_alive_cells + num_dead_cells;
+
+    // Store the data in memory if requested, with the same column names as
+    // the CSV header
+    if (result != nullptr) {
+      std::ostringstream oss;
+      oss << "_radius_" << inner_radius_considered << "_to_"
+          << outer_radius_considered;
+      const std::string suffix = oss.str();
+      auto& rd = result->radius_data;
+      rd["num_alive_cells" + suffix].push_back(num_alive_cells);
+      rd["num_dead_cells" + suffix].push_back(num_dead_cells);
+      rd["total_num_cells" + suffix].push_back(total_num_cells);
+      rd["num_alive_tumor_cells" + suffix].push_back(num_alive_tumor_cells);
+      rd["total_num_tumor_cells" + suffix].push_back(total_num_tumor_cells);
+      rd["num_alive_cart_cells" + suffix].push_back(num_alive_cart);
+      rd["num_dead_cart_cells" + suffix].push_back(num_dead_cart);
+      rd["tumor_cells_type1" + suffix].push_back(num_tumor_cells_type1);
+      rd["tumor_cells_type2" + suffix].push_back(num_tumor_cells_type2);
+      rd["tumor_cells_type3" + suffix].push_back(num_tumor_cells_type3);
+      rd["tumor_cells_type4" + suffix].push_back(num_tumor_cells_type4);
+      rd["tumor_cells_type5_dead" + suffix].push_back(
+          num_tumor_cells_type5_dead);
+      rd["dead_tumor_cells_lack_of_oxygen" + suffix].push_back(
+          num_dead_lack_of_oxygen);
+      rd["dead_tumor_cells_lack_of_glucose" + suffix].push_back(
+          num_dead_lack_of_glucose);
+      rd["dead_tumor_cells_random_natural_causes" + suffix].push_back(
+          num_dead_random_natural_causes);
+      rd["dead_tumor_cells_cartcell_kill" + suffix].push_back(
+          num_dead_cartcell_kill);
+      rd["average_oncoprotein" + suffix].push_back(average_oncoprotein);
+      rd["average_oxygen_cancer_cells" + suffix].push_back(
+          average_oxygen_cancer_cells);
+      rd["average_oxygen_all_cells" + suffix].push_back(
+          average_oxygen_all_cells);
+      rd["average_glucose_cancer_cells" + suffix].push_back(
+          average_glucose_cancer_cells);
+      rd["average_glucose_all_cells" + suffix].push_back(
+          average_glucose_all_cells);
+      rd["average_radius_distance_living_cart_cells" + suffix].push_back(
+          average_radius_distance_living_cart_cells);
+    }
+
+    // Write data to CSV file
+    if (write_csv && file.is_open()) {
       file << "," << num_alive_cells << "," << num_dead_cells << ","
            << total_num_cells << "," << num_alive_tumor_cells << ","
            << total_num_tumor_cells << "," << num_alive_cart << ","
@@ -565,10 +657,13 @@ void OutputInformationBasedOnRadiusCSV(const uint64_t current_step,
            << average_glucose_cancer_cells << "," << average_glucose_all_cells
            << "," << average_radius_distance_living_cart_cells;
     }
-    // End of line for the current step
+  }
+
+  // End of line for the current step
+  if (write_csv && file.is_open()) {
     file << "\n";
   }
-};
+}
 
 // Function to spawn CAR-T cell dosages
 void SpawnCart::operator()() {

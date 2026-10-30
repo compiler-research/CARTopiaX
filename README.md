@@ -682,16 +682,17 @@ Target CSVs must have the same format as the files written by the simulation in 
 
 The sections of the script marked with `Change this` are meant to be adapted to each experiment:
 
-- **Settings:** `EXPERIMENT_ID`, `MODE`, `SEED`, `NUMBER_OF_TRIALS`, `NUMBER_MONTE_CARLO` and `BIODYNAMO_DIR` (path to `thisbdm.sh`).
-- **`run_ABM()`:** fixed simulation configuration written to `params.json` for each run, together with the parameters being calibrated.
+- **Settings:** `EXPERIMENT_ID`, `MODE`, `SEED`, `NUMBER_OF_TRIALS`, `NUMBER_MONTE_CARLO`, `TOTAL_MINUTES_TO_SIMULATE` and `RADIUS_PROFILE_MINUTE` (minute of the radial profile compared in `radius` and `custom` modes, which must not be later than `TOTAL_MINUTES_TO_SIMULATE`).
+- **`run_ABM()`:** fixed simulation configuration for each run (same keys as `params.json`), together with the parameters being calibrated.
 - **`objective()`:** parameters to be calibrated and their search ranges, e.g. `trial.suggest_float("initial_oxygen_level", 30, 40)`.
-- **Error functions:** metric to compare and, for `radius` mode, the minute of the radial profile.
+- **Error functions:** metric to compare.
 
 ### Running the calibration
 
-Install the dependencies and run the script from the repository root:
+The simulations run inside the Python process through the `cppyy` bundled with BioDynaMo's ROOT, and their output is read in memory instead of through `params.json` and the CSV files. [Build the simulation](#building-the-simulation) first (the script loads `build/libCARTopiaX.so`), then install the dependencies, source BioDynaMo and run the script:
 ```bash
 pip install -r abm_calibration/requirements.txt
+source <path-to-biodynamo>/bin/thisbdm.sh
 python3 abm_calibration/optimize.py
 ```
 
@@ -699,7 +700,7 @@ Results are stored in `abm_calibration/experiment_<EXPERIMENT_ID>/`:
 - `abm_optuna.db`: SQLite database with all trials. Running again with the same `EXPERIMENT_ID` resumes the study instead of starting from scratch. Setting `NUMBER_OF_TRIALS = 0` just prints the best result stored.
 - `optuna_results.csv`: table with the parameters and error of every trial.
 
-During the calibration ParaView export is disabled, and the original `params.json` and `bdm.toml` are always restored at the end, even if a run fails.
+During the calibration ParaView export is disabled for each run without modifying `bdm.toml`, and `params.json` is not used. If the process is stopped in the middle of a trial (e.g. by a crash inside a simulation), that trial is marked as failed the next time the study is resumed.
 
 ---
 

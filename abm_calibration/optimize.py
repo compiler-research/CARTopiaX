@@ -17,11 +17,18 @@ limitations under the License.
 This file contains the Bayesian optimization workflow used to calibrate
 the model parameters, developed under Google Summer of Code (GSoC)
 for the compiler-research.org organization.
+
+The simulations run inside this Python process through the cppyy bundled with
+BioDynaMo's ROOT, and their output is read in memory. Build the simulation
+first, then source BioDynaMo once and run the script:
+    source <path-to-biodynamo>/bin/thisbdm.sh
+    python3 abm_calibration/optimize.py
 """
 
+import ctypes
 import json
 import logging
-import subprocess
+import os
 from pathlib import Path
 
 import numpy as np
@@ -40,32 +47,67 @@ SEED = 42
 NUMBER_OF_TRIALS = 8
 # Number of Monte Carlo simulations to run for each trial. Use one for an aproximation of the error with a single montecarlo run
 NUMBER_MONTE_CARLO = 3
-# BioDynaMo directory to execute the comand source thisbdm.sh, you can change it to your own path
-BIODYNAMO_DIR = "/home/usuario/Desktop/biodynamo/build/bin/thisbdm.sh"
+# Minutes simulated in each run
+TOTAL_MINUTES_TO_SIMULATE = 1440
+# Minute at which the radial profile is compared in "radius" and "custom" modes (4320 = 72 hours).
+# It must be an output minute of the simulation (every 12 hours by default) and not later than TOTAL_MINUTES_TO_SIMULATE
+RADIUS_PROFILE_MINUTE = 4320
 
 # Other Hyperparameters for the optimization process
 # LOGGING
 logging.basicConfig(level=logging.INFO)
 
-# Directory for the visualization configuration file bdm.toml
-BDM_TOML_PATH = Path("./bdm.toml")
-# Directory for the parameters file params.json
-PARAMS_PATH = Path(__file__).resolve().parent.parent / "params.json"
+# Root directory of the repository
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+# Simulation library built with the project
+LIB_PATH = PROJECT_ROOT / "build" / "libCARTopiaX.so"
 
-# Directories with the simulation output and the target data
-OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
+# Directory with the target data
 TARGET_DIR = Path(__file__).resolve().parent / "target_data"
 
 # Directory for this experiment
-EXPERIMENT_DIR = Path("abm_calibration") / f"experiment_{EXPERIMENT_ID}"
+EXPERIMENT_DIR = PROJECT_ROOT / "abm_calibration" / f"experiment_{EXPERIMENT_ID}"
 EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
+
+#######################################################
+# Load the simulation in this process (only once)
+#######################################################
+
+BDMSYS = os.environ.get("BDMSYS")
+if not BDMSYS:
+    raise RuntimeError(
+        "BioDynaMo is not sourced. Run once in your shell before this script:\n"
+        "  source <path-to-biodynamo>/bin/thisbdm.sh"
+    )
+if not LIB_PATH.exists():
+    raise FileNotFoundError(
+        f"Simulation library not found at {LIB_PATH}. Build the simulation first."
+    )
+
+
+ctypes.CDLL("libstdc++.so.6", mode=ctypes.RTLD_GLOBAL)
+import cppyy  # noqa: E402
+for lib in ("libbiodynamo.so", "libbiodynamo-pv.so"):
+    lib_path = Path(BDMSYS) / "lib" / lib
+    if lib_path.exists():
+        ctypes.CDLL(str(lib_path), mode=ctypes.RTLD_GLOBAL)
+
+for include_dir in (Path(BDMSYS) / "include", PROJECT_ROOT / "src"):
+    if include_dir.is_dir():
+        cppyy.add_include_path(str(include_dir))
+
+cppyy.load_library(str(LIB_PATH))
+cppyy.include("cart_tumor.h")
+bdm = cppyy.gbl.bdm
+os.chdir(PROJECT_ROOT)
+
 
 #######################################################
 # Change this: Simulations to run the ABM with the given parameters
 #######################################################
 
 
-# Function to run the ABM with the given parameters
+# Function to run the ABM with the given parameters. Returns its output in memory
 def run_ABM(params, seed):
     # Change this: parameter to be optimized in the ABM simulation
     initial_oxygen_level = params["initial_oxygen_level"]
@@ -73,24 +115,29 @@ def run_ABM(params, seed):
         "default_oxygen_consumption_tumor_cell"
     ]
 
-    # Change this configuration for the ABM run
-    # (for MODE = "radius" it must set output_information_dependent_on_radius: True)
+    # Change this configuration for the ABM run (same keys as params.json)
     config = {
         "seed": seed,
         "output_performance_statistics": False,
-        "total_minutes_to_simulate": 1440,
-        "initial_tumor_radius": 40.0,
+        "total_minutes_to_simulate": TOTAL_MINUTES_TO_SIMULATE,
         "treatment": {"0": 50},
+        # The data dependent on the radius is only needed by the "radius" and "custom" errors
+        "output_information_dependent_on_radius": MODE in ("radius", "custom"),
         "initial_oxygen_level": initial_oxygen_level,
         "default_oxygen_consumption_tumor_cell": default_oxygen_consumption_tumor_cell,
     }
 
-    # Save the config parameters for the run to the params.json file
-    with open(PARAMS_PATH, "w") as f:
-        json.dump(config, f, indent=2)
+    # Load the parameters as the simulation does with params.json, so the values
+    # derived from them are computed in the same way
+    sim_param = bdm.SimParam()
+    sim_param.LoadParamsFromString(json.dumps(config))
 
-    # Load the ByoDynaMo environment and run the ABM simulation using the BioDynaMo executable
-    subprocess.run(["bash", "-c", f"source {BIODYNAMO_DIR} && bdm run"], check=True)
+    # Run the ABM simulation in this process (without CSV files nor visualization),
+    # its output is stored in sim_result
+    sim_result = bdm.SimulationResult()
+    if bdm.RunSimulation(sim_param, sim_result) != 0:
+        raise RuntimeError(f"Simulation failed with config {config}")
+    return sim_result
 
 
 #######################################################
@@ -99,46 +146,43 @@ def run_ABM(params, seed):
 
 
 # Error using the data of the whole tumor as a function of time (final_data.csv)
-def compute_error_total():
+def compute_error_total(sim_result):
     metric = "average_oxygen_all_cells"  # Change this: choose the metric to compare, e.g., "average_oxygen_all_cells", "tumor_radius", etc.
-    return mse_against_target("final_data.csv", [metric])
+    return mse_against_target(sim_result, "final_data.csv", [metric])
 
 
 # Error using the data as a function of the radius at a fixed time (data_dependent_on_radius_tumor.csv)
-def compute_error_radius():
+def compute_error_radius(sim_result):
     csv_name = "data_dependent_on_radius_tumor.csv"
     metric = "tumor_cells_type5_dead"  # Change this: prefix of the metric columns, e.g., "tumor_cells_type5_dead"
-    minute = 4320  # Change this: fixed time (total_minutes) at which the radial profile is compared
 
-    target = TARGET_DIR / csv_name
-    if not target.exists():
-        logging.error("Missing CSV: %s", target)
+    df_t = read_target(csv_name)
+    if df_t is None:
         return float("inf")
 
-    header = pd.read_csv(target, nrows=0).columns
-    columns = [c for c in header if c.startswith(f"{metric}_radius_")]
+    columns = [c for c in df_t.columns if c.startswith(f"{metric}_radius_")]
     if not columns:
-        logging.error("No columns for metric %s in %s", metric, target)
+        logging.error("No columns for metric %s in %s", metric, TARGET_DIR / csv_name)
         return float("inf")
-    return mse_against_target(csv_name, columns, minute=minute)
+    return mse_against_target(
+        sim_result, csv_name, columns, minute=RADIUS_PROFILE_MINUTE
+    )
 
 
 # Change this: write your own error. Example: dead cells at the center of a tumor
-# of 3000 micrometers of radius split into 20 measurement rings at minute 4320 (72 hours)
-def compute_custom_error():
-    sim = OUTPUT_DIR / "data_dependent_on_radius_tumor.csv"
-    if not sim.exists():
-        logging.error("Missing simulation CSV: %s", sim)
+# of 3000 micrometers of radius split into 20 measurement rings at RADIUS_PROFILE_MINUTE
+def compute_custom_error(sim_result):
+    column = "tumor_cells_type5_dead_radius_0_to_150"
+    df_s = simulation_output_to_df(sim_result.radius_data, ["total_minutes", column])
+    if df_s is None:
         return float("inf")
 
-    df_s = pd.read_csv(
-        sim, usecols=["total_minutes", "tumor_cells_type5_dead_radius_0_to_150"]
-    )
-    row = df_s[df_s["total_minutes"] == 4320].iloc[0]
+    rows = df_s[df_s["total_minutes"] == RADIUS_PROFILE_MINUTE]
+    if rows.empty:
+        logging.error("No simulation output at minute %s", RADIUS_PROFILE_MINUTE)
+        return float("inf")
     target_value_center = 21
-    return abs(
-        float(row["tumor_cells_type5_dead_radius_0_to_150"]) - target_value_center
-    )
+    return abs(float(rows[column].iloc[0]) - target_value_center)
 
 
 #######################################################
@@ -160,9 +204,9 @@ def objective(trial):
     # Compute the error as the average of the errors from multiple Monte Carlo simulations varying the seed
     total_error = 0
     for seed in np.random.randint(0, 10000, NUMBER_MONTE_CARLO):
-        run_ABM(params, int(seed))
+        sim_result = run_ABM(params, int(seed))
 
-        error = compute_error()
+        error = compute_error(sim_result)
         total_error += error
 
     error = total_error / NUMBER_MONTE_CARLO
@@ -178,43 +222,62 @@ def objective(trial):
 
 
 # Function to compute the error between the ABM simulation results and the target data
-def compute_error():
+def compute_error(sim_result):
     if MODE == "total":
-        return compute_error_total()
+        return compute_error_total(sim_result)
     if MODE == "radius":
-        return compute_error_radius()
+        return compute_error_radius(sim_result)
     if MODE == "custom":
-        return compute_custom_error()
+        return compute_custom_error(sim_result)
     raise ValueError(f"Unknown MODE: {MODE}")
 
 
-# Function to set the export value in the bdm.toml file
-def set_export_value(path: Path, value: bool):
-    lines = path.read_text().splitlines()
+# Target CSVs, read only once because they are the same for every run
+_TARGET_CACHE = {}
 
-    new_lines = []
-    for line in lines:
-        if line.strip().startswith("export"):
-            new_lines.append(f"export = {str(value).lower()}")
-        else:
-            new_lines.append(line)
 
-    path.write_text("\n".join(new_lines))
+# Function to read a target CSV (None if it does not exist)
+def read_target(csv_name):
+    if csv_name not in _TARGET_CACHE:
+        target = TARGET_DIR / csv_name
+        if not target.exists():
+            logging.error("Missing CSV: %s", target)
+            return None
+        _TARGET_CACHE[csv_name] = pd.read_csv(target)
+    return _TARGET_CACHE[csv_name]
+
+
+# Function to convert the in-memory output of the simulation (column name -> values)
+# into a DataFrame with the given columns (None if a column is missing)
+def simulation_output_to_df(output, columns):
+    data = {}
+    for column in columns:
+        # count() instead of [] because std::map::operator[] inserts missing keys
+        if output.count(column) == 0:
+            logging.error("Missing simulation column: %s", column)
+            return None
+        values = output[column]
+        data[column] = np.fromiter(values, dtype=np.float64, count=len(values))
+    return pd.DataFrame(data)
 
 
 # MSE between simulation and target for the given csv file and columns, merged on total_minutes
 # (if minute is given, only that time is compared)
-def mse_against_target(csv_name, columns, minute=None):
-    target = TARGET_DIR / csv_name
-    sim = OUTPUT_DIR / csv_name
+def mse_against_target(sim_result, csv_name, columns, minute=None):
+    df_t = read_target(csv_name)
+    if df_t is None:
+        return float("inf")
+    df_t = df_t[["total_minutes", *columns]]
 
-    for path in (target, sim):
-        if not path.exists():
-            logging.error("Missing CSV: %s", path)
-            return float("inf")
-
-    df_t = pd.read_csv(target, usecols=["total_minutes", *columns])
-    df_s = pd.read_csv(sim, usecols=["total_minutes", *columns])
+    # Simulation output with the same columns as the CSV file written in output/
+    output = (
+        sim_result.final_data
+        if csv_name == "final_data.csv"
+        else sim_result.radius_data
+    )
+    df_s = simulation_output_to_df(output, ["total_minutes", *columns])
+    if df_s is None:
+        return float("inf")
 
     if minute is not None:
         df_t = df_t[df_t["total_minutes"] == minute]
@@ -236,6 +299,13 @@ def mse_against_target(csv_name, columns, minute=None):
 #######################################################
 
 if __name__ == "__main__":
+    # The radial profile can only be compared at a minute that is simulated
+    if MODE in ("radius", "custom") and RADIUS_PROFILE_MINUTE > TOTAL_MINUTES_TO_SIMULATE:
+        raise ValueError(
+            f"RADIUS_PROFILE_MINUTE ({RADIUS_PROFILE_MINUTE}) is later than "
+            f"TOTAL_MINUTES_TO_SIMULATE ({TOTAL_MINUTES_TO_SIMULATE})"
+        )
+
     # Fix the random seed for reproducibility
     np.random.seed(SEED)
 
@@ -248,24 +318,21 @@ if __name__ == "__main__":
         sampler=optuna.samplers.TPESampler(seed=SEED),
     )
 
-    # Save the original content of the bdm.toml and params.json files to restore them later
-    original_bdm = BDM_TOML_PATH.read_text()
-    original_params = PARAMS_PATH.read_text()
+    # A crash inside a simulation stops the whole process and leaves its trial as
+    # RUNNING. This script runs one trial at a time, so trials still RUNNING come
+    # from a previous execution that was stopped and are marked as failed
+    for stale_trial in study.get_trials(
+        deepcopy=False, states=(optuna.trial.TrialState.RUNNING,)
+    ):
+        study.tell(stale_trial.number, state=optuna.trial.TrialState.FAIL)
 
-    try:
-        # Change the export value in the bdm.toml file to False to disable visualization
-        set_export_value(BDM_TOML_PATH, False)
+    # The visualization export is disabled for each run by RunSimulation, so
+    # bdm.toml does not need to be modified
+    study.optimize(objective, n_trials=NUMBER_OF_TRIALS)
 
-        study.optimize(objective, n_trials=NUMBER_OF_TRIALS)
+    print("\nBEST RESULT")
+    print("Value:", study.best_value)
+    print("Params:", study.best_params)
 
-        print("\nBEST RESULT")
-        print("Value:", study.best_value)
-        print("Params:", study.best_params)
-
-        df = study.trials_dataframe()
-        df.to_csv(EXPERIMENT_DIR / "optuna_results.csv", index=False, mode="w")
-
-    finally:
-        # Restore the original content of the bdm.toml and params.json files always, even if an error occurs during the optimization process
-        BDM_TOML_PATH.write_text(original_bdm)
-        PARAMS_PATH.write_text(original_params)
+    df = study.trials_dataframe()
+    df.to_csv(EXPERIMENT_DIR / "optuna_results.csv", index=False, mode="w")

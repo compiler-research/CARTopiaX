@@ -39,16 +39,35 @@
 #include "core/simulation.h"
 #include "core/util/log.h"
 #include <cstdint>
+#include <filesystem>
+#include <functional>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <system_error>
 #include <vector>
 
 namespace bdm {
 
-int Simulate(int argc, const char** argv) {
-  // Load parameters from JSON file or use default values
-  std::unique_ptr<SimParam> custom_parameters = std::make_unique<SimParam>();
-  custom_parameters->LoadParams("params.json");
+namespace {
+
+
+std::unique_ptr<Simulation> CreateSimulation(
+    int argc, const char** argv, const std::function<void(Param*)>& set_param) {
+  if (argv == nullptr) {
+    return std::make_unique<Simulation>("CARTopiaX", set_param);
+  }
+  return std::make_unique<Simulation>(argc, argv, set_param);
+}
+
+}  // namespace
+
+int RunSimulation(const SimParam& input_params, SimulationResult* result,
+                  bool write_csv, bool verbose, bool allow_visualization,
+                  int argc, const char** argv) {
+  // Copy the parameters of this run
+  std::unique_ptr<SimParam> custom_parameters =
+      std::make_unique<SimParam>(input_params);
 
   // Keep a reference to the parameters before releasing
   const auto* sparam_ref = custom_parameters.get();
@@ -57,7 +76,7 @@ int Simulate(int argc, const char** argv) {
   Param::RegisterParamGroup(custom_parameters.release());
 
   // Set simulation parameters using lambda
-  auto set_param = [sparam_ref](Param* param) {
+  auto set_param = [sparam_ref, allow_visualization](Param* param) {
     // Set simulation bounds using the parameters
     param->random_seed = sparam_ref->seed;
     param->bound_space = sparam_ref->bound_space_toplogy;
@@ -65,17 +84,23 @@ int Simulate(int argc, const char** argv) {
     param->max_bound = sparam_ref->bounded_space_length / kHalf;
     param->simulation_time_step = sparam_ref->dt_step;
     param->statistics = sparam_ref->output_performance_statistics;
+    // Disable the visualization export of bdm.toml and the command line
+    // without editing the file (e.g. for calibration runs)
+    param->export_visualization =
+        param->export_visualization && allow_visualization;
   };
 
-  Simulation simulation(argc, argv, set_param);
-  const auto* sparam = simulation.GetParam()->Get<SimParam>();
+  auto simulation = CreateSimulation(argc, argv, set_param);
+  const auto* sparam = simulation->GetParam()->Get<SimParam>();
   // Print parameters
-  sparam->PrintParams();
+  if (verbose) {
+    sparam->PrintParams();
+  }
 
-  ExecutionContext* ctxt = simulation.GetExecutionContext();
+  ExecutionContext* ctxt = simulation->GetExecutionContext();
 
   // Change Forces
-  Scheduler* scheduler = simulation.GetScheduler();
+  Scheduler* scheduler = simulation->GetScheduler();
 
   Operation* op = scheduler->GetOps("mechanical forces")[0];
   std::unique_ptr<InteractionVelocity> interaction_velocity =
@@ -230,7 +255,7 @@ int Simulate(int argc, const char** argv) {
     }
 
     default:
-      Log::Error("Simulate",
+      Log::Error("RunSimulation",
                  "Unknown tumor shape, please use 'sphere' or 'cylinder'.");
       // Exit with an error code
       return 1;
@@ -257,17 +282,36 @@ int Simulate(int argc, const char** argv) {
       "OutputSummary", sparam->output_csv_interval);
   std::unique_ptr<bdm::OutputSummary> output_summary =
       std::make_unique<bdm::OutputSummary>();
+  output_summary->SetOutputConfig(result, write_csv);
   summary_op->AddOperationImpl(bdm::kCpu, output_summary.release());
   scheduler->ScheduleOp(summary_op.release());
 
   // Run simulation
-  std::cout << "Running simulation..." << std::endl;
+  if (verbose) {
+    std::cout << "Running simulation..." << std::endl;
+  }
   // simulate total_minutes_to_simulate minutes including the last minute
   scheduler->Simulate(1 +
                       static_cast<uint64_t>(sparam->total_minutes_to_simulate /
                                             sparam->dt_step));
-  std::cout << "Simulation completed successfully!" << std::endl;
+  if (verbose) {
+    std::cout << "Simulation completed successfully!" << std::endl;
+  }
+  const std::string output_dir = simulation->GetOutputDir();
+  simulation.reset();
+  std::error_code error;
+  // Only removes the directory if it is empty
+  std::filesystem::remove(output_dir, error);
   return 0;
+}
+
+int Simulate(int argc, const char** argv) {
+  // Load parameters from JSON file or use default values
+  SimParam custom_parameters;
+  custom_parameters.LoadParams("params.json");
+  return RunSimulation(custom_parameters, /*result=*/nullptr,
+                       /*write_csv=*/true, /*verbose=*/true,
+                       /*allow_visualization=*/true, argc, argv);
 }
 
 }  // namespace bdm

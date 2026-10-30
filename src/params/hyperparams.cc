@@ -31,6 +31,7 @@
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <sstream>
 #include <string>
 
 namespace bdm {
@@ -41,12 +42,24 @@ const ParamGroupUid SimParam::kUid = ParamGroupUidGenerator::Get()->NewUid();
 // Function to read a JSON file and load the parameters
 // The parameters that are not found in the file keep their default
 void SimParam::LoadParams(const std::string& filename) {
-  nlohmann::json jfile;
   std::ifstream file(filename);
-  // If the json can be opened, try to read it, otherwise leave jfile empty
+  std::stringstream content;
+  // If the json can be opened, read it, otherwise keep all the defaults
   if (file.is_open()) {
+    content << file.rdbuf();
+  }
+  LoadParamsFromString(content.str());
+}
+
+// Function to load the parameters from a JSON string
+// The parameters that are not found in the string keep their default
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+void SimParam::LoadParamsFromString(const std::string& json_string) {
+  nlohmann::json jfile;
+  // If the string is not empty, try to parse it, otherwise leave jfile empty
+  if (!json_string.empty()) {
     try {
-      file >> jfile;
+      jfile = nlohmann::json::parse(json_string);
     } catch (const std::exception& e) {
       std::cerr << "Error reading JSON: " << e.what() << std::endl;
     }
