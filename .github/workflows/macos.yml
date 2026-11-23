@@ -1,0 +1,65 @@
+name: macOS
+
+# Builds BioDynaMo from source on macOS, then builds and tests CARTopiaX and
+# runs a short simulation. BioDynaMo has no prebuilt macOS recipe in
+# ci-workflows, so unlike ci.yml this does not use setup-biodynamo.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  BDM_TAG: v1.05-cr-20260812-01   # same tag the Linux recipe pins
+
+jobs:
+  build:
+    name: macos-15-apple-clang
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install prerequisites
+        run: brew install libomp open-mpi python@3.9 wget cmake ninja bash tbb qt@5
+
+      # BioDynaMo's CMakeLists.txt expands a cache variable unquoted inside an
+      # if(), which a CMake 4 configure rejects, so use an older CMake.
+      - name: Pin CMake
+        run: |
+          python3.9 -m venv "$RUNNER_TEMP/cmake-venv"
+          "$RUNNER_TEMP/cmake-venv/bin/pip" install cmake==3.31.6
+          echo "$RUNNER_TEMP/cmake-venv/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/cmake-venv/bin/cmake" --version
+
+      - name: Build BioDynaMo
+        run: |
+          git clone --depth 1 -b "$BDM_TAG" https://github.com/vgvassilev/biodynamo "$RUNNER_TEMP/biodynamo"
+          cmake -S "$RUNNER_TEMP/biodynamo" -B "$RUNNER_TEMP/bdm-build" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DNOPYENV=YES -Dnuma=OFF \
+            -Dnotebooks=OFF -Dparaview=OFF -Dlibgit2=OFF -Dsbml=OFF
+          cmake --build "$RUNNER_TEMP/bdm-build"
+
+      - name: Build and test CARTopiaX
+        run: |
+          source "$RUNNER_TEMP/bdm-build/bin/thisbdm.sh"
+          cmake . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j"$(sysctl -n hw.ncpu)"
+          ctest --test-dir build --output-on-failure
+
+      - name: Run a short simulation
+        run: |
+          source "$RUNNER_TEMP/bdm-build/bin/thisbdm.sh"
+          mkdir "$RUNNER_TEMP/sim" && cd "$RUNNER_TEMP/sim"
+          cat > params.json <<'JSON'
+          {"seed": 42, "total_minutes_to_simulate": 480, "output_csv_interval": 240,
+           "initial_spherical_tumor_radius": 40.0, "treatment": {"0": 50}}
+          JSON
+          "$GITHUB_WORKSPACE/build/CARTopiaX"
+          cat output/final_data.csv
+          test "$(wc -l < output/final_data.csv)" -ge 3
